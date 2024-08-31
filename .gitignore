@@ -42,8 +42,8 @@
 .settings/
 
 # Project specific files
-Output/*
-build/*
+Software/Output/*
+Software/build/*
 *.ioc
 *.s
 *.ld
