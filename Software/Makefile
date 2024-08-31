@@ -66,7 +66,8 @@ Core/Src/gpio.c \
 Core/Src/adc.c \
 Core/Src/i2c.c \
 Core/Src/tim.c \
-Core/Src/usart.c
+Core/Src/usart.c \
+Application/pid.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -130,7 +131,8 @@ C_INCLUDES =  \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-IApplication
 
 
 # compile gcc flags
