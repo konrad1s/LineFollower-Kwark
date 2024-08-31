@@ -1,0 +1,7 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "schemat-eagle-import")(type "KiCad")(uri "${KIPRJMOD}/schemat-eagle-import.kicad_sym")(options "")(descr ""))
+  (lib (name "FFC2B28-14-G")(type "KiCad")(uri "D:/Pobrane/FFC2B28-14-G/FFC2B28-14-G.kicad_sym")(options "")(descr ""))
+  (lib (name "FTSH-105-01-F-DV-P-TR")(type "KiCad")(uri "D:/Pobrane/FTSH-105-01-F-DV-P-TR/FTSH-105-01-F-DV-P-TR.kicad_sym")(options "")(descr ""))
+  (lib (name "FFC2B28-16-G")(type "KiCad")(uri "D:/Pobrane/FFC2B28-16-G/FFC2B28-16-G.kicad_sym")(options "")(descr ""))
+)
