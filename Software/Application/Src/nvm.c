@@ -100,54 +100,58 @@ bool NVM_Write(NVM_T *const nvm)
     /* Calculate the CRC value of the data */
     uint32_t calculatedCrc = HAL_CRC_Calculate(&hcrc, (uint32_t *)nvm->data, nvm->size);
 
-    HAL_FLASH_Unlock();
-
-    while (size > 0)
+    if (calculatedCrc != nvm->lastCrc)
     {
-        uint64_t programData = 0;
-        uint32_t increment = 0;
-        uint32_t programType = 0;
+        /* If the calculated CRC value is different from the last CRC value, write the data to the flash memory */
+        HAL_FLASH_Unlock();
 
-        if (size >= 4)
+        while (size > 0)
         {
-            programType = FLASH_TYPEPROGRAM_WORD;
-            programData = *(uint32_t *)pData;
-            increment = 4;
-        }
-        else if (size >= 2)
-        {
-            programType = FLASH_TYPEPROGRAM_HALFWORD;
-            programData = *(uint16_t *)pData;
-            increment = 2;
-        }
-        else
-        {
-            programType = FLASH_TYPEPROGRAM_BYTE;
-            programData = *pData;
-            increment = 1;
+            uint64_t programData = 0;
+            uint32_t increment = 0;
+            uint32_t programType = 0;
+
+            if (size >= 4)
+            {
+                programType = FLASH_TYPEPROGRAM_WORD;
+                programData = *(uint32_t *)pData;
+                increment = 4;
+            }
+            else if (size >= 2)
+            {
+                programType = FLASH_TYPEPROGRAM_HALFWORD;
+                programData = *(uint16_t *)pData;
+                increment = 2;
+            }
+            else
+            {
+                programType = FLASH_TYPEPROGRAM_BYTE;
+                programData = *pData;
+                increment = 1;
+            }
+
+            if (HAL_FLASH_Program(programType, currentAddress, programData) != HAL_OK)
+            {
+                HAL_FLASH_Lock();
+                return false;
+            }
+
+            currentAddress += increment;
+            pData += increment;
+            size -= increment;
         }
 
-        if (HAL_FLASH_Program(programType, currentAddress, programData) != HAL_OK)
+        /* Write the CRC value to the flash memory */
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, currentAddress, calculatedCrc) != HAL_OK)
         {
             HAL_FLASH_Lock();
             return false;
         }
 
-        currentAddress += increment;
-        pData += increment;
-        size -= increment;
-    }
-
-    /* Write the CRC value to the flash memory */
-    if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, currentAddress, calculatedCrc) != HAL_OK)
-    {
         HAL_FLASH_Lock();
-        return false;
+
+        nvm->lastCrc = calculatedCrc;
     }
-
-    HAL_FLASH_Lock();
-
-    nvm->lastCrc = calculatedCrc;
 
     return true;
 }
