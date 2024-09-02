@@ -67,8 +67,8 @@ Core/Src/adc.c \
 Core/Src/i2c.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Application/Pid/pid.c \
-Application/Nvm/nvm.c \
+Application/Src/pid.c \
+Application/Src/nvm.c \
 Core/Src/crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c
@@ -136,8 +136,7 @@ C_INCLUDES =  \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
 -IDrivers/CMSIS/Include \
--IApplication/Pid \
--IApplication/Nvm
+-IApplication/Inc
 
 
 # compile gcc flags

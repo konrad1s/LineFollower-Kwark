@@ -1,6 +1,8 @@
 #include "nvm.h"
 #include "stm32f7xx_hal.h"
+#include "crc.h"
 
+#define NVM_CRC_INIT_VALUE   (0xFFFFFFFFU)
 #define FLASH_SECTOR_INVALID (0xFFFFFFFFU)
 
 static uint32_t GetSectorBaseAddress(uint32_t sector)
@@ -35,6 +37,7 @@ void NVM_Init(NVM_T *const nvm, uint8_t *data, uint32_t size, uint32_t sector)
         nvm->data = data;
         nvm->size = size;
         nvm->sector = sector;
+        nvm->lastCrc = NVM_CRC_INIT_VALUE;
     }
 }
 
@@ -52,12 +55,23 @@ bool NVM_Read(NVM_T *const nvm)
     }
 
     /* Read data from the flash memory into the buffer */
-    for (uint32_t i = 0; i < nvm->size; i++)
+    for (uint32_t i = 0U; i < nvm->size; i++)
     {
         nvm->data[i] = *(__IO uint8_t *)(baseAddress + i);
     }
 
-    /* TODO: Implement CRC check here */
+    /* Read the CRC value from the flash memory */
+    uint32_t crcAddress = baseAddress + nvm->size;
+    uint32_t storedCrc = *(__IO uint32_t *)crcAddress;
+    /* Calculate the CRC value of the data */
+    uint32_t calculatedCrc = HAL_CRC_Calculate(&hcrc, (uint32_t *)nvm->data, nvm->size);
+
+    if (calculatedCrc != storedCrc)
+    {
+        return false;
+    }
+
+    nvm->lastCrc = calculatedCrc;
 
     return true;
 }
@@ -83,6 +97,9 @@ bool NVM_Write(NVM_T *const nvm)
         return false;
     }
 
+    /* Calculate the CRC value of the data */
+    uint32_t calculatedCrc = HAL_CRC_Calculate(&hcrc, (uint32_t *)nvm->data, nvm->size);
+
     HAL_FLASH_Unlock();
 
     while (size > 0)
@@ -91,13 +108,13 @@ bool NVM_Write(NVM_T *const nvm)
         uint32_t increment = 0;
         uint32_t programType = 0;
 
-        if ((size >= 4) && (currentAddress % 4 == 0))
+        if (size >= 4)
         {
             programType = FLASH_TYPEPROGRAM_WORD;
             programData = *(uint32_t *)pData;
             increment = 4;
         }
-        else if ((size >= 2) && (currentAddress % 2 == 0))
+        else if (size >= 2)
         {
             programType = FLASH_TYPEPROGRAM_HALFWORD;
             programData = *(uint16_t *)pData;
@@ -121,7 +138,16 @@ bool NVM_Write(NVM_T *const nvm)
         size -= increment;
     }
 
+    /* Write the CRC value to the flash memory */
+    if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, currentAddress, calculatedCrc) != HAL_OK)
+    {
+        HAL_FLASH_Lock();
+        return false;
+    }
+
     HAL_FLASH_Lock();
+
+    nvm->lastCrc = calculatedCrc;
 
     return true;
 }
@@ -150,6 +176,8 @@ bool NVM_Erase(NVM_T *const nvm)
     }
 
     HAL_FLASH_Lock();
+
+    nvm->lastCrc = NVM_CRC_INIT_VALUE;
 
     return true;
 }
