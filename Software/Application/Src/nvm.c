@@ -1,6 +1,7 @@
 #include "nvm.h"
 #include "stm32f7xx_hal.h"
 #include "crc.h"
+#include <string.h>
 
 #define NVM_CRC_INIT_VALUE   (0xFFFFFFFFU)
 #define FLASH_SECTOR_INVALID (0xFFFFFFFFU)
@@ -30,11 +31,12 @@ static uint32_t GetSectorBaseAddress(uint32_t sector)
     }
 }
 
-void NVM_Init(NVM_T *const nvm, uint8_t *data, uint32_t size, uint32_t sector)
+void NVM_Init(NVM_T *const nvm, uint8_t *const data, const uint8_t *const defaultData, uint32_t size, uint32_t sector)
 {
     if (nvm != NULL && data != NULL && sector < FLASH_SECTOR_TOTAL)
     {
         nvm->data = data;
+        nvm->defaultData = defaultData;
         nvm->size = size;
         nvm->sector = sector;
         nvm->lastCrc = NVM_CRC_INIT_VALUE;
@@ -68,7 +70,16 @@ bool NVM_Read(NVM_T *const nvm)
 
     if (calculatedCrc != storedCrc)
     {
-        return false;
+        if (nvm->defaultData != NULL)
+        {
+            /* If the calculated CRC value is different, load the default data */
+            memcpy(nvm->data, nvm->defaultData, nvm->size);
+            calculatedCrc = HAL_CRC_Calculate(&hcrc, (uint32_t *)nvm->data, nvm->size);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     nvm->lastCrc = calculatedCrc;
