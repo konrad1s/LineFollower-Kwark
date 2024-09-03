@@ -72,7 +72,8 @@ Application/Src/nvm.c \
 Core/Src/crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c \
-Core/Src/dma.c
+Core/Src/dma.c	\
+Application/Src/scp.c
 
 # ASM sources
 ASM_SOURCES =  \
