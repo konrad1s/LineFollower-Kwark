@@ -73,29 +73,24 @@ static void SCP_ProcessCommand(SCP_Instance_T *const scp)
  * @brief Initializes an SCP instance for UART communication.
  *
  * @param[in,out] scp Pointer to the SCP instance to initialize.
- * @param[in] buffer Pointer to the buffer used for UART reception.
- * @param[in] size Size of the buffer.
- * @param[in] huart Pointer to the UART handle.
- * @param[in] commands Array of SCP commands that can be processed.
- * @param[in] numCommands Number of commands in the array.
+ * @param[in] config Pointer to the configuration structure for the SCP instance.
  * 
  * @return 
  * - 0 on success.
  * - -1 if fails.
  */
-int SCP_Init(SCP_Instance_T *const scp, uint8_t *const buffer, const uint16_t size,
-             UART_HandleTypeDef *const huart, SCP_Command_T *const commands, const size_t numCommands)
+int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config)
 {
-    if (!scp || !buffer || !huart || !commands || numCommands == 0U)
+    if (!scp || !config || !config->buffer || !config->huart || !config->commands || config->numCommands == 0U)
     {
         return -1;
     }
 
-    scp->buffer = buffer;
-    scp->size = size;
-    scp->huart = huart;
-    scp->commands = commands;
-    scp->numCommands = numCommands;
+    scp->buffer = config->buffer;
+    scp->size = config->size;
+    scp->huart = config->huart;
+    scp->commands = config->commands;
+    scp->numCommands = config->numCommands;
 
     if (SCP_RegisterInstance(scp) != 0)
     {
