@@ -1,6 +1,15 @@
 #include "scp.h"
 #include <string.h>
 
+#define SCP_ErrorHandler(scp)                             \
+    do                                                    \
+    {                                                     \
+        if (scp->errorHandler)                            \
+        {                                                 \
+            scp->errorHandler((const char *)scp->buffer); \
+        }                                                 \
+    } while (0)
+
 typedef struct
 {
     size_t numInstances;
@@ -66,7 +75,8 @@ static void SCP_ProcessCommand(SCP_Instance_T *const scp)
         }
     }
 
-    /* If no matching command is found, the command is ignored */
+    /* No matching command is found, call the error handler if available */
+    SCP_ErrorHandler(scp);
 }
 
 /**
@@ -91,6 +101,7 @@ int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config)
     scp->huart = config->huart;
     scp->commands = config->commands;
     scp->numCommands = config->numCommands;
+    scp->errorHandler = config->errorHandler;
 
     if (SCP_RegisterInstance(scp) != 0)
     {
@@ -119,7 +130,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
             }
             else
             {
-                /* Buffer overflow occurred, ignore the command */
+                SCP_ErrorHandler(scp);
                 return;
             }
 

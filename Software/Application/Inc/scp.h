@@ -20,16 +20,11 @@ typedef struct
     UART_HandleTypeDef *huart;
     SCP_Command_T *commands;
     size_t numCommands;
-} SCP_Config_T;
+    void (*errorHandler)(const char *command);
+} SCP_Common_T;
 
-typedef struct
-{
-    uint8_t *buffer;
-    uint16_t size;
-    UART_HandleTypeDef *huart;
-    SCP_Command_T *commands;
-    size_t numCommands;
-} SCP_Instance_T;
+typedef SCP_Common_T SCP_Config_T;
+typedef SCP_Common_T SCP_Instance_T;
 
 int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config);
 
