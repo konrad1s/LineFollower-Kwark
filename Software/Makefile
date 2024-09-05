@@ -75,7 +75,8 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c \
 Core/Src/dma.c	\
 Application/Src/scp.c \
 Application/Src/linefollower.c \
-Application/Src/linefollower_config.c
+Application/Src/linefollower_config.c \
+Application/Src/sensors.c
 
 # ASM sources
 ASM_SOURCES =  \

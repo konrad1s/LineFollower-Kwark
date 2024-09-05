@@ -2,10 +2,12 @@
 #include "linefollower_config.h"
 #include "scp.h"
 #include "pid.h"
+#include "sensors.h"
 
 static NVM_T NvmInstance;
 static SCP_Instance_T ScpInstance;
 static PID_T PidSensorInstance;
+static Sensors_Manager_T SensorsManager;
 
 static NVM_Layout_T NVM_Block;
 
@@ -17,4 +19,6 @@ void Linefollower_Init(void)
     PID_Init(&PidSensorInstance, &NVM_Block.pidStgSensor);
 
     (void)SCP_Init(&ScpInstance, &ScpConfig);
+
+    Sensors_Config_Init(&SensorsManager, &hadc1);
 }

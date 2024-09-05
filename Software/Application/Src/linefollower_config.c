@@ -47,3 +47,32 @@ const SCP_Config_T ScpConfig = {
         .numCommands = 0U,
         .errorHandler = NULL,
     };
+
+/* --------------------------------- SENSORS CONFIG --------------------------------- */
+
+static Sensor_Instance_T sensorInstances[SENSORS_NUMBER];
+static uint16_t sensorAdcBuffer[SENSORS_NUMBER];
+static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
+    {GPIOC, LED12_Pin},
+    {GPIOC, LED11_Pin},
+    {GPIOC, LED10_Pin},
+    {GPIOC, LED9_Pin},
+    {GPIOC, LED8_Pin},
+    {GPIOC, LED7_Pin},
+    {GPIOB, LED6_Pin},
+    {GPIOB, LED5_Pin},
+    {GPIOB, LED4_Pin},
+    {GPIOB, LED3_Pin},
+    {GPIOB, LED2_Pin},
+    {GPIOB, LED1_Pin},
+};
+
+void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandle)
+{
+    Sensors_Config_T config = {
+        .adcHandle = adcHandle,
+        .ledConfig = sensorLeds
+    };
+
+    Sensors_Init(manager, &config, sensorAdcBuffer, sensorInstances, SENSORS_NUMBER);
+}
