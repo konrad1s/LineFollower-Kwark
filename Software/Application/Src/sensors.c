@@ -65,3 +65,51 @@ void Sensors_UpdateLeds(const Sensors_Manager_T *const manager)
         }
     }
 }
+
+float Sensors_CalculateError(const Sensors_Manager_T *manager, const NVM_Layout_T *nvm)
+{
+    if (manager == NULL || manager->sensors == NULL)
+    {
+        return 0.0f;
+    }
+
+    static float lastError = 0.0f;
+    float currentError = 0.0f;
+    int totalWeight = 0;
+    int activeSensors = 0;
+
+    for (uint16_t i = 0U; i < manager->sensorCount; i++)
+    {
+        if (manager->sensors[i].isActive)
+        {
+            totalWeight += manager->sensors[i].positionWeight;
+            activeSensors++;
+        }
+    }
+
+    if (activeSensors == 0)
+    {
+        /* If no sensors are active, return the fallback error based on the last known error */
+        if (lastError > nvm->errorThreshold)
+        {
+            currentError = nvm->fallbackErrorPositive;
+        }
+        else if (lastError < nvm->errorThreshold)
+        {
+            currentError = nvm->fallbackErrorPositive;
+        }
+        else
+        {
+            return lastError;
+        }
+    }
+    else
+    {
+        /* Calculate the current error as a weighted average of active sensors */
+        currentError = (float)totalWeight / (float)activeSensors;
+    }
+
+    lastError = currentError;
+
+    return currentError;
+}

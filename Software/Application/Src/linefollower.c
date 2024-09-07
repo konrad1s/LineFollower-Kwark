@@ -20,5 +20,5 @@ void Linefollower_Init(void)
 
     (void)SCP_Init(&ScpInstance, &ScpConfig);
 
-    Sensors_Config_Init(&SensorsManager, &hadc1);
+    Sensors_Config_Init(&SensorsManager, &hadc1, NVM_Block.sensorWeights);
 }

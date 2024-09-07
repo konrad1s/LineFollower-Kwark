@@ -33,6 +33,12 @@ const NVM_Layout_T NvmDefaultData = {
         .output_max = 100.0f,
         .output_min = -100.0f,
     },
+    .sensorWeights = {
+        -7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7
+    },
+    .errorThreshold = 1.0f,
+    .fallbackErrorPositive = 15.0f,
+    .fallbackErrorNegative = -15.0f
 };
 
 /* ----------------------------------- SCP CONFIG ----------------------------------- */
@@ -67,12 +73,18 @@ static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {GPIOB, LED1_Pin},
 };
 
-void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandle)
+void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandle, const int8_t *weights)
 {
     Sensors_Config_T config = {
         .adcHandle = adcHandle,
         .ledConfig = sensorLeds
     };
+
+    for (uint16_t i = 0; i < SENSORS_NUMBER; i++)
+    {
+        sensorInstances[i].positionWeight = weights[i];
+        sensorInstances[i].isActive = false;
+    }
 
     Sensors_Init(manager, &config, sensorAdcBuffer, sensorInstances, SENSORS_NUMBER);
 }
