@@ -98,6 +98,34 @@ void SCP_Process(void)
 }
 
 /**
+ * @brief Transmits data over UART
+ *
+ * @param[in] scp Pointer to the SCP instance.
+ * @param[in] data Pointer to the data to be transmitted.
+ * @param[in] size Size of the data to be transmitted.
+ * 
+ * @return 
+ * - 0 on success.
+ * - -1 on failure.
+ */
+int SCP_Transmit(SCP_Instance_T *const scp, const uint8_t *data, uint16_t size)
+{
+    if (!scp || !data || size == 0)
+    {
+        return -1;
+    }
+
+    /* TODO: Currently blocking, consider using non-blocking transmission */
+    if (HAL_UART_Transmit(scp->huart, (uint8_t *)data, size, HAL_MAX_DELAY) != HAL_OK)
+    {
+        SCP_ErrorHandler(scp);
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
  * @brief UART receive event callback for handling incoming data.
  *
  * @param[in] huart Pointer to the UART handle associated with the received data.
