@@ -1,4 +1,5 @@
 #include "linefollower_config.h"
+#include "linefollower_commands.h"
 #include "usart.h"
 
 /* TODO: Dummy values, replace it after tests */
@@ -49,8 +50,8 @@ const SCP_Config_T ScpConfig = {
         .buffer = scpBuffer,
         .size = SCP_BUFFER_SIZE,
         .huart = &huart4,
-        .commands = NULL,
-        .numCommands = 0U,
+        .commands = lineFollowerCommands,
+        .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
         .errorHandler = NULL,
     };
 
@@ -80,7 +81,7 @@ void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandl
         .ledConfig = sensorLeds
     };
 
-    for (uint16_t i = 0; i < SENSORS_NUMBER; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         sensorInstances[i].positionWeight = weights[i];
         sensorInstances[i].isActive = false;

@@ -4,12 +4,12 @@
 #include "pid.h"
 #include "sensors.h"
 
-static NVM_T NvmInstance;
-static SCP_Instance_T ScpInstance;
-static PID_T PidSensorInstance;
-static Sensors_Manager_T SensorsManager;
+NVM_T NvmInstance;
+SCP_Instance_T ScpInstance;
+PID_T PidSensorInstance;
+Sensors_Manager_T SensorsManager;
 
-static NVM_Layout_T NVM_Block;
+NVM_Layout_T NVM_Block;
 
 void Linefollower_Init(void)
 {

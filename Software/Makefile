@@ -77,7 +77,8 @@ Application/Src/scp.c \
 Application/Src/scp_dispatcher.c \
 Application/Src/linefollower.c \
 Application/Src/linefollower_config.c \
-Application/Src/sensors.c
+Application/Src/sensors.c \
+Application/Src/linefollower_commands.c
 
 # ASM sources
 ASM_SOURCES =  \
