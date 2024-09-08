@@ -68,8 +68,9 @@ void SCP_Dispatcher_Process(SCP_Instance_T *scp)
         for (size_t i = 0U; i < scp->numCommands; i++)
         {
             const uint16_t id = (command[0] << 8U) | command[1];
+            const uint16_t cmdSize = size - SCP_COMMAND_ID_SIZE;
 
-            if (id == scp->commands[i].id)
+            if ((id == scp->commands[i].id) && (cmdSize == scp->commands[i].size))
             {
                 scp->commands[i].function(&command[SCP_COMMAND_ID_SIZE], size - SCP_COMMAND_ID_SIZE);
                 break;

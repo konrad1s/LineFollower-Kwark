@@ -11,6 +11,7 @@
 typedef struct
 {
     uint16_t id;
+    uint16_t size;
     void (*function)(const uint8_t *buffer, uint16_t size);
 } SCP_Command_T;
 
