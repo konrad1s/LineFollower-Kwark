@@ -12,7 +12,6 @@ typedef struct
     uint16_t pin;
 } Sensor_Led_T;
 
-
 typedef struct
 {
     bool isActive;
