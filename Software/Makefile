@@ -74,6 +74,7 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c \
 Core/Src/dma.c	\
 Application/Src/scp.c \
+Application/Src/scp_dispatcher.c \
 Application/Src/linefollower.c \
 Application/Src/linefollower_config.c \
 Application/Src/sensors.c

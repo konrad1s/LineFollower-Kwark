@@ -16,6 +16,10 @@ typedef struct
     SCP_Instance_T *scpInstances[SCP_MAX_HUART_INSTANCES];
 } SCP_Manager_T;
 
+extern void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue);
+extern void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const char *command, uint16_t size);
+extern void SCP_Dispatcher_Process(SCP_Instance_T *scp);
+
 static SCP_Manager_T scpManager = {.numInstances = 0U};
 
 /**
@@ -45,41 +49,6 @@ static int SCP_RegisterInstance(SCP_Instance_T *const scp)
 }
 
 /**
- * @brief Processes a command received via UART.
- * 
- * @param[in] scp Pointer to the SCP instance containing the command to process.
- */
-static void SCP_ProcessCommand(SCP_Instance_T *const scp)
-{
-    if (!scp || !scp->commands || scp->numCommands == 0U)
-    {
-        return;
-    }
-
-    /* Parse the command and arguments from the SCP buffer */
-    char *args = strchr((char *)scp->buffer, ' ');
-
-    if (args)
-    {
-        /* Null-terminate the command part */
-        *args = '\0';
-        args++;
-    }
-
-    for (size_t i = 0U; i < scp->numCommands; i++)
-    {
-        if (strcmp((char *)scp->buffer, scp->commands[i].command) == 0)
-        {
-            scp->commands[i].function(args);
-            return; 
-        }
-    }
-
-    /* No matching command is found, call the error handler if available */
-    SCP_ErrorHandler(scp);
-}
-
-/**
  * @brief Initializes an SCP instance for UART communication.
  *
  * @param[in,out] scp Pointer to the SCP instance to initialize.
@@ -96,19 +65,36 @@ int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config)
         return -1;
     }
 
+    if (SCP_RegisterInstance(scp) != 0)
+    {
+        return -1; 
+    }
+
     scp->buffer = config->buffer;
     scp->size = config->size;
     scp->huart = config->huart;
     scp->commands = config->commands;
     scp->numCommands = config->numCommands;
     scp->errorHandler = config->errorHandler;
-
-    if (SCP_RegisterInstance(scp) != 0)
-    {
-        return -1; 
-    }
+    SCP_Dispatcher_Init(&scp->queue);
 
     return 0;
+}
+
+/**
+ * @brief Processes all registered SCP instances.
+ */
+void SCP_Process(void)
+{
+    for (size_t i = 0U; i < scpManager.numInstances; i++)
+    {
+        SCP_Instance_T *scp = scpManager.scpInstances[i];
+
+        if (scp)
+        {
+            SCP_Dispatcher_Process(scp);
+        }
+    }
 }
 
 /**
@@ -124,18 +110,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         SCP_Instance_T *scp = scpManager.scpInstances[i];
         if (scp && scp->huart == huart)
         {
-            if (Size < scp->size)
-            {
-                scp->buffer[Size] = '\0';
-            }
-            else
-            {
-                SCP_ErrorHandler(scp);
-                return;
-            }
-
-            SCP_ProcessCommand(scp);
-
+            SCP_Dispatcher_Enqueue(&scp->queue, (char *)scp->buffer, Size);
             HAL_UARTEx_ReceiveToIdle_DMA(scp->huart, scp->buffer, scp->size);
             return;
         }
