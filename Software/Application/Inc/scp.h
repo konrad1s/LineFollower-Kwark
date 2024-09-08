@@ -10,8 +10,8 @@
 
 typedef struct
 {
-    const char *command;
-    void (*function)(const char *args);
+    uint16_t id;
+    void (*function)(const uint8_t *buffer, uint16_t size);
 } SCP_Command_T;
 
 typedef struct

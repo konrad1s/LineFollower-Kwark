@@ -17,7 +17,7 @@ typedef struct
 } SCP_Manager_T;
 
 extern void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue);
-extern void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const char *command, uint16_t size);
+extern void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *command, uint16_t size);
 extern void SCP_Dispatcher_Process(SCP_Instance_T *scp);
 
 static SCP_Manager_T scpManager = {.numInstances = 0U};
@@ -110,7 +110,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         SCP_Instance_T *scp = scpManager.scpInstances[i];
         if (scp && scp->huart == huart)
         {
-            SCP_Dispatcher_Enqueue(&scp->queue, (char *)scp->buffer, Size);
+            SCP_Dispatcher_Enqueue(&scp->queue, scp->buffer, Size);
             HAL_UARTEx_ReceiveToIdle_DMA(scp->huart, scp->buffer, scp->size);
             return;
         }

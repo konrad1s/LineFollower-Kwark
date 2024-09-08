@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#define SCP_COMMAND_HEADER_SIZE 2U
+#define SCP_COMMAND_ID_SIZE     2U
+
 /**
  * @brief Initializes the SCP command queue.
  *
@@ -12,60 +15,68 @@ void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue)
     scpQueue->front = 0U;
     scpQueue->rear = 0U;
     scpQueue->count = 0U;
+    memset(scpQueue->buffer, 0, SCP_GLOBAL_BUFFER_SIZE);
 }
 
 /**
- * @brief Enqueue a command into the SCP command queue.
+ * @brief Enqueue a command into the global circular buffer.
  *
  * @param[in] scpQueue Pointer to the SCP command queue.
- * @param[in] command The command string to enqueue.
- * @param[in] size The size of the command string.
+ * @param[in] command The byte array of the command to enqueue.
+ * @param[in] size The size of the command data.
  */
-void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const char *command, uint16_t size)
+void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *command, uint16_t size)
 {
-    if ((scpQueue->count < SCP_COMMAND_QUEUE_SIZE) && (size < SCP_COMMAND_BUFFER_SIZE))
-    {
-        memcpy(scpQueue->commands[scpQueue->rear], command, size);
-        /* Ensure null termination */
-        scpQueue->commands[scpQueue->rear][size] = '\0';
+    uint16_t total_size = size + SCP_COMMAND_HEADER_SIZE;
 
-        scpQueue->rear = (scpQueue->rear + 1U) % SCP_COMMAND_QUEUE_SIZE;
-        scpQueue->count++;
+    if (scpQueue->count + total_size <= SCP_GLOBAL_BUFFER_SIZE)
+    {
+        scpQueue->buffer[scpQueue->rear] = (size >> 8U) & 0xFFU; 
+        scpQueue->buffer[(scpQueue->rear + 1U) % SCP_GLOBAL_BUFFER_SIZE] = size & 0xFFU;
+
+        for (uint16_t i = 0U; i < size; i++)
+        {
+            scpQueue->buffer[(scpQueue->rear + SCP_COMMAND_HEADER_SIZE + i) % SCP_GLOBAL_BUFFER_SIZE] = command[i];
+        }
+
+        scpQueue->rear = (scpQueue->rear + total_size) % SCP_GLOBAL_BUFFER_SIZE;
+        scpQueue->count += total_size;
     }
     else
     {
-        /* TODO: Handle error */
+        // TODO: Handle buffer overflow (e.g., log an error or trigger an alert)
     }
 }
 
 /**
- * @brief Processes the next command in the SCP queue.
+ * @brief Processes the next command in the global buffer.
  *
  * @param[in] scp Pointer to the SCP instance.
  */
 void SCP_Dispatcher_Process(SCP_Instance_T *scp)
 {
-    if (scp->queue.count > 0U)
-    {
-        char *command = scp->queue.commands[scp->queue.front];
-        char *args = strchr(command, ' ');
+    SCP_DispatcherQueue_T *scpQueue = &scp->queue;
 
-        if (args)
-        {
-            *args = '\0';
-            args++;
-        }
+    if (scpQueue->count > 0U)
+    {
+        const uint16_t size = (scpQueue->buffer[scpQueue->front] << 8U) |
+                              scpQueue->buffer[(scpQueue->front + 1U) % SCP_GLOBAL_BUFFER_SIZE];
+
+        /* Get the command data (starting after the 2-byte length header) */
+        uint8_t *command = &scpQueue->buffer[(scpQueue->front + SCP_COMMAND_HEADER_SIZE) % SCP_GLOBAL_BUFFER_SIZE];
 
         for (size_t i = 0U; i < scp->numCommands; i++)
         {
-            if (strcmp(command, scp->commands[i].command) == 0)
+            const uint16_t id = (command[0] << 8U) | command[1];
+
+            if (id == scp->commands[i].id)
             {
-                scp->commands[i].function(args);
+                scp->commands[i].function(&command[SCP_COMMAND_ID_SIZE], size - SCP_COMMAND_ID_SIZE);
                 break;
             }
         }
 
-        scp->queue.front = (scp->queue.front + 1U) % SCP_COMMAND_QUEUE_SIZE;
-        scp->queue.count--;
+        scpQueue->front = (scpQueue->front + size + SCP_COMMAND_HEADER_SIZE) % SCP_GLOBAL_BUFFER_SIZE;
+        scpQueue->count -= (size + SCP_COMMAND_HEADER_SIZE);
     }
 }
