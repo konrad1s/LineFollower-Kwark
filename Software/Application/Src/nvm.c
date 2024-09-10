@@ -138,11 +138,6 @@ bool NVM_Write(NVM_T *const nvm)
         return false;
     }
 
-    if (NVM_Erase(nvm) == false)
-    {
-        return false;
-    }
-
     uint32_t size = nvm->size;
     uint8_t *pData = nvm->data;
     uint32_t currentAddress = GetSectorBaseAddress(nvm->sector);
@@ -155,13 +150,26 @@ bool NVM_Write(NVM_T *const nvm)
     /* Calculate the CRC value of the data */
     uint32_t calculatedCrc = HAL_CRC_Calculate(&hcrc, (uint32_t *)nvm->data, nvm->size);
 
+    /* If the calculated CRC value is different from the last CRC value, write the data to the flash memory */
     if (calculatedCrc != nvm->lastCrc)
     {
-        /* If the calculated CRC value is different from the last CRC value, write the data to the flash memory */
+        if (NVM_Erase(nvm) == false)
+        {
+            return false;
+        }
         if (NVM_FlashWrite(currentAddress, pData, size) == false)
         {
             return false;
         }
+
+        /* Write the calculated CRC value after the data */
+        uint32_t crcAddress = currentAddress + size;
+        if (NVM_FlashWrite(crcAddress, (uint8_t *)&calculatedCrc, sizeof(calculatedCrc)) == false)
+        {
+            return false;
+        }
+
+        /* Update the last CRC value */
         nvm->lastCrc = calculatedCrc;
     }
 
