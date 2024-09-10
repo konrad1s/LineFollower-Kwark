@@ -2,6 +2,8 @@
 #include "linefollower_commands.h"
 #include "usart.h"
 #include "tim.h"
+#include "sensors.h"
+#include "stm32f7xx_hal.h"
 
 /* TODO: Dummy values, replace it after tests */
 
@@ -75,20 +77,15 @@ static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {GPIOB, LED1_Pin},
 };
 
-void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandle, const int8_t *weights)
+void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights)
 {
-    Sensors_Config_T config = {
-        .adcHandle = adcHandle,
-        .ledConfig = sensorLeds
-    };
-
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         sensorInstances[i].positionWeight = weights[i];
         sensorInstances[i].isActive = false;
     }
 
-    Sensors_Init(manager, &config, sensorAdcBuffer, sensorInstances, SENSORS_NUMBER);
+    Sensors_Init(adcHandle, sensorLeds, sensorInstances);
 }
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */

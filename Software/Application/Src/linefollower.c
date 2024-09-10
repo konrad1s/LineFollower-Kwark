@@ -8,7 +8,6 @@
 NVM_T NvmInstance;
 SCP_Instance_T ScpInstance;
 PID_T PidSensorInstance;
-Sensors_Manager_T SensorsManager;
 
 NVM_Layout_T NVM_Block;
 
@@ -22,6 +21,7 @@ void Linefollower_Init(void)
     (void)SCP_Init(&ScpInstance, &ScpConfig);
 
     Sensors_Config_Init(&SensorsManager, &hadc1, NVM_Block.sensorWeights);
+    Sensors_Config_Init(&hadc1, NVM_Block.sensorWeights);
     TB6612Motor_Init(&LeftMotor);
     TB6612Motor_Init(&RightMotor);
 }

@@ -1,9 +1,11 @@
 #ifndef __LINEFOLLOWER_CONFIG_H__
 #define __LINEFOLLOWER_CONFIG_H__
 
+#include <stdint.h>
+#include <stdbool.h>
 #include "pid.h"
 #include "scp.h"
-#include "sensors.h"
+#include "tb6612_motor.h"
 
 #define NVM_SECTOR_USED  FLASH_SECTOR_7
 
@@ -25,6 +27,8 @@ typedef struct
 
 extern const NVM_Layout_T NvmDefaultData;
 extern const SCP_Config_T ScpConfig;
-extern void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandle, const int8_t *weights);
+extern const TB6612MotorDriver_T LeftMotor;
+extern const TB6612MotorDriver_T RightMotor;
+extern void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights);
 
 #endif /* __LINEFOLLOWER_CONFIG_H__ */

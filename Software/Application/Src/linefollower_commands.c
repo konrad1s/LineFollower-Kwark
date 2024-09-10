@@ -36,7 +36,7 @@ static void LF_CommandCalibrate(const uint8_t *buffer, uint16_t size)
 {
     uint8_t response[2] = {0xA5U, 0xA5U};
 
-    Sensors_Calibrate(&SensorsManager);
+    // Sensors_Calibrate(&SensorsManager);
     SCP_Transmit(&ScpInstance, response, sizeof(response));
 }
 
@@ -92,7 +92,7 @@ static void LF_CommandSetSensorWeights(const uint8_t *buffer, uint16_t size)
     uint8_t response[2] = {0xA5U, 0xA5U};
 
     memcpy(NVM_Block.sensorWeights, buffer, size);
-    Sensors_Config_Init(&SensorsManager, &hadc1, NVM_Block.sensorWeights);
+    Sensors_Config_Init(&hadc1, NVM_Block.sensorWeights);
 
     SCP_Transmit(&ScpInstance, response, sizeof(response));
 }

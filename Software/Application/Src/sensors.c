@@ -1,62 +1,67 @@
 #include "sensors.h"
-#include "linefollower_config.h"
 #include <stdbool.h>
 
-void Sensors_Init(Sensors_Manager_T *manager,
-                  const Sensors_Config_T *config,
-                  uint16_t *adcBuffer,
-                  Sensor_Instance_T *sensorInstances,
-                  uint16_t sensorCount)
+typedef struct
 {
-    if (manager == NULL || config == NULL || adcBuffer == NULL || sensorInstances == NULL)
+    uint16_t adcBuffer[SENSORS_NUMBER];
+    ADC_HandleTypeDef *adcHandle;
+    Sensor_Instance_T *sensors;
+    uint16_t threshold;
+} Sensors_Manager_T;
+
+static Sensors_Manager_T SensorsManager;
+
+void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
+                  Sensor_Led_T *const ledConfig,
+                  Sensor_Instance_T *const sensorInstances)
+{
+    if (adcHandle == NULL || sensorInstances == NULL || ledConfig == NULL)
     {
-        return;
+        return; 
     }
 
-    manager->adcBuffer = adcBuffer;
-    manager->adcHandle = config->adcHandle;
-    manager->sensors = sensorInstances;
-    manager->sensorCount = sensorCount;
+    SensorsManager.adcHandle = adcHandle;
+    SensorsManager.sensors = sensorInstances;
 
-    for (uint16_t i = 0U; i < sensorCount; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        manager->sensors[i].isActive = false;
-        manager->sensors[i].led = &config->ledConfig[i];
+        SensorsManager.sensors[i].isActive = false;
+        SensorsManager.sensors[i].led = &ledConfig[i];
     }
 
     /* Start ADC in DMA mode */
-    if (HAL_ADC_Start_DMA(manager->adcHandle, (uint32_t *)manager->adcBuffer, sensorCount) != HAL_OK)
+    if (HAL_ADC_Start_DMA(SensorsManager.adcHandle, (uint32_t *)SensorsManager.adcBuffer, SENSORS_NUMBER) != HAL_OK)
     {
-        /* TODO: Handle ADC initialization error */
+        // Handle ADC initialization error (e.g., log the error or return an error code)
     }
 }
 
-void Sensors_SetThreshold(Sensors_Manager_T *const manager, uint16_t threshold)
+void Sensors_SetThreshold(uint16_t threshold)
 {
-    manager->threshold = threshold;
+    SensorsManager.threshold = threshold;
 }
 
-void Sensors_UpdateState(Sensors_Manager_T *const manager)
+void Sensors_UpdateState(void)
 {
-    for (uint16_t i = 0U; i < manager->sensorCount; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        manager->sensors[i].isActive = (manager->adcBuffer[i] > manager->threshold);
+        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.threshold);
     }
 }
 
-void Sensors_GetState(const Sensors_Manager_T *const manager, bool *state)
+void Sensors_GetState(bool *state)
 {
-    for (uint16_t i = 0U; i < manager->sensorCount; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        state[i] = manager->sensors[i].isActive;
+        state[i] = SensorsManager.sensors[i].isActive;
     }
 }
 
-void Sensors_UpdateLeds(const Sensors_Manager_T *const manager)
+void Sensors_UpdateLeds(void)
 {
-    for (uint16_t i = 0U; i < manager->sensorCount; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        Sensor_Instance_T *sensor = &manager->sensors[i];
+        Sensor_Instance_T *sensor = &SensorsManager.sensors[i];
         GPIO_PinState pinState = sensor->isActive ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
         if (sensor->led != NULL)
@@ -66,23 +71,18 @@ void Sensors_UpdateLeds(const Sensors_Manager_T *const manager)
     }
 }
 
-float Sensors_CalculateError(const Sensors_Manager_T *manager, const NVM_Layout_T *nvm)
+float Sensors_CalculateError(const NVM_Layout_T *nvm)
 {
-    if (manager == NULL || manager->sensors == NULL)
-    {
-        return 0.0f;
-    }
-
     static float lastError = 0.0f;
     float currentError = 0.0f;
     int totalWeight = 0;
     int activeSensors = 0;
 
-    for (uint16_t i = 0U; i < manager->sensorCount; i++)
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        if (manager->sensors[i].isActive)
+        if (SensorsManager.sensors[i].isActive)
         {
-            totalWeight += manager->sensors[i].positionWeight;
+            totalWeight += SensorsManager.sensors[i].positionWeight;
             activeSensors++;
         }
     }
