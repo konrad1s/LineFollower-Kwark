@@ -1,6 +1,7 @@
 #include "linefollower_config.h"
 #include "linefollower_commands.h"
 #include "usart.h"
+#include "tim.h"
 
 /* TODO: Dummy values, replace it after tests */
 
@@ -89,3 +90,19 @@ void Sensors_Config_Init(Sensors_Manager_T *manager, ADC_HandleTypeDef *adcHandl
 
     Sensors_Init(manager, &config, sensorAdcBuffer, sensorInstances, SENSORS_NUMBER);
 }
+
+/* --------------------------------- MOTORS CONFIG --------------------------------- */
+
+const TB6612MotorDriver_T LeftMotor = {
+    .in1 = {GPIOA, MOTOR1_AIN_Pin},
+    .in2 = {GPIOA, MOTOR1_BIN_Pin},
+    .pwmTimer = &htim1,
+    .pwmChannel = TIM_CHANNEL_4
+};
+
+const TB6612MotorDriver_T RightMotor = {
+    .in1 = {GPIOB, MOTOR2_AIN_Pin},
+    .in2 = {GPIOD, MOTOR2_BIN_Pin},
+    .pwmTimer = &htim3,
+    .pwmChannel = TIM_CHANNEL_1
+};

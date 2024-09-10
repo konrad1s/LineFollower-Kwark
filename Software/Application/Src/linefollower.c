@@ -3,6 +3,7 @@
 #include "scp.h"
 #include "pid.h"
 #include "sensors.h"
+#include "tb6612_motor.h"
 
 NVM_T NvmInstance;
 SCP_Instance_T ScpInstance;
@@ -21,4 +22,6 @@ void Linefollower_Init(void)
     (void)SCP_Init(&ScpInstance, &ScpConfig);
 
     Sensors_Config_Init(&SensorsManager, &hadc1, NVM_Block.sensorWeights);
+    TB6612Motor_Init(&LeftMotor);
+    TB6612Motor_Init(&RightMotor);
 }
