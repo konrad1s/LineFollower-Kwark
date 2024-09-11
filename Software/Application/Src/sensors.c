@@ -1,5 +1,6 @@
 #include "sensors.h"
 #include <stdbool.h>
+#include "tim.h"
 
 typedef struct
 {
@@ -7,13 +8,15 @@ typedef struct
     ADC_HandleTypeDef *adcHandle;
     Sensor_Instance_T *sensors;
     uint16_t threshold;
+    Sensor_DataUpdatedCb_T callback;
 } Sensors_Manager_T;
 
 static Sensors_Manager_T SensorsManager;
 
 void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
                   Sensor_Led_T *const ledConfig,
-                  Sensor_Instance_T *const sensorInstances)
+                  Sensor_Instance_T *const sensorInstances,
+                  Sensor_DataUpdatedCb_T callback)
 {
     if (adcHandle == NULL || sensorInstances == NULL || ledConfig == NULL)
     {
@@ -22,6 +25,8 @@ void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
 
     SensorsManager.adcHandle = adcHandle;
     SensorsManager.sensors = sensorInstances;
+    SensorsManager.threshold = 0U;
+    SensorsManager.callback = callback;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -30,9 +35,10 @@ void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
     }
 
     /* Start ADC in DMA mode */
+    HAL_TIM_Base_Start(&htim2);
     if (HAL_ADC_Start_DMA(SensorsManager.adcHandle, (uint32_t *)SensorsManager.adcBuffer, SENSORS_NUMBER) != HAL_OK)
     {
-        // Handle ADC initialization error (e.g., log the error or return an error code)
+       
     }
 }
 
@@ -119,5 +125,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     if (SensorsManager.adcHandle == hadc)
     {
         Sensors_UpdateState();
+        SensorsManager.callback();
     }
 }

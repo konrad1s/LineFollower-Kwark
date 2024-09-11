@@ -77,7 +77,7 @@ static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {GPIOB, LED1_Pin},
 };
 
-void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights)
+void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights, Sensor_DataUpdatedCb_T callback)
 {
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -85,7 +85,7 @@ void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights)
         sensorInstances[i].isActive = false;
     }
 
-    Sensors_Init(adcHandle, sensorLeds, sensorInstances);
+    Sensors_Init(adcHandle, sensorLeds, sensorInstances, callback);
 }
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */

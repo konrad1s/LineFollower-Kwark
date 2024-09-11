@@ -22,7 +22,8 @@ typedef struct
 
 void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
                   Sensor_Led_T *const ledConfig,
-                  Sensor_Instance_T *const sensorInstances);
+                  Sensor_Instance_T *const sensorInstances,
+                  Sensor_DataUpdatedCb_T callback);
 void Sensors_SetThreshold(uint16_t threshold);
 void Sensors_UpdateState(void);
 void Sensors_GetState(bool *state);
