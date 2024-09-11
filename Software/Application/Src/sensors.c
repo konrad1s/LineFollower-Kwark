@@ -113,3 +113,11 @@ float Sensors_CalculateError(const NVM_Layout_T *nvm)
 
     return currentError;
 }
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+    if (SensorsManager.adcHandle == hadc)
+    {
+        Sensors_UpdateState();
+    }
+}
