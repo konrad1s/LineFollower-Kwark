@@ -7,7 +7,7 @@ typedef struct
     uint16_t adcBuffer[SENSORS_NUMBER];
     ADC_HandleTypeDef *adcHandle;
     Sensor_Instance_T *sensors;
-    uint16_t threshold;
+    uint16_t thresholds[SENSORS_NUMBER];
     Sensor_DataUpdatedCb_T callback;
 } Sensors_Manager_T;
 
@@ -25,13 +25,13 @@ void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
 
     SensorsManager.adcHandle = adcHandle;
     SensorsManager.sensors = sensorInstances;
-    SensorsManager.threshold = 0U;
     SensorsManager.callback = callback;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         SensorsManager.sensors[i].isActive = false;
         SensorsManager.sensors[i].led = &ledConfig[i];
+        SensorsManager.thresholds[i] = 0xFFFFU;
     }
 
     /* Start ADC in DMA mode */
@@ -42,16 +42,24 @@ void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
     }
 }
 
-void Sensors_SetThreshold(uint16_t threshold)
+void Sensors_SetThresholds(uint16_t *const thresholds)
 {
-    SensorsManager.threshold = threshold;
+    if (thresholds == NULL)
+    {
+        return;
+    }
+
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
+    {
+        SensorsManager.thresholds[i] = thresholds[i];
+    }
 }
 
 void Sensors_UpdateState(void)
 {
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.threshold);
+        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i]);
     }
 }
 
@@ -60,6 +68,14 @@ void Sensors_GetState(bool *state)
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         state[i] = SensorsManager.sensors[i].isActive;
+    }
+}
+
+void Sensors_GetRawData(uint16_t *data)
+{
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
+    {
+        data[i] = SensorsManager.adcBuffer[i];
     }
 }
 
