@@ -1,4 +1,5 @@
 #include "lf_main.h"
+#include "lf_calibrate.h"
 
 static void LF_Dispatch(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
@@ -10,6 +11,37 @@ static void Linefollower_DataUpdateCallback(void *data)
     LineFollower_T *const me = (LineFollower_T *const )data;
 
     LF_SendSignal(me, DATA_UPDATED_SIG);
+}
+
+static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
+{
+    switch (sig)
+    {
+    case START_SIG:
+        me->state = LF_RUN;
+        break;
+    case CALIBRATE_SIG:
+        LF_StartCalibration(me);
+        me->state = LF_CALIBRATION;
+        break;
+    default:
+        break;
+    }
+}
+
+static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
+{
+    switch (sig)
+    {
+    case DATA_UPDATED_SIG:
+        if (LF_CalibrateSensors(me) == LF_CALIBRATION_COMPLETE)
+        {
+            me->state = LF_IDLE;
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 int LF_Init(LineFollower_T *const me)
@@ -46,10 +78,10 @@ void LF_MainFunction(LineFollower_T *const me)
         switch (me->state)
         {
         case LF_IDLE:
-            // LF_StateIdle(me, sig);
+            LF_StateIdle(me, sig);
             break;
         case LF_CALIBRATION:
-            // LF_StateCalibration(me, sig);
+            LF_StateCalibration(me, sig);
             break;
         case LF_RUN:
             // LF_StateRun(me, sig);

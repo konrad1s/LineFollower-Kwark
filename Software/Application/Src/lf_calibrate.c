@@ -36,17 +36,17 @@ static void LF_ApplySensorThresholds(void)
     Sensors_SetThresholds(thresholds);
 }
 
-static void LF_StopCalibration(void)
+static void LF_StopCalibration(LineFollower_T *const me)
 {
     LF_CalibrationData.startTime = UINT32_MAX;
 
-    TB6612Motor_Brake(&LeftMotor);
-    TB6612Motor_Brake(&RightMotor);
-    TB6612Motor_SetSpeed(&LeftMotor, 0U);
-    TB6612Motor_SetSpeed(&RightMotor, 0U);
+    TB6612Motor_Brake(&me->motorLeftConfig);
+    TB6612Motor_Brake(&me->motorRightConfig);
+    TB6612Motor_SetSpeed(&me->motorLeftConfig, 0U);
+    TB6612Motor_SetSpeed(&me->motorRightConfig, 0U);
 }
 
-void LF_StartCalibration(void)
+void LF_StartCalibration(LineFollower_T *const me)
 {
     LF_CalibrationData.startTime = HAL_GetTick();
     LF_CalibrationData.calibrationTime = DEFAULT_CALIBRATION_TIME;
@@ -58,13 +58,13 @@ void LF_StartCalibration(void)
         LF_CalibrationData.sensorValues[i][CALIB_MAX_VALUE_IDX] = 0U;
     }
 
-    TB6612Motor_ChangeDirection(&LeftMotor, MOTOR_FORWARD);
-    TB6612Motor_ChangeDirection(&RightMotor, MOTOR_FORWARD);
-    TB6612Motor_SetSpeed(&LeftMotor, LF_CalibrationData.motorSpeed);
-    TB6612Motor_SetSpeed(&RightMotor, LF_CalibrationData.motorSpeed);
+    TB6612Motor_ChangeDirection(&me->motorLeftConfig, MOTOR_FORWARD);
+    TB6612Motor_ChangeDirection(&me->motorRightConfig, MOTOR_FORWARD);
+    TB6612Motor_SetSpeed(&me->motorLeftConfig, LF_CalibrationData.motorSpeed);
+    TB6612Motor_SetSpeed(&me->motorRightConfig, LF_CalibrationData.motorSpeed);
 }
 
-LF_CalibrationStatus_T LF_CalibrateSensors(void)
+LF_CalibrationStatus_T LF_CalibrateSensors(LineFollower_T *const me)
 {
     uint16_t sensorRawData[SENSORS_NUMBER] = {0U};
 
@@ -90,10 +90,9 @@ LF_CalibrationStatus_T LF_CalibrateSensors(void)
     if ((currentTime - LF_CalibrationData.startTime) >= LF_CalibrationData.calibrationTime)
     {
         LF_ApplySensorThresholds();
-        LF_StopCalibration();
+        LF_StopCalibration(me);
         return LF_CALIBRATION_COMPLETE;
     }
 
     return LF_CALIBRATION_IN_PROGRESS;
 }
-
