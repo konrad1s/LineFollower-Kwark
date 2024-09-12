@@ -80,7 +80,8 @@ Application/Src/linefollower_config.c \
 Application/Src/sensors.c \
 Application/Src/linefollower_commands.c \
 Application/Src/tb6612_motor.c \
-Application/Src/lf_calibrate.c
+Application/Src/lf_calibrate.c \
+Application/Src/lf_signal_queue.c
 
 # ASM sources
 ASM_SOURCES =  \

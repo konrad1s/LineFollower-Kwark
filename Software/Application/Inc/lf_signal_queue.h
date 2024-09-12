@@ -6,6 +6,15 @@
 
 #define LF_SIGNAL_QUEUE_SIZE 5U
 
+typedef enum 
+{
+    NO_SIG,
+    START_SIG,
+    STOP_SIG,
+    CALIBRATE_SIG,
+    DATA_UPDATED_SIG
+} LF_Signal_T;
+
 typedef struct
 {
     LF_Signal_T signals[LF_SIGNAL_QUEUE_SIZE];

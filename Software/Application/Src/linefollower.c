@@ -1,74 +1,70 @@
-#include "nvm.h"
-#include "linefollower_config.h"
-#include "scp.h"
-#include "pid.h"
-#include "sensors.h"
-#include "tb6612_motor.h"
-#include "lf_calibrate.h"
-#include "linefollower_commands.h"
+#include "lf_main.h"
 
-Nvm_Instance_T NvmInstance;
-NVM_Layout_T NVM_Block;
-SCP_Instance_T ScpInstance;
-PID_Instance_T PidSensorInstance;
-Sensor_Instance_T Sensors[SENSORS_NUMBER];
+static void LF_Dispatch(LineFollower_T *const me, LF_Signal_T sig);
+static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
+static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
+static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
 
-extern const Sensor_Led_T sensorLeds[SENSORS_NUMBER];
-
-static bool LF_IsDataUpdated = false;
-
-void Linefollower_DataUpdateCallback(void)
+static void Linefollower_DataUpdateCallback(void)
 {
-    LF_IsDataUpdated = true;
     LF_CalibrateSensors();
 }
 
-void Linefollower_Init(void)
+int LF_Init(LineFollower_T *const me)
 {
-    NvmInstance = (Nvm_Instance_T){.data = (uint8_t *)&NVM_Block,
-                                   .defaultData = (const uint8_t *)&NvmDefaultData,
-                                   .size = sizeof(NVM_Layout_T),
-                                   .sector = NVM_SECTOR_USED};
-    (void)NVM_Init(&NvmInstance);
-    (void)NVM_Read(&NvmInstance);
+    me->state = LF_IDLE;
+    me->timer = 0U;
+    me->isDataUpdated = false;
+    me->nvmInstance.data = (uint8_t *)me->nvmBlock;
 
-    PidSensorInstance = (PID_Instance_T){.settings = &NVM_Block.pidStgSensor};
-    (void)PID_Init(&PidSensorInstance);
+    LF_SignalQueue_Init(&me->signals);
 
-    static uint8_t scpBuffer[SCP_BUFFER_SIZE];
-    ScpInstance = (SCP_Instance_T){.buffer = scpBuffer,
-                                   .size = SCP_BUFFER_SIZE,
-                                   .huart = &huart4,
-                                   .commands = lineFollowerCommands,
-                                   .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
-                                   .errorHandler = NULL};
-    (void)SCP_Init(&ScpInstance);
+    (void)NVM_Init(&me->nvmInstance);
+    (void)NVM_Read(&me->nvmInstance);
 
+    (void)PID_Init(&me->pidSensorInstance);
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        Sensors[i].positionWeight = NVM_Block.sensorWeights[i];
-        Sensors[i].isActive = false;
+        me->sensors[i].positionWeight = me->nvmBlock->sensorWeights[i];
+        me->sensors[i].isActive = false;
     }
-    (void)Sensors_Init(&hadc1, sensorLeds, Sensors, Linefollower_DataUpdateCallback);
+    (void)Sensors_Init(&hadc1, me->sensorLedsConfig, me->sensors, Linefollower_DataUpdateCallback);
 
-    (void)TB6612Motor_Init(&LeftMotor);
-    (void)TB6612Motor_Init(&RightMotor);
-
-    LF_StartCalibration();
+    (void)TB6612Motor_Init(me->motorLeftConfig);
+    (void)TB6612Motor_Init(me->motorRightConfig);
 }
 
-void Linefollower_Main(void)
+void LF_MainFunction(LineFollower_T *const me)
 {
-    if (LF_IsDataUpdated)
+    LF_Signal_T sig;
+
+    if (LF_SignalQueueDequeue(&me->signals, &sig))
     {
-        float error = Sensors_CalculateError(&NVM_Block);
-        int16_t output = PID_Update(&PidSensorInstance, error, 1.0);
+        switch (me->state)
+        {
+        case LF_IDLE:
+            // LF_StateIdle(me, sig);
+            break;
+        case LF_CALIBRATION:
+            // LF_StateCalibration(me, sig);
+            break;
+        case LF_RUN:
+            // LF_StateRun(me, sig);
+            break;
+        case LF_ERROR:
 
-        TB6612Motor_SetSpeed(&LeftMotor, 100U - output);
-        TB6612Motor_SetSpeed(&RightMotor, 100U + output);
+            break;
+        default:
+            break;
+        }
+    }
+}
 
-        Sensors_UpdateLeds();
-        LF_IsDataUpdated = false;
+void LF_SendSignal(LineFollower_T *const me, LF_Signal_T sig)
+{
+    if (!SignalQueue_Enqueue(&me->signals, sig))
+    {
+        /* TODO: Handle queue full */
     }
 }

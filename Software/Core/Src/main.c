@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lf_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +49,36 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+extern const Sensor_Led_T sensorLeds[SENSORS_NUMBER];
 
+static NVM_Layout_T NvmBlock;
+static uint8_t ScpBuffer[SCP_BUFFER_SIZE];
+
+static LineFollower_T LineFollower = {
+    .nvmInstance = {
+        .defaultData = (const uint8_t *)&NvmDefaultData,
+        .size = sizeof(NVM_Layout_T),
+        .sector = NVM_SECTOR_USED
+    },
+    .nvmBlock = &NvmBlock,
+
+    .scpInstance = {
+        .buffer = ScpBuffer,
+        .size = SCP_BUFFER_SIZE,
+        .huart = &huart4,
+        .commands = lineFollowerCommands,
+        .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
+        .errorHandler = NULL
+    },
+
+    .pidSensorInstance = {
+        .settings = &NvmBlock.pidStgSensor
+    },
+
+    .sensorLedsConfig = sensorLeds,
+    .motorLeftConfig = &LeftMotor,
+    .motorRightConfig = &RightMotor
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -108,14 +137,14 @@ int main(void)
   MX_CRC_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  Linefollower_Init();
+  LF_Init(&LineFollower);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    Linefollower_Main();
+    LF_MainFunction(&LineFollower);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

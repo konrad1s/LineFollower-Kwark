@@ -1,4 +1,3 @@
-#include "lf_main.h"
 #include "lf_signal_queue.h"
 
 static inline bool LF_SignalQueueIsFull(const LF_SignalQueue_T *const queue)
