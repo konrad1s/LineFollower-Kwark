@@ -45,24 +45,9 @@ const NVM_Layout_T NvmDefaultData = {
     .fallbackErrorNegative = -15.0f
 };
 
-/* ----------------------------------- SCP CONFIG ----------------------------------- */
-
-static uint8_t scpBuffer[SCP_BUFFER_SIZE];
-
-const SCP_Config_T ScpConfig = {
-        .buffer = scpBuffer,
-        .size = SCP_BUFFER_SIZE,
-        .huart = &huart4,
-        .commands = lineFollowerCommands,
-        .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
-        .errorHandler = NULL,
-    };
-
 /* --------------------------------- SENSORS CONFIG --------------------------------- */
 
-static Sensor_Instance_T sensorInstances[SENSORS_NUMBER];
-static uint16_t sensorAdcBuffer[SENSORS_NUMBER];
-static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
+const Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {GPIOC, LED12_Pin},
     {GPIOC, LED11_Pin},
     {GPIOC, LED10_Pin},
@@ -76,17 +61,6 @@ static Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {GPIOB, LED2_Pin},
     {GPIOB, LED1_Pin},
 };
-
-void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights, Sensor_DataUpdatedCb_T callback)
-{
-    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
-    {
-        sensorInstances[i].positionWeight = weights[i];
-        sensorInstances[i].isActive = false;
-    }
-
-    Sensors_Init(adcHandle, sensorLeds, sensorInstances, callback);
-}
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */
 

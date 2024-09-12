@@ -58,9 +58,9 @@ static int SCP_RegisterInstance(SCP_Instance_T *const scp)
  * - 0 on success.
  * - -1 if fails.
  */
-int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config)
+int SCP_Init(SCP_Instance_T *const scp)
 {
-    if (!scp || !config || !config->buffer || !config->huart || !config->commands || config->numCommands == 0U)
+    if (NULL == scp || NULL == scp->buffer || NULL == scp->huart || NULL == scp->commands || scp->numCommands == 0)
     {
         return -1;
     }
@@ -70,12 +70,6 @@ int SCP_Init(SCP_Instance_T *const scp, const SCP_Config_T *const config)
         return -1; 
     }
 
-    scp->buffer = config->buffer;
-    scp->size = config->size;
-    scp->huart = config->huart;
-    scp->commands = config->commands;
-    scp->numCommands = config->numCommands;
-    scp->errorHandler = config->errorHandler;
     SCP_Dispatcher_Init(&scp->queue);
 
     return 0;

@@ -4,36 +4,63 @@
 #include "pid.h"
 #include "sensors.h"
 #include "tb6612_motor.h"
+#include "lf_calibrate.h"
+#include "linefollower_commands.h"
 
-NVM_T NvmInstance;
+Nvm_Instance_T NvmInstance;
 NVM_Layout_T NVM_Block;
 SCP_Instance_T ScpInstance;
-PID_T PidSensorInstance;
+PID_Instance_T PidSensorInstance;
+Sensor_Instance_T Sensors[SENSORS_NUMBER];
 
-static bool LF_IsUpdateRequired = false;
+extern const Sensor_Led_T sensorLeds[SENSORS_NUMBER];
+
+static bool LF_IsDataUpdated = false;
 
 void Linefollower_DataUpdateCallback(void)
 {
-    LF_IsUpdateRequired = true;
+    LF_IsDataUpdated = true;
+    LF_CalibrateSensors();
 }
 
 void Linefollower_Init(void)
 {
-    NVM_Init(&NvmInstance, &NVM_Block, &NvmDefaultData, sizeof(NVM_Layout_T), NVM_SECTOR_USED);
+    NvmInstance = (Nvm_Instance_T){.data = (uint8_t *)&NVM_Block,
+                                   .defaultData = (const uint8_t *)&NvmDefaultData,
+                                   .size = sizeof(NVM_Layout_T),
+                                   .sector = NVM_SECTOR_USED};
+    (void)NVM_Init(&NvmInstance);
     (void)NVM_Read(&NvmInstance);
 
-    PID_Init(&PidSensorInstance, &NVM_Block.pidStgSensor);
+    PidSensorInstance = (PID_Instance_T){.settings = &NVM_Block.pidStgSensor};
+    (void)PID_Init(&PidSensorInstance);
 
-    (void)SCP_Init(&ScpInstance, &ScpConfig);
+    static uint8_t scpBuffer[SCP_BUFFER_SIZE];
+    ScpInstance = (SCP_Instance_T){.buffer = scpBuffer,
+                                   .size = SCP_BUFFER_SIZE,
+                                   .huart = &huart4,
+                                   .commands = lineFollowerCommands,
+                                   .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
+                                   .errorHandler = NULL};
+    (void)SCP_Init(&ScpInstance);
 
-    Sensors_Config_Init(&hadc1, NVM_Block.sensorWeights, Linefollower_DataUpdateCallback);
-    TB6612Motor_Init(&LeftMotor);
-    TB6612Motor_Init(&RightMotor);
+
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
+    {
+        Sensors[i].positionWeight = NVM_Block.sensorWeights[i];
+        Sensors[i].isActive = false;
+    }
+    (void)Sensors_Init(&hadc1, sensorLeds, Sensors, Linefollower_DataUpdateCallback);
+
+    (void)TB6612Motor_Init(&LeftMotor);
+    (void)TB6612Motor_Init(&RightMotor);
+
+    LF_StartCalibration();
 }
 
 void Linefollower_Main(void)
 {
-    if (LF_IsUpdateRequired)
+    if (LF_IsDataUpdated)
     {
         float error = Sensors_CalculateError(&NVM_Block);
         int16_t output = PID_Update(&PidSensorInstance, error, 1.0);
@@ -42,6 +69,6 @@ void Linefollower_Main(void)
         TB6612Motor_SetSpeed(&RightMotor, 100U + output);
 
         Sensors_UpdateLeds();
-        LF_IsUpdateRequired = false;
+        LF_IsDataUpdated = false;
     }
 }

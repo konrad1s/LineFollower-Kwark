@@ -25,12 +25,8 @@ typedef struct
     float fallbackErrorNegative;
 } NVM_Layout_T;
 
-typedef void (*Sensor_DataUpdatedCb_T)(void);
-
 extern const NVM_Layout_T NvmDefaultData;
-extern const SCP_Config_T ScpConfig;
 extern const TB6612MotorDriver_T LeftMotor;
 extern const TB6612MotorDriver_T RightMotor;
-extern void Sensors_Config_Init(ADC_HandleTypeDef *adcHandle, const int8_t *weights, Sensor_DataUpdatedCb_T callback);
 
 #endif /* __LINEFOLLOWER_CONFIG_H__ */

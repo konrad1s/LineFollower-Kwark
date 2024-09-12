@@ -20,10 +20,12 @@ typedef struct
     Sensor_Led_T *led;
 } Sensor_Instance_T;
 
-void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
-                  Sensor_Led_T *const ledConfig,
-                  Sensor_Instance_T *const sensorInstances,
-                  Sensor_DataUpdatedCb_T callback);
+typedef void (*Sensor_DataUpdatedCb_T)(void);
+
+int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
+                 Sensor_Led_T *const ledConfig,
+                 Sensor_Instance_T *const sensorInstances,
+                 Sensor_DataUpdatedCb_T callback);
 void Sensors_SetThresholds(uint16_t *const thresholds);
 void Sensors_UpdateState(void);
 void Sensors_GetState(bool *state);

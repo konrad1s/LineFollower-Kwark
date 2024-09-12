@@ -15,14 +15,14 @@ typedef struct
 
 typedef struct
 {
-    PID_Settings_T settings;
+    PID_Settings_T *settings;
 
     float integral;       /* Integral term */
     float setpoint;       /* Desired value */
     float error_previous; /* Error at previous step */
-} PID_T;
+} PID_Instance_T;
 
-void PID_Init(PID_T *const pid, const PID_Settings_T *const settings);
-float PID_Update(PID_T *const pid, const float measured, const float dt);
+int PID_Init(PID_Instance_T *const pid);
+float PID_Update(PID_Instance_T *const pid, const float measured, const float dt);
 
 #endif /* __PID__H__ */

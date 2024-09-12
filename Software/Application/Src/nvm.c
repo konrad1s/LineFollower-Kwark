@@ -75,19 +75,19 @@ static bool NVM_FlashWrite(uint32_t baseAddress, uint8_t *pData, uint32_t size)
     return true;
 }
 
-void NVM_Init(NVM_T *const nvm, uint8_t *const data, const uint8_t *const defaultData, uint32_t size, uint32_t sector)
+int NVM_Init(Nvm_Instance_T *const nvm)
 {
-    if (nvm != NULL && data != NULL && sector < FLASH_SECTOR_TOTAL)
+    if (nvm == NULL || nvm->data == NULL || nvm->sector >= FLASH_SECTOR_TOTAL || nvm->size == 0U)
     {
-        nvm->data = data;
-        nvm->defaultData = defaultData;
-        nvm->size = size;
-        nvm->sector = sector;
-        nvm->lastCrc = NVM_CRC_INIT_VALUE;
+        return -1;
     }
+
+    nvm->lastCrc = NVM_CRC_INIT_VALUE;
+
+    return 0;
 }
 
-bool NVM_Read(NVM_T *const nvm)
+bool NVM_Read(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {
@@ -131,7 +131,7 @@ bool NVM_Read(NVM_T *const nvm)
     return true;
 }
 
-bool NVM_Write(NVM_T *const nvm)
+bool NVM_Write(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {
@@ -176,7 +176,7 @@ bool NVM_Write(NVM_T *const nvm)
     return true;
 }
 
-bool NVM_Erase(NVM_T *const nvm)
+bool NVM_Erase(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {

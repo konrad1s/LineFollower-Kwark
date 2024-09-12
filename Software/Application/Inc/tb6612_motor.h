@@ -25,7 +25,7 @@ typedef struct
     uint32_t pwmChannel;
 } TB6612MotorDriver_T;
 
-void TB6612Motor_Init(TB6612MotorDriver_T *const driver);
+int TB6612Motor_Init(TB6612MotorDriver_T *const driver);
 void TB6612Motor_ChangeDirection(TB6612MotorDriver_T *const driver, TB6612MotorDirection_T direction);
 void TB6612Motor_SetSpeed(TB6612MotorDriver_T *const driver, uint16_t speed);
 void TB6612Motor_Stop(TB6612MotorDriver_T *const driver);

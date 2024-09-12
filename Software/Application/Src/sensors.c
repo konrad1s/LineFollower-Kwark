@@ -1,5 +1,5 @@
-#include "sensors.h"
 #include <stdbool.h>
+#include "sensors.h"
 #include "tim.h"
 
 typedef struct
@@ -13,14 +13,14 @@ typedef struct
 
 static Sensors_Manager_T SensorsManager;
 
-void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
-                  Sensor_Led_T *const ledConfig,
-                  Sensor_Instance_T *const sensorInstances,
-                  Sensor_DataUpdatedCb_T callback)
+int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
+                 Sensor_Led_T *const ledConfig,
+                 Sensor_Instance_T *const sensorInstances,
+                 Sensor_DataUpdatedCb_T callback)
 {
     if (adcHandle == NULL || sensorInstances == NULL || ledConfig == NULL)
     {
-        return; 
+        return -1;
     }
 
     SensorsManager.adcHandle = adcHandle;
@@ -34,12 +34,17 @@ void Sensors_Init(ADC_HandleTypeDef *const adcHandle,
         SensorsManager.thresholds[i] = 0xFFFFU;
     }
 
-    /* Start ADC in DMA mode */
-    HAL_TIM_Base_Start(&htim2);
+    /* Start ADC in DMA mode, trigger by timer */
+    if (HAL_TIM_Base_Start(&htim2) != HAL_OK)
+    {
+        return -1;
+    }
     if (HAL_ADC_Start_DMA(SensorsManager.adcHandle, (uint32_t *)SensorsManager.adcBuffer, SENSORS_NUMBER) != HAL_OK)
     {
-       
+        return -1;
     }
+
+    return 0;
 }
 
 void Sensors_SetThresholds(uint16_t *const thresholds)

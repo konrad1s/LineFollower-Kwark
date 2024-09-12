@@ -5,14 +5,15 @@
  * 
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  */
-void TB6612Motor_Init(TB6612MotorDriver_T *const driver)
+int TB6612Motor_Init(TB6612MotorDriver_T *const driver)
 {
     if ((driver == NULL) || (driver->pwmTimer == NULL) || (driver->in1.port == NULL) || (driver->in2.port == NULL))
     {
-        /* TODO: Handle error*/
-        return;
+        return -1;
     }
     TB6612Motor_Stop(driver);
+
+    return 0;
 }
 
 /**
