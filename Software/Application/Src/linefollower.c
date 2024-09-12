@@ -5,9 +5,11 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
 
-static void Linefollower_DataUpdateCallback(void)
+static void Linefollower_DataUpdateCallback(void *data)
 {
-    LF_CalibrateSensors();
+    LineFollower_T *const me = (LineFollower_T *const )data;
+
+    LF_SendSignal(me, DATA_UPDATED_SIG);
 }
 
 int LF_Init(LineFollower_T *const me)
@@ -29,7 +31,7 @@ int LF_Init(LineFollower_T *const me)
         me->sensors[i].positionWeight = me->nvmBlock->sensorWeights[i];
         me->sensors[i].isActive = false;
     }
-    (void)Sensors_Init(&hadc1, me->sensorLedsConfig, me->sensors, Linefollower_DataUpdateCallback);
+    (void)Sensors_Init(&hadc1, me->sensorLedsConfig, me->sensors, Linefollower_DataUpdateCallback, me);
 
     (void)TB6612Motor_Init(me->motorLeftConfig);
     (void)TB6612Motor_Init(me->motorRightConfig);
@@ -63,7 +65,7 @@ void LF_MainFunction(LineFollower_T *const me)
 
 void LF_SendSignal(LineFollower_T *const me, LF_Signal_T sig)
 {
-    if (!SignalQueue_Enqueue(&me->signals, sig))
+    if (!LF_SignalQueueEnqueue(&me->signals, sig))
     {
         /* TODO: Handle queue full */
     }

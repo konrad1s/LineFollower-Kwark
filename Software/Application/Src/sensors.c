@@ -9,6 +9,7 @@ typedef struct
     Sensor_Instance_T *sensors;
     uint16_t thresholds[SENSORS_NUMBER];
     Sensor_DataUpdatedCb_T callback;
+    void *callbackContext;
 } Sensors_Manager_T;
 
 static Sensors_Manager_T SensorsManager;
@@ -16,7 +17,8 @@ static Sensors_Manager_T SensorsManager;
 int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
                  Sensor_Led_T *const ledConfig,
                  Sensor_Instance_T *const sensorInstances,
-                 Sensor_DataUpdatedCb_T callback)
+                 Sensor_DataUpdatedCb_T callback,
+                 void *callbackContext)
 {
     if (adcHandle == NULL || sensorInstances == NULL || ledConfig == NULL)
     {
@@ -26,6 +28,7 @@ int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
     SensorsManager.adcHandle = adcHandle;
     SensorsManager.sensors = sensorInstances;
     SensorsManager.callback = callback;
+    SensorsManager.callbackContext = callbackContext;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -146,6 +149,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     if (SensorsManager.adcHandle == hadc)
     {
         Sensors_UpdateState();
-        SensorsManager.callback();
+        SensorsManager.callback(SensorsManager.callbackContext);
     }
 }
