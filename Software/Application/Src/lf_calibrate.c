@@ -40,10 +40,10 @@ static void LF_StopCalibration(LineFollower_T *const me)
 {
     LF_CalibrationData.startTime = UINT32_MAX;
 
-    TB6612Motor_Brake(&me->motorLeftConfig);
-    TB6612Motor_Brake(&me->motorRightConfig);
-    TB6612Motor_SetSpeed(&me->motorLeftConfig, 0U);
-    TB6612Motor_SetSpeed(&me->motorRightConfig, 0U);
+    TB6612Motor_Brake(me->motorLeftConfig);
+    TB6612Motor_Brake(me->motorRightConfig);
+    TB6612Motor_SetSpeed(me->motorLeftConfig, 0U);
+    TB6612Motor_SetSpeed(me->motorRightConfig, 0U);
 }
 
 void LF_StartCalibration(LineFollower_T *const me)
@@ -58,10 +58,10 @@ void LF_StartCalibration(LineFollower_T *const me)
         LF_CalibrationData.sensorValues[i][CALIB_MAX_VALUE_IDX] = 0U;
     }
 
-    TB6612Motor_ChangeDirection(&me->motorLeftConfig, MOTOR_FORWARD);
-    TB6612Motor_ChangeDirection(&me->motorRightConfig, MOTOR_FORWARD);
-    TB6612Motor_SetSpeed(&me->motorLeftConfig, LF_CalibrationData.motorSpeed);
-    TB6612Motor_SetSpeed(&me->motorRightConfig, LF_CalibrationData.motorSpeed);
+    TB6612Motor_ChangeDirection(me->motorLeftConfig, MOTOR_FORWARD);
+    TB6612Motor_ChangeDirection(me->motorRightConfig, MOTOR_FORWARD);
+    TB6612Motor_SetSpeed(me->motorLeftConfig, LF_CalibrationData.motorSpeed);
+    TB6612Motor_SetSpeed(me->motorRightConfig, LF_CalibrationData.motorSpeed);
 }
 
 LF_CalibrationStatus_T LF_CalibrateSensors(LineFollower_T *const me)

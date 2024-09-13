@@ -5,7 +5,7 @@
  * 
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  */
-int TB6612Motor_Init(TB6612MotorDriver_T *const driver)
+int TB6612Motor_Init(const TB6612MotorDriver_T *const driver)
 {
     if ((driver == NULL) || (driver->pwmTimer == NULL) || (driver->in1.port == NULL) || (driver->in2.port == NULL))
     {
@@ -22,7 +22,7 @@ int TB6612Motor_Init(TB6612MotorDriver_T *const driver)
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  * @param direction Motor direction.
  */
-void TB6612Motor_ChangeDirection(TB6612MotorDriver_T *const driver, TB6612MotorDirection_T direction)
+void TB6612Motor_ChangeDirection(const TB6612MotorDriver_T *const driver, TB6612MotorDirection_T direction)
 {
     switch (direction)
     {
@@ -51,7 +51,7 @@ void TB6612Motor_ChangeDirection(TB6612MotorDriver_T *const driver, TB6612MotorD
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  * @param speed The speed value (0-999 for PWM).
  */
-void TB6612Motor_SetSpeed(TB6612MotorDriver_T *const driver, uint16_t speed)
+void TB6612Motor_SetSpeed(const TB6612MotorDriver_T *const driver, uint16_t speed)
 {
     __HAL_TIM_SET_COMPARE(driver->pwmTimer, driver->pwmChannel, speed);
 }
@@ -61,7 +61,7 @@ void TB6612Motor_SetSpeed(TB6612MotorDriver_T *const driver, uint16_t speed)
  * 
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  */
-void TB6612Motor_Stop(TB6612MotorDriver_T *const driver)
+void TB6612Motor_Stop(const TB6612MotorDriver_T *const driver)
 {
     TB6612Motor_ChangeDirection(driver, MOTOR_STOP);
     TB6612Motor_SetSpeed(driver, 0);
@@ -72,7 +72,7 @@ void TB6612Motor_Stop(TB6612MotorDriver_T *const driver)
  * 
  * @param driver Pointer to the TB6612MotorDriver_T instance.
  */
-void TB6612Motor_Brake(TB6612MotorDriver_T *const driver)
+void TB6612Motor_Brake(const TB6612MotorDriver_T *const driver)
 {
     TB6612Motor_ChangeDirection(driver, MOTOR_BRAKE);
     TB6612Motor_SetSpeed(driver, 0);
