@@ -3,7 +3,7 @@
 
 #include "scp.h"
 
-#define LINEFOLLOWER_COMMANDS_NUMBER 5U
+#define LINEFOLLOWER_COMMANDS_NUMBER 6U
 
 extern const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER];
 

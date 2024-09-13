@@ -18,7 +18,7 @@ typedef struct
 
 extern void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue);
 extern void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *command, uint16_t size);
-extern void SCP_Dispatcher_Process(SCP_Instance_T *scp);
+extern void SCP_Dispatcher_Process(SCP_Instance_T *scp, void *context);
 
 static SCP_Manager_T scpManager = {.numInstances = 0U};
 
@@ -78,7 +78,7 @@ int SCP_Init(SCP_Instance_T *const scp)
 /**
  * @brief Processes all registered SCP instances.
  */
-void SCP_Process(void)
+void SCP_Process(void *context)
 {
     for (size_t i = 0U; i < scpManager.numInstances; i++)
     {
@@ -86,7 +86,7 @@ void SCP_Process(void)
 
         if (scp)
         {
-            SCP_Dispatcher_Process(scp);
+            SCP_Dispatcher_Process(scp, context);
         }
     }
 }

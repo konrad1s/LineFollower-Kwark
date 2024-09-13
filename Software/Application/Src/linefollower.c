@@ -1,7 +1,6 @@
 #include "lf_main.h"
 #include "lf_calibrate.h"
 
-static void LF_Dispatch(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
@@ -24,6 +23,9 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
         LF_StartCalibration(me);
         me->state = LF_CALIBRATION;
         break;
+    case DATA_UPDATED_SIG:
+        Sensors_UpdateLeds();
+        break;
     default:
         break;
     }
@@ -44,6 +46,27 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
     }
 }
 
+static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
+{
+    switch (sig)
+    {
+    case STOP_SIG:
+        TB6612Motor_Stop(me->motorLeftConfig);
+        TB6612Motor_Stop(me->motorRightConfig);
+        me->state = LF_IDLE;
+        break;
+    case DATA_UPDATED_SIG:
+        float error = Sensors_CalculateError(me->nvmBlock);
+        int16_t output = PID_Update(&me->pidSensorInstance, error, 1.0);
+        TB6612Motor_SetSpeed(me->motorLeftConfig, 100U - output);
+        TB6612Motor_SetSpeed(me->motorRightConfig, 100U + output);
+        Sensors_UpdateLeds();
+        break;
+    default:
+        break;
+    }
+}
+
 int LF_Init(LineFollower_T *const me)
 {
     me->state = LF_IDLE;
@@ -57,6 +80,7 @@ int LF_Init(LineFollower_T *const me)
     (void)NVM_Read(&me->nvmInstance);
 
     (void)PID_Init(&me->pidSensorInstance);
+    (void)SCP_Init(&me->scpInstance);
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -84,7 +108,7 @@ void LF_MainFunction(LineFollower_T *const me)
             LF_StateCalibration(me, sig);
             break;
         case LF_RUN:
-            // LF_StateRun(me, sig);
+            LF_StateRun(me, sig);
             break;
         case LF_ERROR:
 
@@ -92,6 +116,11 @@ void LF_MainFunction(LineFollower_T *const me)
         default:
             break;
         }
+    }
+    else
+    {
+        /* No signals to process, so let's process the communication protocol */
+        SCP_Process(me);
     }
 }
 

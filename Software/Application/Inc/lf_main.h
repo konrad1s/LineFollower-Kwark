@@ -33,9 +33,9 @@ typedef struct
     PID_Instance_T pidSensorInstance;
     Sensor_Instance_T sensors[SENSORS_NUMBER];
 
-    const Sensor_Led_T *sensorLedsConfig;
-    const TB6612MotorDriver_T *motorLeftConfig;
-    const TB6612MotorDriver_T *motorRightConfig;
+    const Sensor_Led_T *const sensorLedsConfig;
+    const TB6612MotorDriver_T *const motorLeftConfig;
+    const TB6612MotorDriver_T *const motorRightConfig;
 } LineFollower_T;
 
 int LF_Init(LineFollower_T *const me);

@@ -53,7 +53,7 @@ void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *comm
  *
  * @param[in] scp Pointer to the SCP instance.
  */
-void SCP_Dispatcher_Process(SCP_Instance_T *scp)
+void SCP_Dispatcher_Process(SCP_Instance_T *scp, void *context)
 {
     SCP_DispatcherQueue_T *scpQueue = &scp->queue;
 
@@ -72,7 +72,7 @@ void SCP_Dispatcher_Process(SCP_Instance_T *scp)
 
             if ((id == scp->commands[i].id) && (cmdSize == scp->commands[i].size))
             {
-                scp->commands[i].function(&command[SCP_COMMAND_ID_SIZE], size - SCP_COMMAND_ID_SIZE);
+                scp->commands[i].function(context, &command[SCP_COMMAND_ID_SIZE], size - SCP_COMMAND_ID_SIZE);
                 break;
             }
         }
