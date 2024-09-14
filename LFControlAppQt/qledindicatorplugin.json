@@ -1,0 +1,6 @@
+{
+    "IID": "org.qt-project.Qt.QDesignerCustomWidgetInterface",
+    "className": "QLedIndicatorPlugin",
+    "version": "1.0",
+    "name": "QLedIndicator"
+}
