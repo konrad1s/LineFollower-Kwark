@@ -9,21 +9,21 @@ static void Linefollower_DataUpdateCallback(void *data)
 {
     LineFollower_T *const me = (LineFollower_T *const )data;
 
-    LF_SendSignal(me, DATA_UPDATED_SIG);
+    LF_SendSignal(me, LF_SIG_ADC_DATA_UPDATED);
 }
 
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
 {
     switch (sig)
     {
-    case START_SIG:
+    case LF_SIG_START:
         me->state = LF_RUN;
         break;
-    case CALIBRATE_SIG:
+    case LF_SIG_CALIBRATE:
         LF_StartCalibration(me);
         me->state = LF_CALIBRATION;
         break;
-    case DATA_UPDATED_SIG:
+    case LF_SIG_ADC_DATA_UPDATED:
         Sensors_UpdateLeds();
         break;
     default:
@@ -35,7 +35,7 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
 {
     switch (sig)
     {
-    case DATA_UPDATED_SIG:
+    case LF_SIG_ADC_DATA_UPDATED:
         if (LF_CalibrateSensors(me) == LF_CALIBRATION_COMPLETE)
         {
             me->state = LF_IDLE;
@@ -50,12 +50,12 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
 {
     switch (sig)
     {
-    case STOP_SIG:
+    case LF_SIG_STOP:
         TB6612Motor_Stop(me->motorLeftConfig);
         TB6612Motor_Stop(me->motorRightConfig);
         me->state = LF_IDLE;
         break;
-    case DATA_UPDATED_SIG:
+    case LF_SIG_ADC_DATA_UPDATED:
         float error = Sensors_CalculateError(me->nvmBlock);
         int16_t output = PID_Update(&me->pidSensorInstance, error, 1.0);
         TB6612Motor_SetSpeed(me->motorLeftConfig, 100U - output);
@@ -71,7 +71,7 @@ int LF_Init(LineFollower_T *const me)
 {
     me->state = LF_IDLE;
     me->timer = 0U;
-    me->isDataUpdated = false;
+    me->isDebugMode = false;
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
 
     LF_SignalQueue_Init(&me->signals);

@@ -24,7 +24,7 @@ typedef struct
 {
     LFState_T state;
     uint32_t timer;
-    bool isDataUpdated;
+    bool isDebugMode;
     LF_SignalQueue_T signals;
 
     Nvm_Instance_T nvmInstance;

@@ -8,11 +8,10 @@
 
 typedef enum 
 {
-    NO_SIG,
-    START_SIG,
-    STOP_SIG,
-    CALIBRATE_SIG,
-    DATA_UPDATED_SIG
+    LF_SIG_START,
+    LF_SIG_STOP,
+    LF_SIG_CALIBRATE,
+    LF_SIG_ADC_DATA_UPDATED
 } LF_Signal_T;
 
 typedef struct
