@@ -29,6 +29,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         qledindicatorplugin.cpp
         qledindicatorplugin.json
         qledindicator.h qledindicator.cpp
+        nvmlayout.h pidsetting.h
+        command.h
+        commandhandler.h commandhandler.cpp
+        bluetoothhandler.h bluetoothhandler.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET LFControlAppQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

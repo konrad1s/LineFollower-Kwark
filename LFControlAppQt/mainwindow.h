@@ -5,10 +5,13 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothSocket>
 #include <QTimer>
+#include "nvmlayout.h"
+#include "bluetoothhandler.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
+namespace Ui
+{
+    class MainWindow;
 }
 QT_END_NAMESPACE
 
@@ -26,18 +29,20 @@ private slots:
     void on_pushButtonSearch_clicked();
     void captureDeviceProperties(const QBluetoothDeviceInfo &device);
     void searchingFinished();
-    void on_pushButtonAutoConnect_clicked();
     void connectionEstablished();
     void connectionLost();
-    void connectionTimeout();
-    void readSocketData();
+    void handleDataReceived(Command command, const QByteArray &data);
+    void on_pushButtonAutoConnect_clicked();
+    void on_pushButtonStart_clicked();
+    void on_pushButtonStop_clicked();
+    void on_pushButtonReset_clicked();
+    void on_pushButtonCalibrate_clicked();
+    void on_radioButtonDebugMode_clicked(bool checked);
+    void on_pushButtonReadNvm_clicked();
+    void on_pushButtonWriteNvm_clicked();
 
 private:
-    constexpr static int CONNECTION_TIMEOUT = 10000;
-
     Ui::MainWindow *ui;
-    QBluetoothDeviceDiscoveryAgent *discoveryAgent;
-    QBluetoothSocket *bluetoothSocket;
-    QTimer *connectionTimer;
+    BluetoothHandler *bluetoothHandler;
 };
 #endif // MAINWINDOW_H

@@ -2,20 +2,15 @@
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this))
 {
     ui->setupUi(this);
-    discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    bluetoothSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
-    connectionTimer = new QTimer(this);
-    connectionTimer->setSingleShot(true);
 
-    connect(discoveryAgent, SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)), this, SLOT(captureDeviceProperties(QBluetoothDeviceInfo)));
-    connect(discoveryAgent, SIGNAL(finished()), this, SLOT(searchingFinished));
-    connect(bluetoothSocket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
-    connect(bluetoothSocket, SIGNAL(disconnected()), this, SLOT(connectionLost()));
-    connect(bluetoothSocket, SIGNAL(readyRead()), this, SLOT(readSocketData()));
-    connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionTimeout()));
+    connect(bluetoothHandler, &BluetoothHandler::deviceFound, this, &MainWindow::captureDeviceProperties);
+    connect(bluetoothHandler, &BluetoothHandler::discoveryFinished, this, &MainWindow::searchingFinished);
+    connect(bluetoothHandler, &BluetoothHandler::connectionEstablished, this, &MainWindow::connectionEstablished);
+    connect(bluetoothHandler, &BluetoothHandler::connectionLost, this, &MainWindow::connectionLost);
+    connect(bluetoothHandler, &BluetoothHandler::dataReceived, this, &MainWindow::handleDataReceived);
 }
 
 MainWindow::~MainWindow()
@@ -25,12 +20,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButtonDisconnect_clicked()
 {
-    if (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState)
-    {
-        bluetoothSocket->disconnectFromService();
-        qDebug() << "Disconnected from the device.";
-    }
+    bluetoothHandler->disconnectFromDevice();
 }
+
 void MainWindow::on_pushButtonConnect_clicked()
 {
     QString selectedDeviceName = ui->comboBoxDevices->currentText();
@@ -42,7 +34,7 @@ void MainWindow::on_pushButtonConnect_clicked()
     }
 
     QBluetoothDeviceInfo selectedDeviceInfo;
-    foreach (const QBluetoothDeviceInfo &device, discoveryAgent->discoveredDevices())
+    foreach (const QBluetoothDeviceInfo &device, bluetoothHandler->discoveredDevices()) // Use discovered devices from BluetoothHandler
     {
         if (device.name() == selectedDeviceName)
         {
@@ -53,17 +45,7 @@ void MainWindow::on_pushButtonConnect_clicked()
 
     if (selectedDeviceInfo.isValid())
     {
-        QBluetoothAddress address = selectedDeviceInfo.address();
-
-        if (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState)
-        {
-            qDebug() << "Already connected.";
-            return;
-        }
-
-        qDebug() << "Attempting to connect to device: " << selectedDeviceName;
-        bluetoothSocket->connectToService(address, QBluetoothUuid::ServiceClassUuid::SerialPort);
-        connectionTimer->start(CONNECTION_TIMEOUT);
+        bluetoothHandler->connectToDevice(selectedDeviceInfo.address());
     }
     else
     {
@@ -71,26 +53,9 @@ void MainWindow::on_pushButtonConnect_clicked()
     }
 }
 
-void MainWindow::on_pushButtonAutoConnect_clicked()
-{
-    QString predefinedDeviceAddress = "00:11:22:33:44:55";
-
-    QBluetoothAddress address(predefinedDeviceAddress);
-
-    if (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState)
-    {
-        qDebug() << "Already connected.";
-        return;
-    }
-
-    qDebug() << "Attempting to connect to predefined device: " << predefinedDeviceAddress;
-    bluetoothSocket->connectToService(address, QBluetoothUuid::ServiceClassUuid::SerialPort);
-    connectionTimer->start(CONNECTION_TIMEOUT);
-}
-
 void MainWindow::on_pushButtonSearch_clicked()
 {
-    discoveryAgent->start();
+    bluetoothHandler->startDeviceDiscovery();
     ui->comboBoxDevices->clear();
     ui->pushButtonSearch->setEnabled(false);
     qDebug() << "Searching started";
@@ -110,7 +75,6 @@ void MainWindow::searchingFinished()
 
 void MainWindow::connectionEstablished()
 {
-    connectionTimer->stop();
     qDebug() << "Connection established successfully.";
 }
 
@@ -119,17 +83,48 @@ void MainWindow::connectionLost()
     qDebug() << "Connection lost.";
 }
 
-void MainWindow::connectionTimeout()
+void MainWindow::handleDataReceived(Command command, const QByteArray &data)
 {
-    if (bluetoothSocket->state() != QBluetoothSocket::SocketState::ConnectedState)
-    {
-        qDebug() << "Connection attempt timed out.";
-        bluetoothSocket->abort();
-    }
+    qDebug() << "Data received: " << data.toHex();
+    // Handle data as per the command received
 }
 
-void MainWindow::readSocketData()
+void MainWindow::on_pushButtonAutoConnect_clicked()
 {
-    const auto data = bluetoothSocket->readAll();
-    qDebug() << "Data received: " << data;
+    // bluetoothHandler->sendCommand(Command::Start); // Example command
+}
+
+void MainWindow::on_pushButtonStart_clicked()
+{
+    // bluetoothHandler->sendCommand(Command::Start); // Example command
+}
+
+void MainWindow::on_pushButtonStop_clicked()
+{
+    // bluetoothHandler->sendCommand(Command::Stop); // Example command
+}
+
+void MainWindow::on_pushButtonReset_clicked()
+{
+    bluetoothHandler->sendCommand(Command::Reset); // Example command
+}
+
+void MainWindow::on_pushButtonCalibrate_clicked()
+{
+    bluetoothHandler->sendCommand(Command::Calibrate); // Example command
+}
+
+void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
+{
+    // Handle debug mode toggle
+}
+
+void MainWindow::on_pushButtonReadNvm_clicked()
+{
+    // bluetoothHandler->sendCommand(Command::ReadNvm); // Example command to read NVM
+}
+
+void MainWindow::on_pushButtonWriteNvm_clicked()
+{
+    // bluetoothHandler->sendCommand(Command::WriteNvm); // Example command to write NVM
 }
