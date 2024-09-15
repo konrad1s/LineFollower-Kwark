@@ -1,4 +1,7 @@
-#include "pidsetting.h"
+#ifndef NVMLAYOUT_H
+#define NVMLAYOUT_H
+
+#include "pidsettings.h"
 #include <array>
 
 class NVMLayout
@@ -41,4 +44,11 @@ public:
         std::memcpy(&fallbackErrorNegative, data + offset, sizeof(float));
     }
 
+    constexpr size_t size() const
+    {
+        return pidStgSensor.size() + pidStgMotorLeft.size() + pidStgMotorRight.size() + sensorWeights.size() +
+               sizeof(errorThreshold) + sizeof(fallbackErrorPositive) + sizeof(fallbackErrorNegative);
+    }
 };
+
+#endif //NVMLAYOUT_H

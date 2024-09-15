@@ -29,7 +29,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         qledindicatorplugin.cpp
         qledindicatorplugin.json
         qledindicator.h qledindicator.cpp
-        nvmlayout.h pidsetting.h
+        nvmlayout.h pidsettings.h
         command.h
         commandhandler.h commandhandler.cpp
         bluetoothhandler.h bluetoothhandler.cpp

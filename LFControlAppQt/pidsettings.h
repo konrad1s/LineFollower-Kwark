@@ -1,3 +1,6 @@
+#ifndef PIDSETTINGS_H
+#define PIDSETTINGS_H
+
 #include <cstring>
 #include <cstdint>
 #include <iostream>
@@ -47,4 +50,12 @@ public:
         os << "output_min: " << output_min << "\n";
         return os;
     }
+
+    constexpr std::size_t size() const
+    {
+        return sizeof(kp) + sizeof(ki) + sizeof(kd) + sizeof(integral_max) +
+               sizeof(integral_min) + sizeof(output_max) + sizeof(output_min);
+    }
 };
+
+#endif //PIDSETTINGS_H
