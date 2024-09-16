@@ -36,6 +36,7 @@ signals:
     void connectionEstablished();
     void connectionLost();
     void dataReceived(Command command, const QByteArray &data);
+    void errorOccurred(const QString &error);
 
 private:
     constexpr static int CONNECTION_TIMEOUT = 10000;

@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(bluetoothHandler, &BluetoothHandler::connectionEstablished, this, &MainWindow::connectionEstablished);
     connect(bluetoothHandler, &BluetoothHandler::connectionLost, this, &MainWindow::connectionLost);
     connect(bluetoothHandler, &BluetoothHandler::dataReceived, this, &MainWindow::handleDataReceived);
+    connect(bluetoothHandler, &BluetoothHandler::errorOccurred, [this](const QString &error) { qDebug() << error; });
 }
 
 MainWindow::~MainWindow()

@@ -25,7 +25,7 @@ void BluetoothHandler::connectToDevice(const QBluetoothAddress &address)
 {
     if (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState)
     {
-        qDebug() << "Already connected.";
+        emit errorOccurred("Already connected to a device.");
         return;
     }
     bluetoothSocket->connectToService(address, QBluetoothUuid::ServiceClassUuid::SerialPort);
@@ -38,6 +38,10 @@ void BluetoothHandler::disconnectFromDevice()
     {
         bluetoothSocket->disconnectFromService();
     }
+    else
+    {
+        emit errorOccurred("No device to disconnect.");
+    }
 }
 
 bool BluetoothHandler::isConnected() const
@@ -49,7 +53,7 @@ void BluetoothHandler::sendCommand(Command command, const QByteArray &data)
 {
     if (!bluetoothSocket->isOpen())
     {
-        // TODO: emmit error
+        emit errorOccurred("Socket is not open.");
         return;
     }
 
@@ -98,7 +102,7 @@ void BluetoothHandler::handleSocketReadyRead()
     dataBuffer.append(bluetoothSocket->readAll());
     const qsizetype dataSize = dataBuffer.size();
 
-    if (dataSize < 2) {
+    if (dataSize < ACK_RESPONSE_SIZE) {
         return;
     }
 
@@ -111,8 +115,7 @@ void BluetoothHandler::handleSocketReadyRead()
     }
     else
     {
-        qDebug() << "Unexpected command, command not found in response size map.";
-        // TODO: emit error signal
+        emit errorOccurred("Unexpected command received, no matching entry in response size map.");
         return;
     }
 
@@ -130,6 +133,7 @@ void BluetoothHandler::handleSocketReadyRead()
         responseTimer->stop();
         dataBuffer.clear();
         currentCommand = Command::InvalidCommand;
+        emit errorOccurred("Received incorrect or mismatched data.");
     }
 }
 
@@ -137,20 +141,19 @@ void BluetoothHandler::handleConnectionTimeout()
 {
     if (!isConnected())
     {
-        // TODO: emit connection timeout
-        qDebug() << "Connection timeout.";
+        emit errorOccurred("Connection timeout occurred.");
         disconnectFromDevice();
     }
 }
 
 void BluetoothHandler::handleResponseTimeout()
 {
-    //TODO: emit error
+    emit errorOccurred("Response timeout occurred.");
     currentCommand = Command::InvalidCommand;
     dataBuffer.clear();
 }
 
 void BluetoothHandler::processReceivedData()
 {
-    emit dataReceived(currentCommand, dataBuffer.mid(2));
+    emit dataReceived(currentCommand, dataBuffer.mid(ACK_RESPONSE_SIZE));
 }
