@@ -2,6 +2,7 @@
 #define NVMLAYOUT_H
 
 #include "pidsettings.h"
+#include "byteswap.h"
 #include <array>
 
 class NVMLayout
@@ -19,29 +20,29 @@ public:
 
     NVMLayout() = default;
 
-    void parseFromArray(const uint8_t *data)
+    void parseFromArray(const uint8_t *data, bool isBigEndian = false)
     {
         size_t offset = 0;
 
-        pidStgSensor.parseFromArray(data + offset);
-        offset += sizeof(PIDSettings);
+        pidStgSensor.parseFromArray(data + offset, isBigEndian);
+        offset += pidStgSensor.size();
 
-        pidStgMotorLeft.parseFromArray(data + offset);
-        offset += sizeof(PIDSettings);
+        pidStgMotorLeft.parseFromArray(data + offset, isBigEndian);
+        offset += pidStgMotorLeft.size();
 
-        pidStgMotorRight.parseFromArray(data + offset);
-        offset += sizeof(PIDSettings);
+        pidStgMotorRight.parseFromArray(data + offset, isBigEndian);
+        offset += pidStgMotorRight.size();
 
         std::memcpy(sensorWeights.data(), data + offset, sensorWeights.size() * sizeof(int8_t));
         offset += sensorWeights.size() * sizeof(int8_t);
 
-        std::memcpy(&errorThreshold, data + offset, sizeof(float));
+        ByteSwap::copyAndSwapIfNeeded(errorThreshold, data + offset, isBigEndian);
         offset += sizeof(float);
 
-        std::memcpy(&fallbackErrorPositive, data + offset, sizeof(float));
+        ByteSwap::copyAndSwapIfNeeded(fallbackErrorPositive, data + offset, isBigEndian);
         offset += sizeof(float);
 
-        std::memcpy(&fallbackErrorNegative, data + offset, sizeof(float));
+        ByteSwap::copyAndSwapIfNeeded(fallbackErrorNegative, data + offset, isBigEndian);
     }
 
     constexpr size_t size() const

@@ -4,39 +4,35 @@
 #include <cstring>
 #include <cstdint>
 #include <iostream>
+#include "byteswap.h"
 
 class PIDSettings
 {
 public:
     float kp, ki, kd;
-    float integral_max, integral_min;
-    float output_max, output_min;
+    float integralMax, integralMin;
+    float outputMax, outputMin;
 
     PIDSettings() = default;
 
-    void parseFromArray(const uint8_t *data)
+    void parseFromArray(const uint8_t *data, bool isBigEndian = false)
     {
         std::size_t offset = 0;
 
-        std::memcpy(&kp, data + offset, sizeof(kp));
+        ByteSwap::copyAndSwapIfNeeded(kp, data + offset, isBigEndian);
         offset += sizeof(kp);
-
-        std::memcpy(&ki, data + offset, sizeof(ki));
+        ByteSwap::copyAndSwapIfNeeded(ki, data + offset, isBigEndian);
         offset += sizeof(ki);
-
-        std::memcpy(&kd, data + offset, sizeof(kd));
+        ByteSwap::copyAndSwapIfNeeded(kd, data + offset, isBigEndian);
         offset += sizeof(kd);
-
-        std::memcpy(&integral_max, data + offset, sizeof(integral_max));
-        offset += sizeof(integral_max);
-
-        std::memcpy(&integral_min, data + offset, sizeof(integral_min));
-        offset += sizeof(integral_min);
-
-        std::memcpy(&output_max, data + offset, sizeof(output_max));
-        offset += sizeof(output_max);
-
-        std::memcpy(&output_min, data + offset, sizeof(output_min));
+        ByteSwap::copyAndSwapIfNeeded(integralMax, data + offset, isBigEndian);
+        offset += sizeof(integralMax);
+        ByteSwap::copyAndSwapIfNeeded(integralMin, data + offset, isBigEndian);
+        offset += sizeof(integralMin);
+        ByteSwap::copyAndSwapIfNeeded(outputMax, data + offset, isBigEndian);
+        offset += sizeof(outputMax);
+        ByteSwap::copyAndSwapIfNeeded(outputMin, data + offset, isBigEndian);
+        offset += sizeof(outputMin);
     }
 
     std::ostream& operator<<(std::ostream& os) const
@@ -44,17 +40,17 @@ public:
         os << "kp: " << kp << "\n";
         os << "ki: " << ki << "\n";
         os << "kd: " << kd << "\n";
-        os << "integral_max: " << integral_max << "\n";
-        os << "integral_min: " << integral_min << "\n";
-        os << "output_max: " << output_max << "\n";
-        os << "output_min: " << output_min << "\n";
+        os << "integralMax: " << integralMax << "\n";
+        os << "integralMin: " << integralMin << "\n";
+        os << "outputMax: " << outputMax << "\n";
+        os << "outputMin: " << outputMin << "\n";
         return os;
     }
 
     constexpr std::size_t size() const
     {
-        return sizeof(kp) + sizeof(ki) + sizeof(kd) + sizeof(integral_max) +
-               sizeof(integral_min) + sizeof(output_max) + sizeof(output_min);
+        return sizeof(kp) + sizeof(ki) + sizeof(kd) + sizeof(integralMax) +
+               sizeof(integralMin) + sizeof(outputMax) + sizeof(outputMin);
     }
 };
 
