@@ -6,6 +6,7 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QTimer>
 #include "command.h"
+#include "nvmlayout.h"
 
 class BluetoothHandler : public QObject
 {
@@ -17,7 +18,7 @@ public:
     void connectToDevice(const QBluetoothAddress &address);
     void disconnectFromDevice();
     bool isConnected() const;
-    void sendCommand(Command command);
+    void sendCommand(Command command, const QByteArray &data);
     QList<QBluetoothDeviceInfo> discoveredDevices() const;
 
 private slots:
@@ -27,6 +28,7 @@ private slots:
     void handleConnectionLost();
     void handleSocketReadyRead();
     void handleConnectionTimeout();
+    void handleResponseTimeout();
 
 signals:
     void deviceFound(const QBluetoothDeviceInfo &device);
@@ -37,6 +39,21 @@ signals:
 
 private:
     constexpr static int CONNECTION_TIMEOUT = 10000;
+    constexpr static int RESPONSE_TIMEOUT = 1000;
+    constexpr static size_t NVM_LAYOUT_SIZE = NVMLayout().size();
+
+    const std::unordered_map<Command, qsizetype> commandResponseSize =
+    {
+        {Command::SetMode, 1},
+        {Command::Reset, 0},
+        {Command::Calibrate, 1},
+        {Command::ReadNvmData, NVM_LAYOUT_SIZE},
+        {Command::WriteNvmData, 1},
+        {Command::SetDebugMode, 1},
+        {Command::SetPID, 1},
+        {Command::SetSensorWeights, 1},
+        {Command::GetSensorWeights, 0}
+    };
 
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
     QBluetoothSocket *bluetoothSocket;
@@ -44,7 +61,6 @@ private:
     QTimer *responseTimer;
 
     QByteArray dataBuffer;
-    qsizetype expectedResponseSize;
     Command currentCommand;
 
     void processReceivedData();

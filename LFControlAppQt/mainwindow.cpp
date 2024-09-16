@@ -91,27 +91,27 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
 
 void MainWindow::on_pushButtonAutoConnect_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::Start); // Example command
+    // bluetoothHandler->sendCommand(Command::Start);
 }
 
 void MainWindow::on_pushButtonStart_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::Start); // Example command
+    // bluetoothHandler->sendCommand(Command::Start);
 }
 
 void MainWindow::on_pushButtonStop_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::Stop); // Example command
+    // bluetoothHandler->sendCommand(Command::Stop);
 }
 
 void MainWindow::on_pushButtonReset_clicked()
 {
-    bluetoothHandler->sendCommand(Command::Reset); // Example command
+    bluetoothHandler->sendCommand(Command::Reset, nullptr);
 }
 
 void MainWindow::on_pushButtonCalibrate_clicked()
 {
-    bluetoothHandler->sendCommand(Command::Calibrate); // Example command
+    bluetoothHandler->sendCommand(Command::Calibrate, nullptr);
 }
 
 void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
@@ -121,10 +121,10 @@ void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
 
 void MainWindow::on_pushButtonReadNvm_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::ReadNvm); // Example command to read NVM
+    // bluetoothHandler->sendCommand(Command::ReadNvm);
 }
 
 void MainWindow::on_pushButtonWriteNvm_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::WriteNvm); // Example command to write NVM
+    // bluetoothHandler->sendCommand(Command::WriteNvm);
 }

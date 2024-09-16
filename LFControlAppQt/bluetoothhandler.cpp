@@ -2,7 +2,7 @@
 
 BluetoothHandler::BluetoothHandler(QObject *parent)
     : QObject{parent}, discoveryAgent(new QBluetoothDeviceDiscoveryAgent(this)), bluetoothSocket(new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this)),
-      connectionTimer(new QTimer(this)), responseTimer(new QTimer(this)), expectedResponseSize(0U)
+      connectionTimer(new QTimer(this)), responseTimer(new QTimer(this))
 {
     connect(discoveryAgent, SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)), this, SLOT(handleDeviceDiscovered(QBluetoothDeviceInfo)));
     connect(discoveryAgent, SIGNAL(finished()), this, SLOT(handleDiscoveryFinished()));
@@ -10,6 +10,7 @@ BluetoothHandler::BluetoothHandler(QObject *parent)
     connect(bluetoothSocket, SIGNAL(connected()), this, SLOT(handleConnectionEstablished()));
     connect(bluetoothSocket, SIGNAL(readyRead()), this, SLOT(handleSocketReadyRead()));
     connect(connectionTimer, SIGNAL(timeout()), this, SLOT(handleConnectionTimeout));
+    connect(responseTimer, SIGNAL(timeout()), this, SLOT(handleResponseTimeout));
 
     connectionTimer->setSingleShot(true);
     responseTimer->setSingleShot(true);
@@ -44,18 +45,26 @@ bool BluetoothHandler::isConnected() const
     return (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState);
 }
 
-void BluetoothHandler::sendCommand(Command command)
+void BluetoothHandler::sendCommand(Command command, const QByteArray &data)
 {
     if (!bluetoothSocket->isOpen())
     {
         // TODO: emmit error
+        return;
     }
 
     QByteArray commandData;
     QDataStream stream(&commandData, QIODevice::WriteOnly);
     stream << command;
 
+    if (!data.isEmpty())
+    {
+        commandData.append(data);
+    }
+
     bluetoothSocket->write(commandData);
+    currentCommand = command;
+    responseTimer->start(RESPONSE_TIMEOUT);
 }
 
 QList<QBluetoothDeviceInfo> BluetoothHandler::discoveredDevices() const
@@ -87,20 +96,23 @@ void BluetoothHandler::handleConnectionLost()
 void BluetoothHandler::handleSocketReadyRead()
 {
     dataBuffer.append(bluetoothSocket->readAll());
-    const qsizetype dataSize = dataBuffer.size();
 
-    if (dataSize == expectedResponseSize)
+    const qsizetype dataSize = dataBuffer.size();
+    const qsizetype expectedResponseSize = commandResponseSize.at(currentCommand);
+    const int expectedResponseCommand = static_cast<int>(currentCommand) + 1;
+
+    if ((dataSize == expectedResponseSize) && (dataBuffer.at(0) == expectedResponseCommand))
     {
+        responseTimer->stop();
         processReceivedData();
         dataBuffer.clear();
         currentCommand = Command::InvalidCommand;
-        expectedResponseSize = 0U;
     }
-    else if (dataSize > expectedResponseSize)
+    else if ((dataSize > expectedResponseSize) || (dataSize > 0U && dataBuffer.at(0) != expectedResponseCommand))
     {
+        responseTimer->stop();
         dataBuffer.clear();
         currentCommand = Command::InvalidCommand;
-        expectedResponseSize = 0U;
     }
 }
 
@@ -111,6 +123,13 @@ void BluetoothHandler::handleConnectionTimeout()
         // TODO: emit connection timeout
         disconnectFromDevice();
     }
+}
+
+void BluetoothHandler::handleResponseTimeout()
+{
+    //TODO: emit error
+    currentCommand = Command::InvalidCommand;
+    dataBuffer.clear();
 }
 
 void BluetoothHandler::processReceivedData()
