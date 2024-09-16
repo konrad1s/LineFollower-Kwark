@@ -76,11 +76,13 @@ void MainWindow::searchingFinished()
 
 void MainWindow::connectionEstablished()
 {
+    ui->indicatorConnStatus->setOn(true);
     qDebug() << "Connection established successfully.";
 }
 
 void MainWindow::connectionLost()
 {
+    ui->indicatorConnStatus->setOn(false);
     qDebug() << "Connection lost.";
 }
 

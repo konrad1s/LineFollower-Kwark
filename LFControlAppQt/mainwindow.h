@@ -44,5 +44,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     BluetoothHandler *bluetoothHandler;
+
+    void updateNvmLayout(const QByteArray &data);
 };
 #endif // MAINWINDOW_H

@@ -31,7 +31,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         qledindicator.h qledindicator.cpp
         nvmlayout.h pidsettings.h
         command.h
-        commandhandler.h commandhandler.cpp
+
         bluetoothhandler.h bluetoothhandler.cpp
         byteswap.h
     )

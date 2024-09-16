@@ -35,7 +35,7 @@
        <x>20</x>
        <y>10</y>
        <width>271</width>
-       <height>91</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="title">
@@ -81,13 +81,34 @@
         </item>
        </layout>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_39">
+        <item>
+         <widget class="QLabel" name="label_37">
+          <property name="text">
+           <string>Connection status:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLedIndicator" name="indicatorConnStatus" native="true">
+          <property name="maximumSize">
+           <size>
+            <width>33</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>120</y>
+       <y>150</y>
        <width>203</width>
        <height>151</height>
       </rect>
@@ -163,13 +184,13 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>300</y>
+       <y>310</y>
        <width>211</width>
        <height>270</height>
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
@@ -262,7 +283,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEditPid1IntMax_2"/>
+           <widget class="QLineEdit" name="lineEditfallbackNegative"/>
           </item>
          </layout>
         </item>
