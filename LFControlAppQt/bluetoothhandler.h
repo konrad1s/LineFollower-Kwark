@@ -41,17 +41,18 @@ private:
     constexpr static int CONNECTION_TIMEOUT = 10000;
     constexpr static int RESPONSE_TIMEOUT = 1000;
     constexpr static size_t NVM_LAYOUT_SIZE = NVMLayout().size();
+    constexpr static int ACK_RESPONSE_SIZE = 2;
 
     const std::unordered_map<Command, qsizetype> commandResponseSize =
     {
-        {Command::SetMode, 1},
-        {Command::Reset, 0},
-        {Command::Calibrate, 1},
-        {Command::ReadNvmData, NVM_LAYOUT_SIZE},
-        {Command::WriteNvmData, 1},
-        {Command::SetDebugMode, 1},
-        {Command::SetPID, 1},
-        {Command::SetSensorWeights, 1},
+        {Command::SetMode,          ACK_RESPONSE_SIZE},
+        {Command::Reset,            0},
+        {Command::Calibrate,        ACK_RESPONSE_SIZE},
+        {Command::ReadNvmData,      NVM_LAYOUT_SIZE + ACK_RESPONSE_SIZE},
+        {Command::WriteNvmData,     ACK_RESPONSE_SIZE},
+        {Command::SetDebugMode,     ACK_RESPONSE_SIZE},
+        {Command::SetPID,           ACK_RESPONSE_SIZE},
+        {Command::SetSensorWeights, ACK_RESPONSE_SIZE},
         {Command::GetSensorWeights, 0}
     };
 

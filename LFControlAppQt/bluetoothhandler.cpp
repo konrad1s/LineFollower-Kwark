@@ -96,19 +96,36 @@ void BluetoothHandler::handleConnectionLost()
 void BluetoothHandler::handleSocketReadyRead()
 {
     dataBuffer.append(bluetoothSocket->readAll());
-
     const qsizetype dataSize = dataBuffer.size();
-    const qsizetype expectedResponseSize = commandResponseSize.at(currentCommand);
-    const int expectedResponseCommand = static_cast<int>(currentCommand) + 1;
 
-    if ((dataSize == expectedResponseSize) && (dataBuffer.at(0) == expectedResponseCommand))
+    if (dataSize < 2) {
+        return;
+    }
+
+    int receivedCommand = static_cast<uint8_t>(dataBuffer.at(0)) | (static_cast<uint8_t>(dataBuffer.at(1) << 8));
+
+    qsizetype expectedResponseSize = 0;
+    if (commandResponseSize.contains(currentCommand))
+    {
+        expectedResponseSize = commandResponseSize.at(currentCommand);
+    }
+    else
+    {
+        qDebug() << "Unexpected command, command not found in response size map.";
+        // TODO: emit error signal
+        return;
+    }
+
+    int expectedResponseCommand = static_cast<int>(currentCommand) + 1;
+
+    if ((dataSize == expectedResponseSize) && (receivedCommand == expectedResponseCommand))
     {
         responseTimer->stop();
         processReceivedData();
         dataBuffer.clear();
         currentCommand = Command::InvalidCommand;
     }
-    else if ((dataSize > expectedResponseSize) || (dataSize > 0U && dataBuffer.at(0) != expectedResponseCommand))
+    else if ((dataSize > expectedResponseSize) || (dataSize > 0U && receivedCommand != expectedResponseCommand))
     {
         responseTimer->stop();
         dataBuffer.clear();
@@ -121,6 +138,7 @@ void BluetoothHandler::handleConnectionTimeout()
     if (!isConnected())
     {
         // TODO: emit connection timeout
+        qDebug() << "Connection timeout.";
         disconnectFromDevice();
     }
 }
@@ -134,5 +152,5 @@ void BluetoothHandler::handleResponseTimeout()
 
 void BluetoothHandler::processReceivedData()
 {
-    emit dataReceived(currentCommand, dataBuffer);
+    emit dataReceived(currentCommand, dataBuffer.mid(2));
 }
