@@ -133,7 +133,8 @@ void BluetoothHandler::handleSocketReadyRead()
         responseTimer->stop();
         dataBuffer.clear();
         currentCommand = Command::InvalidCommand;
-        emit errorOccurred("Received incorrect or mismatched data.");
+        emit errorOccurred("Received incorrect or mismatched data, expected response size: " +
+                           QString::number(expectedResponseSize) + ", received data size: " + QString::number(dataSize));
     }
 }
 

@@ -15,7 +15,13 @@ enum class Command : uint16_t
     SetSensorWeights = 0x0102,
     GetSensorWeights = 0x0200,
 
-    InvalidCommand   = 0xFFFF
+    InvalidCommand   = 0xFFFE
+};
+
+enum class CommandSetMode : uint8_t
+{
+    Start = 0x00,
+    Stop  = 0x01
 };
 
 #endif // COMMAND_H

@@ -10,6 +10,21 @@
 #define LF_COMMAND_MODE_START   0x00U
 #define LF_COMMAND_MODE_STOP    0x01U
 
+enum LF_Commands
+{
+    LF_CMD_SET_MODE         = 0x0000,
+    LF_CMD_RESET            = 0x0002,
+    LF_CMD_CALIBRATE        = 0x0004,
+    LF_CMD_READ_NVM_DATA    = 0x0006,
+    LF_CMD_WRITE_NVM_DATA   = 0x0008,
+    LF_CMD_SET_DEBUG_MODE   = 0x00010,
+
+    LF_CMD_SET_PID              = 0x0100,
+    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0102,
+
+    LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
+};
+
 extern NVM_Layout_T NVM_Block;
 extern PID_Instance_T PidSensorInstance;
 extern SCP_Instance_T ScpInstance;
@@ -26,18 +41,30 @@ static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uin
 static void LF_CommandSetSensorWeights(void *context, const uint8_t *buffer, uint16_t size);
 
 const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
-    {0x0000, 1U,                    LF_SetMode},
-    {0x0001, 0U,                    LF_CommandReset},
-    {0x0002, 0U,                    LF_CommandCalibrate},
-    {0x0003, 0U,                    LF_ReadNvmData},
-    {0x0004, sizeof(NVM_Layout_T),  LF_WriteNvmData},
-    {0x0005, 1U,                    LF_SetDebugMode},
+    {LF_CMD_SET_MODE,       1U,                     LF_SetMode},
+    {LF_CMD_RESET,          0U,                     LF_CommandReset},
+    {LF_CMD_CALIBRATE,      0U,                     LF_CommandCalibrate},
+    {LF_CMD_READ_NVM_DATA,  0U,                     LF_ReadNvmData},
+    {LF_CMD_WRITE_NVM_DATA, sizeof(NVM_Layout_T),   LF_WriteNvmData},
+    {LF_CMD_SET_DEBUG_MODE, 1U,                     LF_SetDebugMode},
 
-    {0x0100, 13U, LF_CommandSetPID},
-    {0x0101, 12U, LF_CommandSetSensorWeights},
+    {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
+    {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
 
-    {0x0201, 0U, LF_CommandGetSensorWeights},
+    {LF_CMD_GET_SENSOR_WEIGHTS, 0U, LF_CommandGetSensorWeights},
 };
+
+static void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
+{
+    uint16_t responseCmd = command_id + 1U;
+
+    SCP_Transmit(&me->scpInstance, &responseCmd, sizeof(responseCmd));
+
+    if (responseData != NULL && responseSize > 0U)
+    {
+        SCP_Transmit(&me->scpInstance, responseData, responseSize);
+    }
+}
 
 static void LF_SetMode(void *context, const uint8_t *buffer, uint16_t size)
 {
@@ -72,7 +99,7 @@ static void LF_ReadNvmData(void *context, const uint8_t *buffer, uint16_t size)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
-    SCP_Transmit(&me->scpInstance, me->nvmBlock, sizeof(NVM_Layout_T));
+    LF_CommandTransmitResponse(me, LF_CMD_READ_NVM_DATA, me->nvmBlock, sizeof(NVM_Layout_T));
 }
 
 static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size)
@@ -141,7 +168,8 @@ static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uin
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
-    SCP_Transmit(&me->scpInstance, me->nvmBlock->sensorWeights, sizeof(me->nvmBlock->sensorWeights));
+    LF_CommandTransmitResponse(me, LF_CMD_GET_SENSOR_WEIGHTS,
+                               me->nvmBlock->sensors.weights, sizeof(me->nvmBlock->sensors.weights));
 }
 
 static void LF_CommandSetSensorWeights(void *context, const uint8_t *buffer, uint16_t size)

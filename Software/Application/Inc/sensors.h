@@ -32,7 +32,7 @@ void Sensors_UpdateState(void);
 void Sensors_GetState(bool *state);
 void Sensors_GetRawData(uint16_t *data);
 void Sensors_UpdateLeds(void);
-float Sensors_CalculateError(const NVM_Layout_T *nvm);
+float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors);
 
 
 #endif /* __SENSORS__H__ */

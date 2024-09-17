@@ -155,20 +155,26 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
 
     nvmLayout.parseFromArray(reinterpret_cast<const uint8_t *>(data.data()));
 
-    QLineEdit *const sensorLineEdits[NVMLayout::SENSORS_NUMBER] = {
-        ui->lineEditSensorValue1, ui->lineEditSensorValue2, ui->lineEditSensorValue3,
-        ui->lineEditSensorValue4, ui->lineEditSensorValue5, ui->lineEditSensorValue6,
-        ui->lineEditSensorValue7, ui->lineEditSensorValue8, ui->lineEditSensorValue9,
-        ui->lineEditSensorValue10, ui->lineEditSensorValue11, ui->lineEditSensorValue12};
+    QLineEdit *const sensorWeights[NVMLayout::SENSORS_NUMBER] = {
+        ui->lineEditSensorWeight1, ui->lineEditSensorWeight2, ui->lineEditSensorWeight3,
+        ui->lineEditSensorWeight4, ui->lineEditSensorWeight5, ui->lineEditSensorWeight6,
+        ui->lineEditSensorWeight7, ui->lineEditSensorWeight8, ui->lineEditSensorWeight9,
+        ui->lineEditSensorWeight10, ui->lineEditSensorWeight11, ui->lineEditSensorWeight12};
+    QLineEdit *const sensorThresholds[NVMLayout::SENSORS_NUMBER] = {
+        ui->lineEditSensorCalib1, ui->lineEditSensorCalib2, ui->lineEditSensorCalib3,
+        ui->lineEditSensorCalib4, ui->lineEditSensorCalib5, ui->lineEditSensorCalib6,
+        ui->lineEditSensorCalib7, ui->lineEditSensorCalib8, ui->lineEditSensorCalib9,
+        ui->lineEditSensorCalib10, ui->lineEditSensorCalib11, ui->lineEditSensorCalib12};
 
     for (int i = 0; i < NVMLayout::SENSORS_NUMBER; ++i)
     {
-        sensorLineEdits[i]->setText(QString::number(nvmLayout.sensorWeights[i]));
+        sensorWeights[i]->setText(QString::number(nvmLayout.sensors.weights[i]));
+        sensorThresholds[i]->setText(QString::number(nvmLayout.sensors.thresholds[i]));
     }
 
-    ui->lineEditErrorThreshold->setText(QString::number(nvmLayout.errorThreshold));
-    ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.fallbackErrorPositive));
-    ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.fallbackErrorNegative));
+    ui->lineEditErrorThreshold->setText(QString::number(nvmLayout.sensors.errorThreshold));
+    ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.sensors.fallbackErrorPositive));
+    ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.sensors.fallbackErrorNegative));
 
     struct PidSettings
     {

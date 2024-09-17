@@ -13,10 +13,14 @@ public:
     PIDSettings pidStgSensor;
     PIDSettings pidStgMotorLeft;
     PIDSettings pidStgMotorRight;
-    std::array<int8_t, SENSORS_NUMBER> sensorWeights;
-    float errorThreshold;
-    float fallbackErrorPositive;
-    float fallbackErrorNegative;
+    struct
+    {
+        std::array<int8_t, SENSORS_NUMBER> weights;
+        std::array<uint16_t, SENSORS_NUMBER> thresholds;
+        float errorThreshold;
+        float fallbackErrorPositive;
+        float fallbackErrorNegative;
+    } sensors;
 
     NVMLayout() = default;
 
@@ -33,22 +37,30 @@ public:
         pidStgMotorRight.parseFromArray(data + offset, isBigEndian);
         offset += pidStgMotorRight.size();
 
-        std::memcpy(sensorWeights.data(), data + offset, sensorWeights.size() * sizeof(int8_t));
-        offset += sensorWeights.size() * sizeof(int8_t);
+        std::memcpy(sensors.weights.data(), data + offset, sensors.weights.size() * sizeof(int8_t));
+        offset +=  sensors.weights.size() * sizeof(int8_t);
 
-        ByteSwap::copyAndSwapIfNeeded(errorThreshold, data + offset, isBigEndian);
+        for (size_t i = 0U; i < sensors.thresholds.size(); ++i)
+        {
+            ByteSwap::copyAndSwapIfNeeded(sensors.thresholds[i], data + offset, isBigEndian);
+            offset += sizeof(sensors.thresholds[i]);
+        }
+
+        ByteSwap::copyAndSwapIfNeeded(sensors.errorThreshold, data + offset, isBigEndian);
         offset += sizeof(float);
 
-        ByteSwap::copyAndSwapIfNeeded(fallbackErrorPositive, data + offset, isBigEndian);
+        ByteSwap::copyAndSwapIfNeeded(sensors.fallbackErrorPositive, data + offset, isBigEndian);
         offset += sizeof(float);
 
-        ByteSwap::copyAndSwapIfNeeded(fallbackErrorNegative, data + offset, isBigEndian);
+        ByteSwap::copyAndSwapIfNeeded(sensors.fallbackErrorNegative, data + offset, isBigEndian);
     }
 
     constexpr size_t size() const
     {
-        return pidStgSensor.size() + pidStgMotorLeft.size() + pidStgMotorRight.size() + sensorWeights.size() +
-               sizeof(errorThreshold) + sizeof(fallbackErrorPositive) + sizeof(fallbackErrorNegative);
+        return pidStgSensor.size() + pidStgMotorLeft.size() + pidStgMotorRight.size() +
+               (sensors.weights.size() * sizeof(int8_t)) +
+               (sensors.thresholds.size() * sizeof(uint16_t)) +
+               sizeof(sensors.errorThreshold) + sizeof(sensors.fallbackErrorPositive) + sizeof(sensors.fallbackErrorNegative);
     }
 };
 

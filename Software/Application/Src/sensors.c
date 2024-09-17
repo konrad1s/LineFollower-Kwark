@@ -101,7 +101,7 @@ void Sensors_UpdateLeds(void)
     }
 }
 
-float Sensors_CalculateError(const NVM_Layout_T *nvm)
+float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors)
 {
     static float lastError = 0.0f;
     float currentError = 0.0f;
@@ -120,13 +120,13 @@ float Sensors_CalculateError(const NVM_Layout_T *nvm)
     if (activeSensors == 0)
     {
         /* If no sensors are active, return the fallback error based on the last known error */
-        if (lastError > nvm->errorThreshold)
+        if (lastError > nvmSensors->errorThreshold)
         {
-            currentError = nvm->fallbackErrorPositive;
+            currentError = nvmSensors->fallbackErrorPositive;
         }
-        else if (lastError < nvm->errorThreshold)
+        else if (lastError < nvmSensors->errorThreshold)
         {
-            currentError = nvm->fallbackErrorPositive;
+            currentError = nvmSensors->fallbackErrorPositive;
         }
         else
         {

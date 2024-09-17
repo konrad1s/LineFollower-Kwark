@@ -15,14 +15,19 @@
 
 typedef struct
 {
-    PID_Settings_T pidStgSensor;
-    PID_Settings_T pidStgMotorLeft;
-    PID_Settings_T pidStgMotorRight;
-
-    int8_t sensorWeights[SENSORS_NUMBER];
+    int8_t weights[SENSORS_NUMBER];
+    uint16_t thresholds[SENSORS_NUMBER];
     float errorThreshold;
     float fallbackErrorPositive;
     float fallbackErrorNegative;
+} NVM_Sensors_T;
+
+typedef struct
+{
+    PID_Settings_T pidStgSensor;
+    PID_Settings_T pidStgMotorLeft;
+    PID_Settings_T pidStgMotorRight;
+    NVM_Sensors_T sensors;
 } NVM_Layout_T;
 
 extern const NVM_Layout_T NvmDefaultData;

@@ -36,7 +36,9 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
     switch (sig)
     {
     case LF_SIG_ADC_DATA_UPDATED:
-        if (LF_CalibrateSensors(me) == LF_CALIBRATION_COMPLETE)
+        LF_CalibrationStatus_T status = LF_CalibrateSensors(me);
+
+        if (LF_CALIBRATION_COMPLETE == status)
         {
             me->state = LF_IDLE;
         }
@@ -84,10 +86,11 @@ int LF_Init(LineFollower_T *const me)
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        me->sensors[i].positionWeight = me->nvmBlock->sensorWeights[i];
+        me->sensors[i].positionWeight = me->nvmBlock->sensors.weights[i];
         me->sensors[i].isActive = false;
     }
     (void)Sensors_Init(&hadc1, me->sensorLedsConfig, me->sensors, Linefollower_DataUpdateCallback, me);
+    Sensors_SetThresholds(me->nvmBlock->sensors.thresholds);
 
     (void)TB6612Motor_Init(me->motorLeftConfig);
     (void)TB6612Motor_Init(me->motorRightConfig);
