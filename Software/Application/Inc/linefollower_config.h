@@ -9,7 +9,7 @@
 
 #define NVM_SECTOR_USED  FLASH_SECTOR_7
 
-#define SCP_BUFFER_SIZE  128U
+#define SCP_BUFFER_SIZE  256U
 
 #define SENSORS_NUMBER   (12U)
 

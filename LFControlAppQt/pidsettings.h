@@ -4,7 +4,6 @@
 #include <cstring>
 #include <cstdint>
 #include <iostream>
-#include "byteswap.h"
 
 class PIDSettings
 {
@@ -15,23 +14,55 @@ public:
 
     PIDSettings() = default;
 
-    void parseFromArray(const uint8_t *data, bool isBigEndian = false)
+    void parseFromArray(const uint8_t *data)
     {
         std::size_t offset = 0;
 
-        ByteSwap::copyAndSwapIfNeeded(kp, data + offset, isBigEndian);
+        std::memcpy(&kp, data + offset, sizeof(kp));
         offset += sizeof(kp);
-        ByteSwap::copyAndSwapIfNeeded(ki, data + offset, isBigEndian);
+
+        std::memcpy(&ki, data + offset, sizeof(ki));
         offset += sizeof(ki);
-        ByteSwap::copyAndSwapIfNeeded(kd, data + offset, isBigEndian);
+
+        std::memcpy(&kd, data + offset, sizeof(kd));
         offset += sizeof(kd);
-        ByteSwap::copyAndSwapIfNeeded(integralMax, data + offset, isBigEndian);
+
+        std::memcpy(&integralMax, data + offset, sizeof(integralMax));
         offset += sizeof(integralMax);
-        ByteSwap::copyAndSwapIfNeeded(integralMin, data + offset, isBigEndian);
+
+        std::memcpy(&integralMin, data + offset, sizeof(integralMin));
         offset += sizeof(integralMin);
-        ByteSwap::copyAndSwapIfNeeded(outputMax, data + offset, isBigEndian);
+
+        std::memcpy(&outputMax, data + offset, sizeof(outputMax));
         offset += sizeof(outputMax);
-        ByteSwap::copyAndSwapIfNeeded(outputMin, data + offset, isBigEndian);
+
+        std::memcpy(&outputMin, data + offset, sizeof(outputMin));
+        offset += sizeof(outputMin);
+    }
+
+    void serializeToArray(uint8_t *data) const
+    {
+        std::size_t offset = 0;
+
+        std::memcpy(data + offset, &kp, sizeof(kp));
+        offset += sizeof(kp);
+
+        std::memcpy(data + offset, &ki, sizeof(ki));
+        offset += sizeof(ki);
+
+        std::memcpy(data + offset, &kd, sizeof(kd));
+        offset += sizeof(kd);
+
+        std::memcpy(data + offset, &integralMax, sizeof(integralMax));
+        offset += sizeof(integralMax);
+
+        std::memcpy(data + offset, &integralMin, sizeof(integralMin));
+        offset += sizeof(integralMin);
+
+        std::memcpy(data + offset, &outputMax, sizeof(outputMax));
+        offset += sizeof(outputMax);
+
+        std::memcpy(data + offset, &outputMin, sizeof(outputMin));
         offset += sizeof(outputMin);
     }
 

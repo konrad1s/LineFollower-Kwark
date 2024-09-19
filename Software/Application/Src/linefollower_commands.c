@@ -113,6 +113,8 @@ static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size)
 
     memcpy(me->nvmBlock, buffer, size);
     NVM_Write(&me->nvmInstance);
+
+    LF_CommandTransmitResponse(me, LF_CMD_WRITE_NVM_DATA, NULL, 0);
 }
 
 static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size)

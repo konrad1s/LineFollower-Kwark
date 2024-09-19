@@ -2,8 +2,8 @@
 #define NVMLAYOUT_H
 
 #include "pidsettings.h"
-#include "byteswap.h"
 #include <array>
+#include <cstring>
 
 class NVMLayout
 {
@@ -24,17 +24,17 @@ public:
 
     NVMLayout() = default;
 
-    void parseFromArray(const uint8_t *data, bool isBigEndian = false)
+    void parseFromArray(const uint8_t *data)
     {
         size_t offset = 0;
 
-        pidStgSensor.parseFromArray(data + offset, isBigEndian);
+        pidStgSensor.parseFromArray(data + offset);
         offset += pidStgSensor.size();
 
-        pidStgMotorLeft.parseFromArray(data + offset, isBigEndian);
+        pidStgMotorLeft.parseFromArray(data + offset);
         offset += pidStgMotorLeft.size();
 
-        pidStgMotorRight.parseFromArray(data + offset, isBigEndian);
+        pidStgMotorRight.parseFromArray(data + offset);
         offset += pidStgMotorRight.size();
 
         std::memcpy(sensors.weights.data(), data + offset, sensors.weights.size() * sizeof(int8_t));
@@ -42,17 +42,50 @@ public:
 
         for (size_t i = 0U; i < sensors.thresholds.size(); ++i)
         {
-            ByteSwap::copyAndSwapIfNeeded(sensors.thresholds[i], data + offset, isBigEndian);
+            std::memcpy(&sensors.thresholds[i], data + offset, sizeof(sensors.thresholds[i]));
             offset += sizeof(sensors.thresholds[i]);
         }
 
-        ByteSwap::copyAndSwapIfNeeded(sensors.errorThreshold, data + offset, isBigEndian);
-        offset += sizeof(float);
+        std::memcpy(&sensors.errorThreshold, data + offset, sizeof(sensors.errorThreshold));
+        offset += sizeof(sensors.errorThreshold);
 
-        ByteSwap::copyAndSwapIfNeeded(sensors.fallbackErrorPositive, data + offset, isBigEndian);
-        offset += sizeof(float);
+        std::memcpy(&sensors.fallbackErrorPositive, data + offset, sizeof(sensors.fallbackErrorPositive));
+        offset += sizeof(sensors.fallbackErrorPositive);
 
-        ByteSwap::copyAndSwapIfNeeded(sensors.fallbackErrorNegative, data + offset, isBigEndian);
+        std::memcpy(&sensors.fallbackErrorNegative, data + offset, sizeof(sensors.fallbackErrorNegative));
+        offset += sizeof(sensors.fallbackErrorNegative);
+    }
+
+    void serializeToArray(uint8_t *data) const
+    {
+        size_t offset = 0;
+
+        pidStgSensor.serializeToArray(data + offset);
+        offset += pidStgSensor.size();
+
+        pidStgMotorLeft.serializeToArray(data + offset);
+        offset += pidStgMotorLeft.size();
+
+        pidStgMotorRight.serializeToArray(data + offset);
+        offset += pidStgMotorRight.size();
+
+        std::memcpy(data + offset, sensors.weights.data(), sensors.weights.size() * sizeof(int8_t));
+        offset += sensors.weights.size() * sizeof(int8_t);
+
+        for (size_t i = 0U; i < sensors.thresholds.size(); ++i)
+        {
+            std::memcpy(data + offset, &sensors.thresholds[i], sizeof(sensors.thresholds[i]));
+            offset += sizeof(sensors.thresholds[i]);
+        }
+
+        std::memcpy(data + offset, &sensors.errorThreshold, sizeof(sensors.errorThreshold));
+        offset += sizeof(sensors.errorThreshold);
+
+        std::memcpy(data + offset, &sensors.fallbackErrorPositive, sizeof(sensors.fallbackErrorPositive));
+        offset += sizeof(sensors.fallbackErrorPositive);
+
+        std::memcpy(data + offset, &sensors.fallbackErrorNegative, sizeof(sensors.fallbackErrorNegative));
+        offset += sizeof(sensors.fallbackErrorNegative);
     }
 
     constexpr size_t size() const

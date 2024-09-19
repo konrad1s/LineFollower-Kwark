@@ -164,7 +164,67 @@ void MainWindow::on_pushButtonReadNvm_clicked()
 
 void MainWindow::on_pushButtonWriteNvm_clicked()
 {
-    // bluetoothHandler->sendCommand(Command::WriteNvm);
+    NVMLayout nvmLayout;
+
+    QLineEdit *const sensorWeights[NVMLayout::SENSORS_NUMBER] = {
+        ui->lineEditSensorWeight1, ui->lineEditSensorWeight2, ui->lineEditSensorWeight3,
+        ui->lineEditSensorWeight4, ui->lineEditSensorWeight5, ui->lineEditSensorWeight6,
+        ui->lineEditSensorWeight7, ui->lineEditSensorWeight8, ui->lineEditSensorWeight9,
+        ui->lineEditSensorWeight10, ui->lineEditSensorWeight11, ui->lineEditSensorWeight12};
+    QLineEdit *const sensorThresholds[NVMLayout::SENSORS_NUMBER] = {
+        ui->lineEditSensorCalib1, ui->lineEditSensorCalib2, ui->lineEditSensorCalib3,
+        ui->lineEditSensorCalib4, ui->lineEditSensorCalib5, ui->lineEditSensorCalib6,
+        ui->lineEditSensorCalib7, ui->lineEditSensorCalib8, ui->lineEditSensorCalib9,
+        ui->lineEditSensorCalib10, ui->lineEditSensorCalib11, ui->lineEditSensorCalib12};
+
+    for (int i = 0; i < NVMLayout::SENSORS_NUMBER; ++i)
+    {
+        nvmLayout.sensors.weights[i] = sensorWeights[i]->text().toInt();
+        nvmLayout.sensors.thresholds[i] = sensorThresholds[i]->text().toInt();
+    }
+
+    nvmLayout.sensors.errorThreshold = ui->lineEditErrorThreshold->text().toFloat();
+    nvmLayout.sensors.fallbackErrorPositive = ui->lineEditfallbackPositive->text().toFloat();
+    nvmLayout.sensors.fallbackErrorNegative = ui->lineEditfallbackNegative->text().toFloat();
+
+    struct PidSettingsUI
+    {
+        PIDSettings &pid;
+        QLineEdit *lineEditKp;
+        QLineEdit *lineEditKi;
+        QLineEdit *lineEditKd;
+        QLineEdit *lineEditIntMax;
+        QLineEdit *lineEditIntMin;
+        QLineEdit *lineEditOutputMax;
+        QLineEdit *lineEditOutputMin;
+    };
+
+    PidSettingsUI pidSettingsUI[] = {
+        {nvmLayout.pidStgSensor, ui->lineEditPid1Kp, ui->lineEditPid1Ki, ui->lineEditPid1Kd,
+         ui->lineEditPid1IntMax, ui->lineEditPid1IntMin, ui->lineEditPid1OutputMax, ui->lineEditPid1OutputMin},
+        {nvmLayout.pidStgMotorLeft, ui->lineEditPid2Kp, ui->lineEditPid2Ki, ui->lineEditPid2Kd,
+         ui->lineEditPid2IntMax, ui->lineEditPid2IntMin, ui->lineEditPid2OutputMax, ui->lineEditPid2OutputMin},
+        {nvmLayout.pidStgMotorRight, ui->lineEditPid3Kp, ui->lineEditPid3Ki, ui->lineEditPid3Kd,
+         ui->lineEditPid3IntMax, ui->lineEditPid3IntMin, ui->lineEditPid3OutputMax, ui->lineEditPid3OutputMin}};
+
+    for (const PidSettingsUI &settings : pidSettingsUI)
+    {
+        settings.pid.kp = settings.lineEditKp->text().toFloat();
+        settings.pid.ki = settings.lineEditKi->text().toFloat();
+        settings.pid.kd = settings.lineEditKd->text().toFloat();
+        settings.pid.integralMax = settings.lineEditIntMax->text().toFloat();
+        settings.pid.integralMin = settings.lineEditIntMin->text().toFloat();
+        settings.pid.outputMax = settings.lineEditOutputMax->text().toFloat();
+        settings.pid.outputMin = settings.lineEditOutputMin->text().toFloat();
+    }
+
+    QByteArray data(nvmLayout.size(), Qt::Uninitialized);
+    nvmLayout.serializeToArray(reinterpret_cast<uint8_t *>(data.data()));
+
+    qDebug() << "Data to write: " << data.toHex();
+    qDebug() << "Data to write: " << data.size();
+
+    bluetoothHandler->sendCommand(Command::WriteNvmData, data);
 }
 
 void MainWindow::updateNvmLayout(const QByteArray &data)
