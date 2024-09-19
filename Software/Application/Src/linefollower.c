@@ -73,7 +73,6 @@ int LF_Init(LineFollower_T *const me)
 {
     me->state = LF_IDLE;
     me->timer = 0U;
-    me->isDebugMode = false;
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
 
     LF_SignalQueue_Init(&me->signals);

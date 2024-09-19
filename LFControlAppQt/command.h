@@ -10,7 +10,7 @@ enum class Command : uint16_t
     Calibrate        = 0x0004,
     ReadNvmData      = 0x0006,
     WriteNvmData     = 0x0008,
-    SetDebugMode     = 0x0010,
+    GetDebugData     = 0x0010,
     SetPID           = 0x0100,
     SetSensorWeights = 0x0102,
     GetSensorWeights = 0x0200,

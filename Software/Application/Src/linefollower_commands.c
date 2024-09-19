@@ -17,13 +17,18 @@ enum LF_Commands
     LF_CMD_CALIBRATE        = 0x0004,
     LF_CMD_READ_NVM_DATA    = 0x0006,
     LF_CMD_WRITE_NVM_DATA   = 0x0008,
-    LF_CMD_SET_DEBUG_MODE   = 0x00010,
+    LF_CMD_GET_DEBUG_DATA   = 0x00010,
 
     LF_CMD_SET_PID              = 0x0100,
     LF_CMD_SET_SENSOR_WEIGHTS   = 0x0102,
 
     LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
 };
+
+typedef struct
+{
+    uint16_t sensorsValues[SENSORS_NUMBER];
+} Lf_CommandDebugData_T;
 
 extern NVM_Layout_T NVM_Block;
 extern PID_Instance_T PidSensorInstance;
@@ -34,7 +39,7 @@ static void LF_CommandReset(void *context, const uint8_t *buffer, uint16_t size)
 static void LF_CommandCalibrate(void *context, const uint8_t *buffer, uint16_t size);
 static void LF_ReadNvmData(void *context, const uint8_t *buffer, uint16_t size);
 static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_SetDebugMode(void *context, const uint8_t *buffer, uint16_t size);
+static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size);
 
 static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size);
 static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uint16_t size);
@@ -46,7 +51,7 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_CALIBRATE,      0U,                     LF_CommandCalibrate},
     {LF_CMD_READ_NVM_DATA,  0U,                     LF_ReadNvmData},
     {LF_CMD_WRITE_NVM_DATA, sizeof(NVM_Layout_T),   LF_WriteNvmData},
-    {LF_CMD_SET_DEBUG_MODE, 1U,                     LF_SetDebugMode},
+    {LF_CMD_GET_DEBUG_DATA, 1U,                     LF_GetDebugData},
 
     {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
     {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
@@ -110,18 +115,14 @@ static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size)
     NVM_Write(&me->nvmInstance);
 }
 
-static void LF_SetDebugMode(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
+    Lf_CommandDebugData_T debugData;
 
-    if (buffer[0] == 0x01)
-    {
-        me->isDebugMode = true;
-    }
-    else
-    {
-        me->isDebugMode = false;
-    }
+    Sensors_GetRawData(debugData.sensorsValues);
+
+    LF_CommandTransmitResponse(me, LF_CMD_GET_DEBUG_DATA, &debugData, sizeof(debugData));
 }
 
 static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size)

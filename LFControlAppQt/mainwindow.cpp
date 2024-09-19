@@ -1,10 +1,18 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "debugdata.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this))
 {
     ui->setupUi(this);
+
+    debugDataTimer = new QTimer(this);
+    connect(debugDataTimer, &QTimer::timeout, this, [this]() {
+        QByteArray data;
+        data.append(static_cast<char>(true));
+        bluetoothHandler->sendCommand(Command::GetDebugData, data);
+    });
 
     connect(bluetoothHandler, &BluetoothHandler::deviceFound, this, &MainWindow::captureDeviceProperties);
     connect(bluetoothHandler, &BluetoothHandler::discoveryFinished, this, &MainWindow::searchingFinished);
@@ -16,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete debugDataTimer;
     delete ui;
 }
 
@@ -95,7 +104,11 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
         updateNvmLayout(data);
         break;
     }
-    /* TODO: Currently only ReadNvmData is supported*/
+    case Command::GetDebugData:
+    {
+        updateDebugData(data);
+        break;
+    }
     default:
         break;
     }
@@ -134,7 +147,14 @@ void MainWindow::on_pushButtonCalibrate_clicked()
 
 void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
 {
-    // Handle debug mode toggle
+    if (checked)
+    {
+        debugDataTimer->start(100);
+    }
+    else
+    {
+        debugDataTimer->stop();
+    }
 }
 
 void MainWindow::on_pushButtonReadNvm_clicked()
@@ -205,5 +225,28 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
         settings.lineEditIntMin->setText(QString::number(settings.pid.integralMin));
         settings.lineEditOutputMax->setText(QString::number(settings.pid.outputMax));
         settings.lineEditOutputMin->setText(QString::number(settings.pid.outputMin));
+    }
+}
+
+void MainWindow::updateDebugData(const QByteArray &data)
+{
+    DebugData debugData;
+
+    debugData.parseFromArray(reinterpret_cast<const uint8_t *>(data.data()));
+
+    QLineEdit *const sensorValues[DebugData::SENSORS_NUMBER] = {
+        ui->lineEditSensorValue1, ui->lineEditSensorValue2, ui->lineEditSensorValue3, ui->lineEditSensorValue4, 
+        ui->lineEditSensorValue5, ui->lineEditSensorValue6, ui->lineEditSensorValue7, ui->lineEditSensorValue8, 
+        ui->lineEditSensorValue9, ui->lineEditSensorValue10, ui->lineEditSensorValue11, ui->lineEditSensorValue12};
+
+    QLedIndicator *const sensorLeds[DebugData::SENSORS_NUMBER] = {
+        ui->sensorLed1, ui->sensorLed2, ui->sensorLed3, ui->sensorLed4,
+        ui->sensorLed5, ui->sensorLed6, ui->sensorLed7, ui->sensorLed8,
+        ui->sensorLed9, ui->sensorLed10, ui->sensorLed11, ui->sensorLed12};
+
+    for (int i = 0; i < DebugData::SENSORS_NUMBER; ++i)
+    {
+        sensorValues[i]->setText(QString::number(debugData.sensorValues[i]));
+        sensorLeds[i]->setOn(debugData.sensorValues[i] > 3000);
     }
 }

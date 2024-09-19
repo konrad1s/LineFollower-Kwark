@@ -106,7 +106,7 @@ void BluetoothHandler::handleSocketReadyRead()
         return;
     }
 
-    int receivedCommand = static_cast<uint8_t>(dataBuffer.at(0)) | (static_cast<uint8_t>(dataBuffer.at(1) << 8));
+    int receivedCommand = static_cast<uint8_t>(dataBuffer.at(0)) | (static_cast<uint8_t>(dataBuffer.at(1)) << 8);
 
     qsizetype expectedResponseSize = 0;
     if (commandResponseSize.contains(currentCommand))

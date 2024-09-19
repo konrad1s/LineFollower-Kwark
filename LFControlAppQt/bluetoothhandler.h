@@ -7,6 +7,7 @@
 #include <QTimer>
 #include "command.h"
 #include "nvmlayout.h"
+#include "debugdata.h"
 
 class BluetoothHandler : public QObject
 {
@@ -42,6 +43,7 @@ private:
     constexpr static int CONNECTION_TIMEOUT = 10000;
     constexpr static int RESPONSE_TIMEOUT = 1000;
     constexpr static size_t NVM_LAYOUT_SIZE = NVMLayout().size();
+    constexpr static size_t DEBUG_DATA_SIZE = DebugData().size();
     constexpr static int ACK_RESPONSE_SIZE = 2;
 
     const std::unordered_map<Command, qsizetype> commandResponseSize =
@@ -51,7 +53,7 @@ private:
         {Command::Calibrate,        ACK_RESPONSE_SIZE},
         {Command::ReadNvmData,      NVM_LAYOUT_SIZE + ACK_RESPONSE_SIZE},
         {Command::WriteNvmData,     ACK_RESPONSE_SIZE},
-        {Command::SetDebugMode,     ACK_RESPONSE_SIZE},
+        {Command::GetDebugData,     DEBUG_DATA_SIZE + ACK_RESPONSE_SIZE},
         {Command::SetPID,           ACK_RESPONSE_SIZE},
         {Command::SetSensorWeights, ACK_RESPONSE_SIZE},
         {Command::GetSensorWeights, 0}
