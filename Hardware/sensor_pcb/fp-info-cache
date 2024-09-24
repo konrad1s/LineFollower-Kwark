@@ -1,4 +1,4 @@
-23772826522804375
+23750429615207861
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -80325,6 +80325,13 @@ SSOP 0.635
 56
 56
 Package_SO
+SSOP16
+<b>Small Shrink Outline Package</b> SSOP 16 (5.3mm x 6.2mm)<p>Source: www.austriamicrosystems.com .. AS5040DataSheetRev12.pdf
+
+0
+16
+16
+Package_SO
 STC_SOP-16_3.9x9.9mm_P1.27mm
 STC  SOP, 16 Pin (https://www.stcmicro.com/datasheet/STC15F2K60S2-en.pdf#page=156), generated with kicad-footprint-generator ipc_gullwing_generator.py
 STC SOP SO
@@ -96655,101 +96662,3 @@ Varistor VF
 0
 2
 2
-schemat
-C0805_334
-CAPACITOR
-
-0
-2
-2
-schemat
-FH12-10S-0.5SH_152
-0.5mm Pitch Connectors For FPC/FFC{return}{return}Source: Data sheet
-
-0
-10
-10
-schemat
-HC49UP_204
-CRYSTAL
-
-0
-2
-2
-schemat
-JP1_252
-JUMPER
-
-0
-2
-2
-schemat
-JP4_252
-JUMPER
-
-0
-4
-4
-schemat
-R0805_334
-RESISTOR
-
-0
-2
-2
-schemat
-SMC_A_334
-Chip Capacitor  Polar tantalum capacitors with solid electrolyte{return}{return}Siemens Matsushita Components B 45 194, B 45 197, B 45 198{return}Source: www.farnell.com/datasheets/247.pdf
-
-0
-2
-2
-schemat
-SML0805_259
-SML0805-2CW-TR (0805 PROFILE) COOL WHITE{return}{return}Source: http://www.ledtronics.com/ds/smd-0603/Dstr0093.pdf
-
-0
-2
-2
-schemat
-SOT230P696X180-4N
-
-
-0
-4
-4
-schemat
-SSOP24-0.65-8.9X5.3MM
-
-
-0
-24
-24
-schemat
-SW_JS202011SCQN
-
-
-0
-6
-6
-schemat
-TACTILE_SWITCH_SMD_6.0X3.5MM
-Momentary Switch (Pushbutton) - SPST - SMD, 6.0 x 3.5 mm{return}{return}Normally-open (NO) SPST momentary switches (buttons, pushbuttons).{return}{return}https://www.sparkfun.com/datasheets/Components/1101.pdf Datasheet
-
-0
-2
-2
-schemat
-TOP
-
-
-0
-4
-4
-schemat
-TQFP44_105
-44-lead Thin Quad Flat Package
-
-0
-44
-44
