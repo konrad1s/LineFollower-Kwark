@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "debugdata.h"
+#include <QDateTime.h>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this))
@@ -19,7 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(bluetoothHandler, &BluetoothHandler::connectionEstablished, this, &MainWindow::connectionEstablished);
     connect(bluetoothHandler, &BluetoothHandler::connectionLost, this, &MainWindow::connectionLost);
     connect(bluetoothHandler, &BluetoothHandler::dataReceived, this, &MainWindow::handleDataReceived);
-    connect(bluetoothHandler, &BluetoothHandler::errorOccurred, [this](const QString &error) { qDebug() << error; });
+    connect(bluetoothHandler, &BluetoothHandler::errorOccurred, [this](const QString &error)
+            { addToLogs(error, false); });
 }
 
 MainWindow::~MainWindow()
@@ -39,7 +45,7 @@ void MainWindow::on_pushButtonConnect_clicked()
 
     if (selectedDeviceName.isEmpty())
     {
-        qDebug() << "No device selected.";
+        addToLogs("No device selected.", false);
         return;
     }
 
@@ -55,11 +61,12 @@ void MainWindow::on_pushButtonConnect_clicked()
 
     if (selectedDeviceInfo.isValid())
     {
+        addToLogs("Device found, connect attempting", true);
         bluetoothHandler->connectToDevice(selectedDeviceInfo.address());
     }
     else
     {
-        qDebug() << "Selected device not found.";
+        addToLogs("Selected device not found.", false);
     }
 }
 
@@ -68,31 +75,31 @@ void MainWindow::on_pushButtonSearch_clicked()
     bluetoothHandler->startDeviceDiscovery();
     ui->comboBoxDevices->clear();
     ui->pushButtonSearch->setEnabled(false);
-    qDebug() << "Searching started";
+    addToLogs("Bluetooth searching started", true);
 }
 
 void MainWindow::captureDeviceProperties(const QBluetoothDeviceInfo &device)
 {
     ui->comboBoxDevices->addItem(device.name());
-    qDebug() << "Device found: " << device.name();
+    addToLogs("Device found: " + device.name(), true);
 }
 
 void MainWindow::searchingFinished()
 {
     ui->pushButtonSearch->setEnabled(true);
-    qDebug() << "Searching finished";
+    addToLogs("Searching finished", true);
 }
 
 void MainWindow::connectionEstablished()
 {
     ui->indicatorConnStatus->setOn(true);
-    qDebug() << "Connection established successfully.";
+    addToLogs("Connection established successfully.", false);
 }
 
 void MainWindow::connectionLost()
 {
     ui->indicatorConnStatus->setOn(false);
-    qDebug() << "Connection lost.";
+    addToLogs("Connection lost.", false);
 }
 
 void MainWindow::handleDataReceived(Command command, const QByteArray &data)
@@ -116,6 +123,7 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
 
 void MainWindow::on_pushButtonAutoConnect_clicked()
 {
+    addToLogs("Autoconnect started", true);
     // bluetoothHandler->sendCommand(Command::Start);
 }
 
@@ -123,26 +131,28 @@ void MainWindow::on_pushButtonStart_clicked()
 {
     QByteArray data;
     data.append(static_cast<char>(CommandSetMode::Start));
-
     bluetoothHandler->sendCommand(Command::SetMode, data);
+    addToLogs("Start command sent", true);
 }
 
 void MainWindow::on_pushButtonStop_clicked()
 {
     QByteArray data;
     data.append(static_cast<char>(CommandSetMode::Stop));
-
     bluetoothHandler->sendCommand(Command::SetMode, data);
+    addToLogs("Stop command sent", true);
 }
 
 void MainWindow::on_pushButtonReset_clicked()
 {
     bluetoothHandler->sendCommand(Command::Reset, nullptr);
+    addToLogs("Reset command sent", true);
 }
 
 void MainWindow::on_pushButtonCalibrate_clicked()
 {
     bluetoothHandler->sendCommand(Command::Calibrate, nullptr);
+    addToLogs("Calibrate command sent", true);
 }
 
 void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
@@ -150,16 +160,19 @@ void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
     if (checked)
     {
         debugDataTimer->start(100);
+        addToLogs("Debug mode enabled", true);
     }
     else
     {
         debugDataTimer->stop();
+        addToLogs("Debug mode disabled", true);
     }
 }
 
 void MainWindow::on_pushButtonReadNvm_clicked()
 {
     bluetoothHandler->sendCommand(Command::ReadNvmData, nullptr);
+    addToLogs("Read NvM command sent", true);
 }
 
 void MainWindow::on_pushButtonWriteNvm_clicked()
@@ -221,17 +234,14 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
     QByteArray data(nvmLayout.size(), Qt::Uninitialized);
     nvmLayout.serializeToArray(reinterpret_cast<uint8_t *>(data.data()));
 
-    qDebug() << "Data to write: " << data.toHex();
-    qDebug() << "Data to write: " << data.size();
-
     bluetoothHandler->sendCommand(Command::WriteNvmData, data);
+
+    addToLogs("Write NvM command sent \n" + nvmLayout.toString(), true);
 }
 
 void MainWindow::updateNvmLayout(const QByteArray &data)
 {
     NVMLayout nvmLayout;
-
-    qDebug() << "Data received: " << data.toHex();
 
     nvmLayout.parseFromArray(reinterpret_cast<const uint8_t *>(data.data()));
 
@@ -286,6 +296,8 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
         settings.lineEditOutputMax->setText(QString::number(settings.pid.outputMax));
         settings.lineEditOutputMin->setText(QString::number(settings.pid.outputMin));
     }
+
+    addToLogs("NvM layout updated: \n" + nvmLayout.toString(), true);
 }
 
 void MainWindow::updateDebugData(const QByteArray &data)
@@ -309,4 +321,53 @@ void MainWindow::updateDebugData(const QByteArray &data)
         sensorValues[i]->setText(QString::number(debugData.sensorValues[i]));
         sensorLeds[i]->setOn(debugData.sensorValues[i] > 3000);
     }
+
+    addToLogs("Debug data updated: \n" + debugData.toString(), true);
+}
+
+void MainWindow::addToLogs(const QString &msg, bool isDebugMsg)
+{
+    QString currentTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    const QString msgLog = currentTime + "   " + msg;
+
+    if (isDebugMsg)
+    {
+        if (ui->radioButtonDebugLogs->isChecked())
+        {
+            ui->textEditLogs->append(msgLog);
+        }
+    }
+    else
+    {
+        ui->textEditLogs->append(msgLog);
+    }
+}
+
+void MainWindow::on_pushButtonClearLogs_clicked()
+{
+    ui->textEditLogs->clear();
+}
+
+void MainWindow::on_pushButtonSaveLogs_clicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Logs"), "", tr("Text Files (*.txt);;All Files (*)"));
+
+    if (fileName.isEmpty())
+    {
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Unable to open file"), file.errorString());
+        return;
+    }
+
+    QTextStream out(&file);
+    out << ui->textEditLogs->toPlainText();
+
+    file.close();
+
+    QMessageBox::information(this, tr("Logs Saved"), tr("Logs have been saved to %1").arg(fileName));
 }

@@ -95,6 +95,56 @@ public:
                (sensors.thresholds.size() * sizeof(uint16_t)) +
                sizeof(sensors.errorThreshold) + sizeof(sensors.fallbackErrorPositive) + sizeof(sensors.fallbackErrorNegative);
     }
+
+    QString toString() const
+    {
+        QString output;
+
+        output.append("PID Sensor Settings:\n");
+        output.append(QString("Kp: %1, Ki: %2, Kd: %3, IntMax: %4, IntMin: %5, OutputMax: %6, OutputMin: %7\n")
+                          .arg(pidStgSensor.kp)
+                          .arg(pidStgSensor.ki)
+                          .arg(pidStgSensor.kd)
+                          .arg(pidStgSensor.integralMax)
+                          .arg(pidStgSensor.integralMin)
+                          .arg(pidStgSensor.outputMax)
+                          .arg(pidStgSensor.outputMin));
+
+        output.append("\nPID Motor Left Settings:\n");
+        output.append(QString("Kp: %1, Ki: %2, Kd: %3, IntMax: %4, IntMin: %5, OutputMax: %6, OutputMin: %7\n")
+                          .arg(pidStgMotorLeft.kp)
+                          .arg(pidStgMotorLeft.ki)
+                          .arg(pidStgMotorLeft.kd)
+                          .arg(pidStgMotorLeft.integralMax)
+                          .arg(pidStgMotorLeft.integralMin)
+                          .arg(pidStgMotorLeft.outputMax)
+                          .arg(pidStgMotorLeft.outputMin));
+
+        output.append("\nPID Motor Right Settings:\n");
+        output.append(QString("Kp: %1, Ki: %2, Kd: %3, IntMax: %4, IntMin: %5, OutputMax: %6, OutputMin: %7\n")
+                          .arg(pidStgMotorRight.kp)
+                          .arg(pidStgMotorRight.ki)
+                          .arg(pidStgMotorRight.kd)
+                          .arg(pidStgMotorRight.integralMax)
+                          .arg(pidStgMotorRight.integralMin)
+                          .arg(pidStgMotorRight.outputMax)
+                          .arg(pidStgMotorRight.outputMin));
+
+        output.append("\nSensor Weights:\n");
+        for (int i = 0; i < SENSORS_NUMBER; ++i)
+        {
+            output.append(QString("Sensor %1 Weight: %2, Threshold: %3\n")
+                              .arg(i + 1)
+                              .arg(sensors.weights[i])
+                              .arg(sensors.thresholds[i]));
+        }
+
+        output.append(QString("\nError Threshold: %1\n").arg(sensors.errorThreshold));
+        output.append(QString("Fallback Error Positive: %1\n").arg(sensors.fallbackErrorPositive));
+        output.append(QString("Fallback Error Negative: %1\n").arg(sensors.fallbackErrorNegative));
+
+        return output;
+    }
 };
 
 #endif //NVMLAYOUT_H

@@ -40,6 +40,8 @@ private slots:
     void on_radioButtonDebugMode_clicked(bool checked);
     void on_pushButtonReadNvm_clicked();
     void on_pushButtonWriteNvm_clicked();
+    void on_pushButtonClearLogs_clicked();
+    void on_pushButtonSaveLogs_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -48,5 +50,6 @@ private:
 
     void updateNvmLayout(const QByteArray &data);
     void updateDebugData(const QByteArray &data);
+    void addToLogs(const QString &msg, bool isDebugMsg);
 };
 #endif // MAINWINDOW_H
