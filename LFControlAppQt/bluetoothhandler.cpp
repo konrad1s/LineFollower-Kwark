@@ -21,6 +21,11 @@ void BluetoothHandler::startDeviceDiscovery()
     discoveryAgent->start();
 }
 
+void BluetoothHandler::stopDeviceDiscovery()
+{
+    discoveryAgent->stop();
+}
+
 void BluetoothHandler::connectToDevice(const QBluetoothAddress &address)
 {
     if (bluetoothSocket->state() == QBluetoothSocket::SocketState::ConnectedState)

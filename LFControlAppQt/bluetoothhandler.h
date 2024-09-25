@@ -16,6 +16,7 @@ public:
     explicit BluetoothHandler(QObject *parent = nullptr);
 
     void startDeviceDiscovery();
+    void stopDeviceDiscovery();
     void connectToDevice(const QBluetoothAddress &address);
     void disconnectFromDevice();
     bool isConnected() const;

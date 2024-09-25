@@ -8,7 +8,8 @@
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this))
+    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this)),
+      autoConnectInProgress(false)
 {
     ui->setupUi(this);
 
@@ -82,6 +83,19 @@ void MainWindow::captureDeviceProperties(const QBluetoothDeviceInfo &device)
 {
     ui->comboBoxDevices->addItem(device.name());
     addToLogs("Device found: " + device.name(), true);
+
+    if (autoConnectInProgress)
+    {
+        if (device.name() == autoConnectDeviceName)
+        {
+            addToLogs("AutoConnect: Target device found: " + device.name(), true);
+
+            bluetoothHandler->connectToDevice(device.address());
+
+            autoConnectInProgress = false;
+            ui->pushButtonAutoConnect->setEnabled(true);
+        }
+    }
 }
 
 void MainWindow::searchingFinished()
@@ -93,6 +107,7 @@ void MainWindow::searchingFinished()
 void MainWindow::connectionEstablished()
 {
     ui->indicatorConnStatus->setOn(true);
+    bluetoothHandler->stopDeviceDiscovery();
     addToLogs("Connection established successfully.", false);
 }
 
@@ -123,8 +138,12 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
 
 void MainWindow::on_pushButtonAutoConnect_clicked()
 {
-    addToLogs("Autoconnect started", true);
-    // bluetoothHandler->sendCommand(Command::Start);
+    addToLogs("AutoConnect started", true);
+
+    autoConnectDeviceName = "HC-05";
+    autoConnectInProgress = true;
+    bluetoothHandler->startDeviceDiscovery();
+    ui->pushButtonAutoConnect->setEnabled(false);
 }
 
 void MainWindow::on_pushButtonStart_clicked()

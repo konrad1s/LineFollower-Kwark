@@ -47,6 +47,8 @@ private:
     Ui::MainWindow *ui;
     BluetoothHandler *bluetoothHandler;
     QTimer *debugDataTimer;
+    bool autoConnectInProgress;
+    QString autoConnectDeviceName;
 
     void updateNvmLayout(const QByteArray &data);
     void updateDebugData(const QByteArray &data);
