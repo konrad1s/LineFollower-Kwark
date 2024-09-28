@@ -34,16 +34,16 @@ extern NVM_Layout_T NVM_Block;
 extern PID_Instance_T PidSensorInstance;
 extern SCP_Instance_T ScpInstance;
 
-static void LF_SetMode(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_CommandReset(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_CommandCalibrate(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_ReadNvmData(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size);
+static void LF_SetMode(const SCP_Packet *const packet, void *context);
+static void LF_CommandReset(const SCP_Packet *const packet, void *context);
+static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
+static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
+static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
+static void LF_GetDebugData(const SCP_Packet *const packet, void *context);
 
-static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uint16_t size);
-static void LF_CommandSetSensorWeights(void *context, const uint8_t *buffer, uint16_t size);
+static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
+static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context);
+static void LF_CommandSetSensorWeights(const SCP_Packet *const packet, void *context);
 
 const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_SET_MODE,       1U,                     LF_SetMode},
@@ -63,61 +63,53 @@ static void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, 
 {
     uint16_t responseCmd = command_id + 1U;
 
-    SCP_Transmit(&me->scpInstance, &responseCmd, sizeof(responseCmd));
-
-    if (responseData != NULL && responseSize > 0U)
-    {
-        SCP_Transmit(&me->scpInstance, responseData, responseSize);
-    }
+    SCP_Transmit(&me->scpInstance, responseCmd, responseData, responseSize);
 }
 
-static void LF_SetMode(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_SetMode(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
-    if (buffer[0] == LF_COMMAND_MODE_START)
+    if (packet->data[0] == LF_COMMAND_MODE_START)
     {
         LF_SendSignal(me, LF_SIG_START);
     }
-    else if (buffer[0] == LF_COMMAND_MODE_STOP)
+    else if (packet->data[0] == LF_COMMAND_MODE_STOP)
     {
         LF_SendSignal(me, LF_SIG_STOP);
     }
 }
 
-static void LF_CommandReset(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_CommandReset(const SCP_Packet *const packet, void *context)
 {
     HAL_NVIC_SystemReset();
 }
 
-static void LF_CommandCalibrate(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context)
 {
-    (void)buffer;
-    (void)size;
-
     LineFollower_T *const me = (LineFollower_T *const )context;
 
     LF_SendSignal(me, LF_SIG_CALIBRATE);
 }
 
-static void LF_ReadNvmData(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_ReadNvmData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
     LF_CommandTransmitResponse(me, LF_CMD_READ_NVM_DATA, me->nvmBlock, sizeof(NVM_Layout_T));
 }
 
-static void LF_WriteNvmData(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_WriteNvmData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
-    memcpy(me->nvmBlock, buffer, size);
+    memcpy(me->nvmBlock, packet->data, packet->header.size);
     NVM_Write(&me->nvmInstance);
 
     LF_CommandTransmitResponse(me, LF_CMD_WRITE_NVM_DATA, NULL, 0);
 }
 
-static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_GetDebugData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
     Lf_CommandDebugData_T debugData;
@@ -127,7 +119,7 @@ static void LF_GetDebugData(void *context, const uint8_t *buffer, uint16_t size)
     LF_CommandTransmitResponse(me, LF_CMD_GET_DEBUG_DATA, &debugData, sizeof(debugData));
 }
 
-static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_CommandSetPID(const SCP_Packet *const packet, void *context)
 {
     struct pidData
     {
@@ -138,7 +130,7 @@ static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size
     } __attribute__((__packed__));
 
     LineFollower_T *const me = (LineFollower_T *const )context;
-    const struct pidData *input = (const struct pidData *)buffer;
+    const struct pidData *input = (const struct pidData *)packet->data;
 
     switch (input->pidType)
     {
@@ -167,7 +159,7 @@ static void LF_CommandSetPID(void *context, const uint8_t *buffer, uint16_t size
     }
 }
 
-static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
@@ -175,7 +167,7 @@ static void LF_CommandGetSensorWeights(void *context, const uint8_t *buffer, uin
                                me->nvmBlock->sensors.weights, sizeof(me->nvmBlock->sensors.weights));
 }
 
-static void LF_CommandSetSensorWeights(void *context, const uint8_t *buffer, uint16_t size)
+static void LF_CommandSetSensorWeights(const SCP_Packet *const packet, void *context)
 {
     // memcpy(NVM_Block.sensorWeights, buffer, size);
     // // Sensors_Config_Init(&hadc1, NVM_Block.sensorWeights);

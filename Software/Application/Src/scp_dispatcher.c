@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SCP_COMMAND_HEADER_SIZE 2U
-#define SCP_COMMAND_ID_SIZE     2U
 
 /**
  * @brief Initializes the SCP command queue.
@@ -19,32 +17,68 @@ void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue)
 }
 
 /**
- * @brief Enqueue a command into the global circular buffer.
+ * @brief Enqueue a data into the global circular buffer.
  *
- * @param[in] scpQueue Pointer to the SCP command queue.
- * @param[in] command The byte array of the command to enqueue.
- * @param[in] size The size of the command data.
+ * @param[in] scpQueue Pointer to the SCP queue.
+ * @param[in] data The byte array to be enqueued.
+ * @param[in] size The size of the data to be enqueued.
  */
-void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *command, uint16_t size)
+void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *data, uint16_t size)
 {
-    uint16_t total_size = size + SCP_COMMAND_HEADER_SIZE;
-
-    if (scpQueue->count + total_size <= SCP_GLOBAL_BUFFER_SIZE)
+    if (scpQueue->count < SCP_GLOBAL_BUFFER_SIZE)
     {
-        scpQueue->buffer[scpQueue->rear] = (size >> 8U) & 0xFFU; 
-        scpQueue->buffer[(scpQueue->rear + 1U) % SCP_GLOBAL_BUFFER_SIZE] = size & 0xFFU;
-
         for (uint16_t i = 0U; i < size; i++)
         {
-            scpQueue->buffer[(scpQueue->rear + SCP_COMMAND_HEADER_SIZE + i) % SCP_GLOBAL_BUFFER_SIZE] = command[i];
+            scpQueue->buffer[scpQueue->rear] = data[i];
+            scpQueue->rear = (scpQueue->rear + 1U) % SCP_GLOBAL_BUFFER_SIZE;
         }
-
-        scpQueue->rear = (scpQueue->rear + total_size) % SCP_GLOBAL_BUFFER_SIZE;
-        scpQueue->count += total_size;
+        scpQueue->count += size;
     }
-    else
+}
+
+/**
+ * @brief Dequeue a data from the global circular buffer.
+ *
+ * @param[in] scpQueue Pointer to the SCP queue.
+ * @param[out] data The byte array to be dequeued.
+ *
+ * @return 1 if the data was dequeued, 0 otherwise.
+ */
+uint8_t SCP_Dispatcher_Dequeue(SCP_DispatcherQueue_T *scpQueue, uint8_t *data)
+{
+    if (scpQueue->count > 0U)
     {
-        // TODO: Handle buffer overflow (e.g., log an error or trigger an alert)
+        *data = scpQueue->buffer[scpQueue->front];
+        scpQueue->front = (scpQueue->front + 1U) % SCP_GLOBAL_BUFFER_SIZE;
+        scpQueue->count--;
+        return 1U;
+    }
+
+    return 0U;
+}
+
+/**
+ * @brief Handles the received packet.
+ * 
+ * @param[in] scp Pointer to the SCP instance.
+ * @param[in] context Pointer to the context, to be passed to the command handler.
+ */
+static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *context)
+{
+    uint16_t crcDataSize = scp->receivedPacket.header.size + sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
+    uint16_t crc = SCP_CalculateCRC(&scp->receivedPacket.header.id, crcDataSize, SCP_PACKET_CRC_INIT);
+
+    if (crc == scp->receivedPacket.header.crc)
+    {
+        for (size_t i = 0U; i < scp->numCommands; i++)
+        {
+            if ((scp->receivedPacket.header.id == scp->commands[i].id) &&
+                (scp->receivedPacket.header.size == scp->commands[i].size))
+            {
+                scp->commands[i].handler(&scp->receivedPacket, context);
+                break;
+            }
+        }
     }
 }
 
@@ -52,32 +86,64 @@ void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *comm
  * @brief Processes the next command in the global buffer.
  *
  * @param[in] scp Pointer to the SCP instance.
+ * @param[in] context Pointer to the context, to be passed to the command handler.
  */
 void SCP_Dispatcher_Process(SCP_Instance_T *scp, void *context)
 {
     SCP_DispatcherQueue_T *scpQueue = &scp->queue;
+    uint8_t byte = 0U;
 
-    if (scpQueue->count > 0U)
+    while (SCP_Dispatcher_Dequeue(scpQueue, &byte))
     {
-        const uint16_t size = (scpQueue->buffer[scpQueue->front] << 8U) |
-                              scpQueue->buffer[(scpQueue->front + 1U) % SCP_GLOBAL_BUFFER_SIZE];
-
-        /* Get the command data (starting after the 2-byte length header) */
-        uint8_t *command = &scpQueue->buffer[(scpQueue->front + SCP_COMMAND_HEADER_SIZE) % SCP_GLOBAL_BUFFER_SIZE];
-
-        for (size_t i = 0U; i < scp->numCommands; i++)
+        switch (scp->state)
         {
-            const uint16_t id = (command[0] << 8U) | command[1];
-            const uint16_t cmdSize = size - SCP_COMMAND_ID_SIZE;
-
-            if ((id == scp->commands[i].id) && (cmdSize == scp->commands[i].size))
+        case SCP_PACKET_STATE_IDLE:
+            if (byte == SCP_PACKET_START)
             {
-                scp->commands[i].function(context, &command[SCP_COMMAND_ID_SIZE], size - SCP_COMMAND_ID_SIZE);
-                break;
+                scp->receivedPacket.header.start = byte;
+                scp->receivedPacket.header.size = 0U;
+                scp->state = SCP_PACKET_STATE_GOT_START;
             }
+            break;
+        case SCP_PACKET_STATE_GOT_START:
+            scp->receivedPacket.header.crc = byte;
+            scp->state = SCP_PACKET_STATE_GOT_CRC_LOW;
+            break;
+        case SCP_PACKET_STATE_GOT_CRC_LOW:
+            scp->receivedPacket.header.crc |= (uint16_t)(byte << 8);
+            scp->state = SCP_PACKET_STATE_GOT_CRC_HIGH;
+            break;
+        case SCP_PACKET_STATE_GOT_CRC_HIGH:
+            scp->receivedPacket.header.id = byte;
+            scp->state = SCP_PACKET_STATE_GOT_ID_LOW;
+            break;
+        case SCP_PACKET_STATE_GOT_ID_LOW:
+            scp->receivedPacket.header.id |= (uint16_t)(byte << 8);
+            if (scp->receivedPacket.header.size > 0)
+            {
+                scp->state = SCP_PACKET_STATE_GETTING_DATA;
+            }
+            else
+            {
+                scp->state = SCP_PACKET_STATE_PACKET_COMPLETE;
+            }
+            break;;
+        case SCP_PACKET_STATE_GETTING_DATA:
+            scp->receivedPacket.data[scp->receivedPacket.header.size++] = byte;
+            if (scp->receivedPacket.header.size == scp->receivedPacket.header.size)
+            {
+                scp->state = SCP_PACKET_STATE_PACKET_COMPLETE;
+            }
+            break;
+        default:
+            scp->state = SCP_PACKET_STATE_IDLE;
+            break;
         }
 
-        scpQueue->front = (scpQueue->front + size + SCP_COMMAND_HEADER_SIZE) % SCP_GLOBAL_BUFFER_SIZE;
-        scpQueue->count -= (size + SCP_COMMAND_HEADER_SIZE);
+        if (scp->state == SCP_PACKET_STATE_PACKET_COMPLETE)
+        {
+            SCP_Dispatcher_HandlePacketReceived(scp, context);
+            scp->state = SCP_PACKET_STATE_IDLE;
+        }
     }
 }

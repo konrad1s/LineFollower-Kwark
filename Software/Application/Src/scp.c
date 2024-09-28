@@ -95,6 +95,7 @@ void SCP_Process(void *context)
  * @brief Transmits data over UART
  *
  * @param[in] scp Pointer to the SCP instance.
+ * @param[in] id Command ID.
  * @param[in] data Pointer to the data to be transmitted.
  * @param[in] size Size of the data to be transmitted.
  * 
@@ -102,21 +103,67 @@ void SCP_Process(void *context)
  * - 0 on success.
  * - -1 on failure.
  */
-int SCP_Transmit(SCP_Instance_T *const scp, const uint8_t *data, uint16_t size)
+int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data, uint16_t size)
 {
-    if (!scp || !data || size == 0)
+    if (!scp || !data)
     {
         return -1;
     }
 
+    SCP_PacketHeader packetHeader =
+    {
+        .start = SCP_PACKET_START,
+        .crc = 0,
+        .id = id,
+        .size = size
+    };
+
+    uint16_t crcHeaderSize = sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
+    uint16_t crc = SCP_CalculateCRC((uint8_t *)&packetHeader.id, crcHeaderSize, SCP_PACKET_CRC_INIT);
+
+    crc = SCP_CalculateCRC((uint8_t *)data, size, crc);
+    packetHeader.crc = crc;
+
     /* TODO: Currently blocking, consider using non-blocking transmission */
-    if (HAL_UART_Transmit(scp->huart, (uint8_t *)data, size, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_UART_Transmit(scp->huart, (uint8_t *)&packetHeader, sizeof(packetHeader), HAL_MAX_DELAY) != HAL_OK)
     {
         SCP_ErrorHandler(scp);
         return -1;
     }
+    if (size > 0)
+    {
+        if (HAL_UART_Transmit(scp->huart, (uint8_t *)data, size, HAL_MAX_DELAY) != HAL_OK)
+        {
+            SCP_ErrorHandler(scp);
+            return -1;
+        }
+    }
 
     return 0;
+}
+
+uint16_t SCP_CalculateCRC(const uint8_t *data, uint16_t size, uint16_t init)
+{
+    uint16_t crc = init;
+
+    for (uint16_t i = 0U; i < size; i++)
+    {
+        crc = (uint16_t)(crc ^ (uint16_t)data[i]);
+
+        for (uint16_t j = 0U; j < 8U; j++)
+        {
+            if ((crc & 0x0001U) != 0U)
+            {
+                crc = (uint16_t)((crc >> 1) ^ 0x8408U);
+            }
+            else
+            {
+                crc = (uint16_t)(crc >> 1);
+            }
+        }
+    }
+
+    return crc;
 }
 
 /**
@@ -125,14 +172,15 @@ int SCP_Transmit(SCP_Instance_T *const scp, const uint8_t *data, uint16_t size)
  * @param[in] huart Pointer to the UART handle associated with the received data.
  * @param[in] Size Size of the received data.
  */
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
 {
     for (size_t i = 0U; i < scpManager.numInstances; i++)
     {
         SCP_Instance_T *scp = scpManager.scpInstances[i];
+
         if (scp && scp->huart == huart)
         {
-            SCP_Dispatcher_Enqueue(&scp->queue, scp->buffer, Size);
+            SCP_Dispatcher_Enqueue(&scp->queue, scp->buffer, size);
             HAL_UARTEx_ReceiveToIdle_DMA(scp->huart, scp->buffer, scp->size);
             return;
         }
