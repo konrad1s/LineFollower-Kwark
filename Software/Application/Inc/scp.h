@@ -68,6 +68,5 @@ typedef struct
 int SCP_Init(SCP_Instance_T *const scp);
 void SCP_Process(void *context);
 int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data, uint16_t size);
-uint16_t SCP_CalculateCRC(const uint8_t *data, uint16_t size, uint16_t init);
 
 #endif /* __SCP__H__ */

@@ -151,17 +151,12 @@ void SCP::receiveData(const QByteArray &data)
 uint16_t SCP::calculateCRC(const uint8_t *data, uint16_t size, uint16_t init)
 {
     uint16_t crc = init;
-    for (uint16_t i = 0; i < size; ++i)
+
+    for (uint32_t i = 0U; i < size; i++)
     {
-        crc ^= data[i];
-        for (uint8_t j = 0; j < 8; ++j)
-        {
-            if (crc & 0x0001)
-                crc = (crc >> 1) ^ 0x8408;
-            else
-                crc >>= 1;
-        }
+        crc = (uint16_t)((crc << 8) ^ CRC16_CCIT_LOOKUP[((crc >> 8) ^ data[i]) & 0xFF]);
     }
+
     return crc;
 }
 

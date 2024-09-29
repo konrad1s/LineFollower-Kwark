@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <stdint.h>
 /* USER CODE END Includes */
 
 extern CRC_HandleTypeDef hcrc;
@@ -41,7 +41,7 @@ extern CRC_HandleTypeDef hcrc;
 void MX_CRC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+uint16_t CRC_CalculateCRC16(const uint8_t *data, uint32_t size, uint16_t init);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

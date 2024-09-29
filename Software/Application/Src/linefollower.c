@@ -1,5 +1,6 @@
 #include "lf_main.h"
 #include "lf_calibrate.h"
+#include <string.h>
 
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);

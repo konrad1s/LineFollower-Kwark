@@ -1,5 +1,6 @@
-#include "scp.h"
 #include <string.h>
+#include "scp.h"
+#include "crc.h"
 
 #define SCP_ErrorHandler(scp)                             \
     do                                                    \
@@ -119,9 +120,9 @@ int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data
     };
 
     uint16_t crcHeaderSize = sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
-    uint16_t crc = SCP_CalculateCRC((uint8_t *)&packetHeader.id, crcHeaderSize, SCP_PACKET_CRC_INIT);
+    uint16_t crc = CRC_CalculateCRC16((uint8_t *)&packetHeader.id, crcHeaderSize, SCP_PACKET_CRC_INIT);
 
-    crc = SCP_CalculateCRC((uint8_t *)data, size, crc);
+    crc = CRC_CalculateCRC16((uint8_t *)data, size, crc);
     packetHeader.crc = crc;
 
     /* TODO: Currently blocking, consider using non-blocking transmission */
@@ -140,30 +141,6 @@ int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data
     }
 
     return 0;
-}
-
-uint16_t SCP_CalculateCRC(const uint8_t *data, uint16_t size, uint16_t init)
-{
-    uint16_t crc = init;
-
-    for (uint16_t i = 0U; i < size; i++)
-    {
-        crc = (uint16_t)(crc ^ (uint16_t)data[i]);
-
-        for (uint16_t j = 0U; j < 8U; j++)
-        {
-            if ((crc & 0x0001U) != 0U)
-            {
-                crc = (uint16_t)((crc >> 1) ^ 0x8408U);
-            }
-            else
-            {
-                crc = (uint16_t)(crc >> 1);
-            }
-        }
-    }
-
-    return crc;
 }
 
 /**
