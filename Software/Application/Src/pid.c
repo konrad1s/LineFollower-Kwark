@@ -1,6 +1,15 @@
 #include "pid.h"
 #include <stddef.h>
 
+/**
+ * @brief Calculates the integral term for the PID controller.
+ *
+ * @param[in] pid Pointer to the PID instance.
+ * @param[in] error The current error value.
+ * @param[in] dt The time step between PID updates.
+ *
+ * @return The calculated integral term, clamped within the integral limits.
+ */
 static inline float PID_CalculateIntegralTerm(const PID_Instance_T *const pid, const float error, const float dt)
 {
     float integral = pid->integral + error * dt;
@@ -17,16 +26,41 @@ static inline float PID_CalculateIntegralTerm(const PID_Instance_T *const pid, c
     return integral;
 }
 
+/**
+ * @brief Calculates the derivative term for the PID controller.
+ *
+ * @param[in] pid Pointer to the PID instance.
+ * @param[in] error The current error value.
+ * @param[in] dt The time step between PID updates.
+ *
+ * @return The calculated derivative term.
+ */
 static inline float PID_CalculateDerivativeTerm(const PID_Instance_T *const pid, const float error, const float dt)
 {
     return (error - pid->error_previous) / dt;
 }
 
+/**
+ * @brief Calculates the proportional term for the PID controller.
+ *
+ * @param[in] pid Pointer to the PID instance.
+ * @param[in] error The current error value.
+ *
+ * @return The calculated proportional term.
+ */
 static inline float PID_CalculateProportionalTerm(const PID_Instance_T *const pid, const float error)
 {
     return pid->settings->kp * error;
 }
 
+/**
+ * @brief Limits the output of the PID controller.
+ *
+ * @param[in] pid Pointer to the PID instance.
+ * @param[in] output The calculated output before clamping.
+ *
+ * @return The clamped output, limited within the output bounds.
+ */
 static inline float PID_LimitOutput(const PID_Instance_T *const pid, const float output)
 {
     if (output > pid->settings->output_max)
@@ -41,6 +75,15 @@ static inline float PID_LimitOutput(const PID_Instance_T *const pid, const float
     return output;
 }
 
+/**
+ * @brief Initializes the PID controller instance.
+ *
+ * @param[in,out] pid Pointer to the PID instance to initialize.
+ *
+ * @return
+ * - 0 on success.
+ * - -1 on failure.
+ */
 int PID_Init(PID_Instance_T *const pid)
 {
     if (pid == NULL)
@@ -55,6 +98,15 @@ int PID_Init(PID_Instance_T *const pid)
     return 0;
 }
 
+/**
+ * @brief Updates the PID controller with the latest measurement.
+ *
+ * @param[in,out] pid Pointer to the PID instance.
+ * @param[in] measured The current measured value.
+ * @param[in] dt The time step between PID updates.
+ *
+ * @return The PID controller's output after applying the control algorithm.
+ */
 float PID_Update(PID_Instance_T *const pid, const float measured, const float dt)
 {
     float derivative, proportional;

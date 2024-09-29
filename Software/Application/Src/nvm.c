@@ -6,6 +6,13 @@
 #define NVM_CRC_INIT_VALUE   (0xFFFFFFFFU)
 #define FLASH_SECTOR_INVALID (0xFFFFFFFFU)
 
+/**
+ * @brief Retrieves the base address of the specified flash sector.
+ *
+ * @param[in] sector Flash sector number.
+ * 
+ * @return The base address of the flash sector, or `FLASH_SECTOR_INVALID` if invalid.
+ */
 static uint32_t GetSectorBaseAddress(uint32_t sector)
 {
     switch (sector)
@@ -31,6 +38,17 @@ static uint32_t GetSectorBaseAddress(uint32_t sector)
     }
 }
 
+/**
+ * @brief Writes data to the specified flash memory address.
+ *
+ * @param[in] baseAddress Starting address in flash memory for the write operation.
+ * @param[in] pData Pointer to the data to be written.
+ * @param[in] size Number of bytes to write.
+ *
+ * @return
+ * - true if the write operation is successful.
+ * - false if the write operation fails.
+ */
 static bool NVM_FlashWrite(uint32_t baseAddress, uint8_t *pData, uint32_t size)
 {
     HAL_FLASH_Unlock();
@@ -75,6 +93,15 @@ static bool NVM_FlashWrite(uint32_t baseAddress, uint8_t *pData, uint32_t size)
     return true;
 }
 
+/**
+ * @brief Initializes the NVM instance.
+ *
+ * @param[in,out] nvm Pointer to the NVM instance.
+ *
+ * @return
+ * - 0 on success.
+ * - -1 if the initialization fails.
+ */
 int NVM_Init(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL || nvm->sector >= FLASH_SECTOR_TOTAL || nvm->size == 0U)
@@ -87,17 +114,26 @@ int NVM_Init(Nvm_Instance_T *const nvm)
     return 0;
 }
 
-bool NVM_Read(Nvm_Instance_T *const nvm)
+/**
+ * @brief Reads data from flash memory into the NVM buffer.
+ *
+ * @param[in,out] nvm Pointer to the NVM instance.
+ *
+ * @return
+ * - 0 if the data is read and validated successfully.
+ * - -1 if the read operation fails.
+ */
+int NVM_Read(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {
-        return false;
+        return -1;
     }
 
     uint32_t baseAddress = GetSectorBaseAddress(nvm->sector);
     if (baseAddress == FLASH_SECTOR_INVALID)
     {
-        return false;
+        return -1;
     }
 
     /* Read data from the flash memory into the buffer */
@@ -122,20 +158,29 @@ bool NVM_Read(Nvm_Instance_T *const nvm)
         }
         else
         {
-            return false;
+            return -1;
         }
     }
 
     nvm->lastCrc = calculatedCrc;
 
-    return true;
+    return 0;
 }
 
-bool NVM_Write(Nvm_Instance_T *const nvm)
+/**
+ * @brief Writes data from the NVM buffer to flash memory.
+ *
+ * @param[in] nvm Pointer to the NVM instance.
+ *
+ * @return
+ * - 0 if the data is written successfully.
+ * - -1 if the write operation fails.
+ */
+int NVM_Write(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {
-        return false;
+        return -1;
     }
 
     uint32_t size = nvm->size;
@@ -144,7 +189,7 @@ bool NVM_Write(Nvm_Instance_T *const nvm)
 
     if (currentAddress == FLASH_SECTOR_INVALID)
     {
-        return false;
+        return -1;
     }
 
     /* Calculate the CRC value of the data */
@@ -153,34 +198,43 @@ bool NVM_Write(Nvm_Instance_T *const nvm)
     /* If the calculated CRC value is different from the last CRC value, write the data to the flash memory */
     if (calculatedCrc != nvm->lastCrc)
     {
-        if (NVM_Erase(nvm) == false)
+        if (NVM_Erase(nvm) == -1)
         {
-            return false;
+            return -1;
         }
-        if (NVM_FlashWrite(currentAddress, pData, size) == false)
+        if (NVM_FlashWrite(currentAddress, pData, size) == -1)
         {
-            return false;
+            return -1;
         }
 
         /* Write the calculated CRC value after the data */
         uint32_t crcAddress = currentAddress + size;
-        if (NVM_FlashWrite(crcAddress, (uint8_t *)&calculatedCrc, sizeof(calculatedCrc)) == false)
+        if (NVM_FlashWrite(crcAddress, (uint8_t *)&calculatedCrc, sizeof(calculatedCrc)) == -1)
         {
-            return false;
+            return -1;
         }
 
         /* Update the last CRC value */
         nvm->lastCrc = calculatedCrc;
     }
 
-    return true;
+    return 0;
 }
 
-bool NVM_Erase(Nvm_Instance_T *const nvm)
+/**
+ * @brief Erases the specified flash sector.
+ *
+ * @param[in] nvm Pointer to the NVM instance.
+ *
+ * @return
+ * - 0 if the sector is erased successfully.
+ * - -1 if the erase operation fails.
+ */
+int NVM_Erase(Nvm_Instance_T *const nvm)
 {
     if (nvm == NULL || nvm->data == NULL)
     {
-        return false;
+        return -1;
     }
 
     FLASH_EraseInitTypeDef eraseInitStruct;
@@ -196,12 +250,12 @@ bool NVM_Erase(Nvm_Instance_T *const nvm)
     if (HAL_FLASHEx_Erase(&eraseInitStruct, &sectorError) != HAL_OK)
     {
         HAL_FLASH_Lock();
-        return false;
+        return -1;
     }
 
     HAL_FLASH_Lock();
 
     nvm->lastCrc = NVM_CRC_INIT_VALUE;
 
-    return true;
+    return 0;
 }

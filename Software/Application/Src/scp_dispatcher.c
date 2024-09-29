@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "scp.h"
 #include "crc.h"
+#include "cmsis_compiler.h"
 
 #define SCP_Dispatcher_EnterCritical() __disable_irq()
 #define SCP_Dispatcher_ExitCritical() __enable_irq()

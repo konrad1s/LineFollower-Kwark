@@ -15,8 +15,8 @@ typedef struct
 } Nvm_Instance_T;
 
 int NVM_Init(Nvm_Instance_T *const nvm);
-bool NVM_Read(Nvm_Instance_T *const nvm);
-bool NVM_Write(Nvm_Instance_T *const nvm);
-bool NVM_Erase(Nvm_Instance_T *const nvm);
+int NVM_Read(Nvm_Instance_T *const nvm);
+int NVM_Write(Nvm_Instance_T *const nvm);
+int NVM_Erase(Nvm_Instance_T *const nvm);
 
 #endif /* __NVM__H__ */

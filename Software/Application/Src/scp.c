@@ -53,7 +53,6 @@ static int SCP_RegisterInstance(SCP_Instance_T *const scp)
  * @brief Initializes an SCP instance for UART communication.
  *
  * @param[in,out] scp Pointer to the SCP instance to initialize.
- * @param[in] config Pointer to the configuration structure for the SCP instance.
  * 
  * @return 
  * - 0 on success.

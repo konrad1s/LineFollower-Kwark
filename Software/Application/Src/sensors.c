@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include "sensors.h"
 #include "tim.h"
+#include "cmsis_compiler.h"
 
 #define Sensors_EnterCritical() __disable_irq()
 #define Sensors_ExitCritical() __enable_irq()

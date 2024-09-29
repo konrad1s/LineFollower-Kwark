@@ -126,7 +126,7 @@ static void LF_CommandSetPID(const SCP_Packet *const packet, void *context)
         float kd;
     } __attribute__((__packed__));
 
-    LineFollower_T *const me = (LineFollower_T *const )context;
+    LineFollower_T *const me = (LineFollower_T *const)context;
     const struct pidData *input = (const struct pidData *)packet->data;
 
     switch (input->pidType)
