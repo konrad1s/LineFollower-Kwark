@@ -1,11 +1,6 @@
 #include "lf_main.h"
 #include "lf_calibrate.h"
 
-typedef struct
-{
-    uint16_t sensorsValues[SENSORS_NUMBER];
-} Lf_DebugData_T;
-
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
@@ -13,11 +8,10 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
-    Lf_DebugData_T debugData;
 
-    Sensors_GetRawData(debugData.sensorsValues);
+    Sensors_GetRawData(me->debugData.sensorsValues);
 
-    SCP_Transmit(&me->scpInstance, LF_CMD_SEND_DEBUG_DATA, &debugData, sizeof(debugData));
+    SCP_Transmit(&me->scpInstance, LF_CMD_SEND_DEBUG_DATA, &me->debugData, sizeof(me->debugData));
 }
 
 static void Linefollower_DataUpdateCallback(void *data)
@@ -76,8 +70,8 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         me->state = LF_IDLE;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
-        float error = Sensors_CalculateError(me->nvmBlock);
-        int16_t output = PID_Update(&me->pidSensorInstance, error, 1.0);
+        me->debugData.sensorError = Sensors_CalculateError(me->nvmBlock);
+        int16_t output = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, 1.0);
         TB6612Motor_SetSpeed(me->motorLeftConfig, 100U - output);
         TB6612Motor_SetSpeed(me->motorRightConfig, 100U + output);
         Sensors_UpdateLeds();
@@ -98,6 +92,7 @@ int LF_Init(LineFollower_T *const me)
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
 
     LF_SignalQueue_Init(&me->signals);
+    memset(&me->debugData, 0, sizeof(me->debugData));
 
     (void)NVM_Init(&me->nvmInstance);
     (void)NVM_Read(&me->nvmInstance);

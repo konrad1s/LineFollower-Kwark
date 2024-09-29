@@ -5,8 +5,12 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothSocket>
 #include <QTimer>
+#include <QtCharts>
+#include <QLineSeries>
+#include <QValueAxis>
 #include "nvmlayout.h"
 #include "bluetoothhandler.h"
+#include "plot.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -46,9 +50,12 @@ private slots:
 private:
     Ui::MainWindow *ui;
     BluetoothHandler *bluetoothHandler;
-    QTimer *debugDataTimer;
     bool autoConnectInProgress;
     QString autoConnectDeviceName;
+
+    Plot *plot1;
+    Plot *plot2;
+    size_t plotStartTime;
 
     void updateNvmLayout(const QByteArray &data);
     void updateDebugData(const QByteArray &data);

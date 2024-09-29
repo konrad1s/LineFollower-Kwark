@@ -22,11 +22,18 @@ typedef enum
 
 typedef struct
 {
+    uint16_t sensorsValues[SENSORS_NUMBER];
+    float sensorError;
+} Lf_DebugData_T;
+
+typedef struct
+{
     LFState_T state;
     bool isDebugMode;
     TIM_HandleTypeDef *const debugModeTimer;
     uint32_t timer;
     LF_SignalQueue_T signals;
+    Lf_DebugData_T debugData;
 
     Nvm_Instance_T nvmInstance;
     NVM_Layout_T *const nvmBlock;

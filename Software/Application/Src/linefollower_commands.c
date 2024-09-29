@@ -56,6 +56,8 @@ static void LF_SetMode(const SCP_Packet *const packet, void *context)
     {
         LF_SendSignal(me, LF_SIG_STOP);
     }
+
+    LF_CommandTransmitResponse(me, LF_CMD_SET_MODE, NULL, 0);
 }
 
 static void LF_CommandReset(const SCP_Packet *const packet, void *context)

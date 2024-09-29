@@ -29,7 +29,6 @@ int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
                  void *callbackContext);
 void Sensors_SetThresholds(uint16_t *const thresholds);
 void Sensors_UpdateState(void);
-void Sensors_GetState(bool *state);
 void Sensors_GetRawData(uint16_t *data);
 void Sensors_UpdateLeds(void);
 float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors);

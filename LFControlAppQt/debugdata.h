@@ -11,6 +11,7 @@ public:
     static constexpr size_t SENSORS_NUMBER = 12;
 
     std::array<uint16_t, SENSORS_NUMBER> sensorValues;
+    float sensorError;
 
     DebugData() = default;
 
@@ -24,11 +25,13 @@ public:
                               (static_cast<uint16_t>(data[offset + 1]) << 8);
             offset += sizeof(sensorValues[i]);
         }
+        sensorError = *reinterpret_cast<const float *>(data + offset);
+        offset += sizeof(sensorError);
     }
 
     constexpr size_t size() const
     {
-        return sensorValues.size() * sizeof(uint16_t);
+        return sizeof(sensorError) + (sensorValues.size() * sizeof(uint16_t));
     }
 
     QString toString() const
@@ -42,6 +45,7 @@ public:
                               .arg(i + 1)
                               .arg(sensorValues[i]));
         }
+        output.append(QString("Sensor Error: %1\n").arg(sensorError));
 
         return output;
     }

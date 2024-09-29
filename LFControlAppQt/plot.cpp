@@ -1,7 +1,7 @@
 #include "plot.h"
 
 Plot::Plot(QWidget *parent, const QString &title, const QString &xTitle, const QString &yTitle)
-    : QWidget(parent), autoRangeEnabled(true)
+    : QWidget(parent), xMin(0), xMax(0)
 {
     chart = new QChart();
     chart->setTitle(title);
@@ -32,13 +32,32 @@ Plot::Plot(QWidget *parent, const QString &title, const QString &xTitle, const Q
     updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, &Plot::updateChart);
     updateTimer->start(50);
-
-    xMin = std::numeric_limits<qreal>::max();
-    xMax = std::numeric_limits<qreal>::lowest();
-    yMin = std::numeric_limits<qreal>::max();
-    yMax = std::numeric_limits<qreal>::lowest();
 }
 
+void Plot::clear()
+{
+    for (QLineSeries *series : seriesList)
+    {
+        series->clear();
+    }
+}
+
+void Plot::setSeriesName(const QString &seriesName)
+{
+    setSeriesName(0, seriesName);
+}
+
+void Plot::setSeriesName(int seriesIndex, const QString &seriesName)
+{
+    if (seriesIndex >= 0 && seriesIndex < seriesList.size())
+    {
+        seriesList[seriesIndex]->setName(seriesName);
+    }
+    else
+    {
+        qWarning("Series index out of bounds");
+    }
+}
 
 void Plot::addDataPoint(qreal x, qreal y)
 {
@@ -51,12 +70,14 @@ void Plot::addDataPoint(int seriesIndex, qreal x, qreal y)
     {
         dataBuffers[seriesIndex].append(QPointF(x, y));
 
-        if (autoRangeEnabled)
+        if (seriesList[seriesIndex]->points().isEmpty())
         {
-            if (x < xMin) xMin = x;
-            if (x > xMax) xMax = x;
-            if (y < yMin) yMin = y;
-            if (y > yMax) yMax = y;
+            xMin = x;
+            xMax = x;
+        }
+        else
+        {
+            xMax = x;
         }
     }
     else
@@ -86,48 +107,12 @@ int Plot::addSeries(const QString &seriesName)
 
 void Plot::setAxisRange(qreal xMin, qreal xMax, qreal yMin, qreal yMax)
 {
-    this->xMin = xMin;
-    this->xMax = xMax;
-    this->yMin = yMin;
-    this->yMax = yMax;
-
     axisX->setRange(xMin, xMax);
     axisY->setRange(yMin, yMax);
-
-    autoRangeEnabled = false;
-}
-
-void Plot::enableAutoRange(bool enable)
-{
-    autoRangeEnabled = enable;
-
-    if (autoRangeEnabled)
-    {
-        xMin = std::numeric_limits<qreal>::max();
-        xMax = std::numeric_limits<qreal>::lowest();
-        yMin = std::numeric_limits<qreal>::max();
-        yMax = std::numeric_limits<qreal>::lowest();
-
-        for (QLineSeries *series : seriesList)
-        {
-            for (const QPointF &point : series->pointsVector())
-            {
-                if (point.x() < xMin) xMin = point.x();
-                if (point.x() > xMax) xMax = point.x();
-                if (point.y() < yMin) yMin = point.y();
-                if (point.y() > yMax) yMax = point.y();
-            }
-        }
-
-        axisX->setRange(xMin, xMax);
-        axisY->setRange(yMin, yMax);
-    }
 }
 
 void Plot::updateChart()
 {
-    bool rangeChanged = false;
-
     for (int seriesId = 0; seriesId < seriesList.size(); ++seriesId)
     {
         if (!dataBuffers[seriesId].isEmpty())
@@ -140,23 +125,12 @@ void Plot::updateChart()
             {
                 int removeCount = series->count() - maxDataPoints;
                 series->removePoints(0, removeCount);
-
-                if (autoRangeEnabled)
-                {
-                    QPointF firstPoint = series->at(0);
-                    xMin = firstPoint.x();
-                }
+                xMin = series->at(0).x();
             }
 
             dataBuffers[seriesId].clear();
-            rangeChanged = true;
         }
     }
 
-    if (autoRangeEnabled && rangeChanged)
-    {
-        qDebug() << xMin << xMax;
-        axisX->setRange(xMin, xMax);
-        axisY->setRange(yMin, yMax);
-    }
+    axisX->setRange(xMin, xMax);
 }

@@ -7,18 +7,26 @@
 #include <QTextStream>
 #include <QMessageBox>
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this)),
       autoConnectInProgress(false)
 {
     ui->setupUi(this);
 
-    debugDataTimer = new QTimer(this);
-    connect(debugDataTimer, &QTimer::timeout, this, [this]() {
-        QByteArray data;
-        data.append(static_cast<char>(true));
-        bluetoothHandler->sendCommand(Command::GetDebugData, data);
-    });
+    plot1 = new Plot(this, "Robot speed", "Time", "Speed");
+    plot1->setSeriesName("Motor Left");
+    plot1->addSeries("Motor Right");
+    QVBoxLayout *tab1Layout = new QVBoxLayout(ui->tabChart1);
+    tab1Layout->addWidget(plot1);
+    ui->tabChart1->setLayout(tab1Layout);
+
+    plot2 = new Plot(this, "Sensor error", "Time", "Error");
+    QVBoxLayout *tab2Layout = new QVBoxLayout(ui->tabChart2);
+    tab2Layout->addWidget(plot2);
+    ui->tabChart2->setLayout(tab2Layout);
+
+    plotStartTime = 0;
 
     connect(bluetoothHandler, &BluetoothHandler::deviceFound, this, &MainWindow::captureDeviceProperties);
     connect(bluetoothHandler, &BluetoothHandler::discoveryFinished, this, &MainWindow::searchingFinished);
@@ -31,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete debugDataTimer;
     delete ui;
 }
 
@@ -126,7 +133,7 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
         updateNvmLayout(data);
         break;
     }
-    case Command::GetDebugData:
+    case Command::DebugData:
     {
         updateDebugData(data);
         break;
@@ -176,16 +183,23 @@ void MainWindow::on_pushButtonCalibrate_clicked()
 
 void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
 {
+    QByteArray data;
+
     if (checked)
     {
-        debugDataTimer->start(100);
+        plotStartTime = QDateTime::currentMSecsSinceEpoch();
+        plot1->clear();
+        plot2->clear();
+        data.append(static_cast<char>(true));
         addToLogs("Debug mode enabled", true);
     }
     else
     {
-        debugDataTimer->stop();
+        data.append(static_cast<char>(false));
         addToLogs("Debug mode disabled", true);
     }
+
+    bluetoothHandler->sendCommand(Command::SetDebugMode, data);
 }
 
 void MainWindow::on_pushButtonReadNvm_clicked()
@@ -340,6 +354,9 @@ void MainWindow::updateDebugData(const QByteArray &data)
         sensorValues[i]->setText(QString::number(debugData.sensorValues[i]));
         sensorLeds[i]->setOn(debugData.sensorValues[i] > 3000);
     }
+
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch() - plotStartTime;
+    plot2->addDataPoint(currentTime, debugData.sensorError);
 
     addToLogs("Debug data updated: \n" + debugData.toString(), true);
 }

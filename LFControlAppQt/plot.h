@@ -15,11 +15,13 @@ public:
     explicit Plot(QWidget *parent = nullptr, const QString &title = "", const QString &xTitle = "", const QString &yTitle = "");
     ~Plot() = default;
 
+    void clear();
+    void setSeriesName(const QString &seriesName);
+    void setSeriesName(int seriesIndex, const QString &seriesName);
     void addDataPoint(qreal x, qreal y);
     void addDataPoint(int seriesIndex, qreal x, qreal y);
     int addSeries(const QString &seriesName = "");
     void setAxisRange(qreal xMin, qreal xMax, qreal yMin, qreal yMax);
-    void enableAutoRange(bool enable);
 
 private slots:
     void updateChart();
@@ -35,9 +37,7 @@ private:
     QValueAxis *axisY;
     QTimer *updateTimer;
     QVector<QVector<QPointF>> dataBuffers;
-
-    bool autoRangeEnabled;
-    qreal xMin, xMax, yMin, yMax;
+    qreal xMin, xMax;
 };
 
 #endif // PLOT_H
