@@ -2,6 +2,9 @@
 #include "sensors.h"
 #include "tim.h"
 
+#define Sensors_EnterCritical() __disable_irq()
+#define Sensors_ExitCritical() __enable_irq()
+
 typedef struct
 {
     uint16_t adcBuffer[SENSORS_NUMBER];
@@ -13,6 +16,14 @@ typedef struct
 } Sensors_Manager_T;
 
 static Sensors_Manager_T SensorsManager;
+
+static void Sensors_UpdateState(void)
+{
+    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
+    {
+        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i]);
+    }
+}
 
 int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
                  const Sensor_Led_T *const ledConfig,
@@ -63,28 +74,21 @@ void Sensors_SetThresholds(uint16_t *const thresholds)
     }
 }
 
-void Sensors_UpdateState(void)
-{
-    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
-    {
-        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i]);
-    }
-}
-
-void Sensors_GetState(bool *state)
-{
-    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
-    {
-        state[i] = SensorsManager.sensors[i].isActive;
-    }
-}
-
 void Sensors_GetRawData(uint16_t *data)
 {
+    if (data == NULL)
+    {
+        return;
+    }
+
+    Sensors_EnterCritical();
+
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         data[i] = SensorsManager.adcBuffer[i];
     }
+
+    Sensors_ExitCritical();
 }
 
 void Sensors_UpdateLeds(void)

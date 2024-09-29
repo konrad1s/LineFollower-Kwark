@@ -3,6 +3,9 @@
 #include "scp.h"
 #include "crc.h"
 
+#define SCP_Dispatcher_EnterCritical() __disable_irq()
+#define SCP_Dispatcher_ExitCritical() __enable_irq()
+
 /**
  * @brief Initializes the SCP command queue.
  *
@@ -10,10 +13,14 @@
  */
 void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue)
 {
+    SCP_Dispatcher_EnterCritical();
+
     scpQueue->front = 0U;
     scpQueue->rear = 0U;
     scpQueue->count = 0U;
     memset(scpQueue->buffer, 0, SCP_GLOBAL_BUFFER_SIZE);
+
+    SCP_Dispatcher_ExitCritical();
 }
 
 /**
@@ -25,6 +32,8 @@ void SCP_Dispatcher_Init(SCP_DispatcherQueue_T *scpQueue)
  */
 void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *data, uint16_t size)
 {
+    SCP_Dispatcher_EnterCritical();
+
     if (scpQueue->count < SCP_GLOBAL_BUFFER_SIZE)
     {
         for (uint16_t i = 0U; i < size; i++)
@@ -34,6 +43,8 @@ void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *data
         }
         scpQueue->count += size;
     }
+
+    SCP_Dispatcher_ExitCritical();
 }
 
 /**
@@ -46,15 +57,21 @@ void SCP_Dispatcher_Enqueue(SCP_DispatcherQueue_T *scpQueue, const uint8_t *data
  */
 uint8_t SCP_Dispatcher_Dequeue(SCP_DispatcherQueue_T *scpQueue, uint8_t *data)
 {
+    SCP_Dispatcher_EnterCritical();
+
+    uint8_t retVal = 0U;
+
     if (scpQueue->count > 0U)
     {
         *data = scpQueue->buffer[scpQueue->front];
         scpQueue->front = (scpQueue->front + 1U) % SCP_GLOBAL_BUFFER_SIZE;
         scpQueue->count--;
-        return 1U;
+        retVal = 1U;
     }
 
-    return 0U;
+    SCP_Dispatcher_ExitCritical();
+
+    return retVal;
 }
 
 /**
