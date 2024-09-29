@@ -23,6 +23,8 @@ typedef enum
 typedef struct
 {
     LFState_T state;
+    bool isDebugMode;
+    TIM_HandleTypeDef *const debugModeTimer;
     uint32_t timer;
     LF_SignalQueue_T signals;
 
@@ -40,5 +42,6 @@ typedef struct
 int LF_Init(LineFollower_T *const me);
 void LF_MainFunction(LineFollower_T *const me);
 void LF_SendSignal(LineFollower_T *const me, LF_Signal_T sig);
+void LF_DebugModeTimerCallback(void *context);
 
 #endif /* __LF_MAIN_H__ */

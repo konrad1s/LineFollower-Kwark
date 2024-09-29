@@ -55,6 +55,7 @@ static NVM_Layout_T NvmBlock;
 static uint8_t ScpBuffer[SCP_BUFFER_SIZE];
 
 static LineFollower_T LineFollower = {
+    .debugModeTimer = &htim6,
     .nvmInstance = {
         .defaultData = (const uint8_t *)&NvmDefaultData,
         .size = sizeof(NVM_Layout_T),
@@ -90,7 +91,13 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim == &htim6)
+    {
+        LF_DebugModeTimerCallback(&LineFollower);
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -136,6 +143,7 @@ int main(void)
   MX_TIM8_Init();
   MX_CRC_Init();
   MX_TIM2_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   LF_Init(&LineFollower);
   /* USER CODE END 2 */

@@ -105,7 +105,7 @@ void SCP_Process(void *context)
  */
 int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data, uint16_t size)
 {
-    if (!scp || !data)
+    if (!scp)
     {
         return -1;
     }

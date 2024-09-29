@@ -10,26 +10,6 @@
 #define LF_COMMAND_MODE_START   0x00U
 #define LF_COMMAND_MODE_STOP    0x01U
 
-enum LF_Commands
-{
-    LF_CMD_SET_MODE         = 0x0000,
-    LF_CMD_RESET            = 0x0001,
-    LF_CMD_CALIBRATE        = 0x0002,
-    LF_CMD_READ_NVM_DATA    = 0x0003,
-    LF_CMD_WRITE_NVM_DATA   = 0x0004,
-    LF_CMD_GET_DEBUG_DATA   = 0x0005,
-
-    LF_CMD_SET_PID              = 0x0100,
-    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0101,
-
-    LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
-};
-
-typedef struct
-{
-    uint16_t sensorsValues[SENSORS_NUMBER];
-} Lf_CommandDebugData_T;
-
 extern NVM_Layout_T NVM_Block;
 extern PID_Instance_T PidSensorInstance;
 extern SCP_Instance_T ScpInstance;
@@ -39,7 +19,7 @@ static void LF_CommandReset(const SCP_Packet *const packet, void *context);
 static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
 static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
 static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
-static void LF_SendDebugData(const SCP_Packet *const packet, void *context);
+static void LF_SetDebugMode(const SCP_Packet *const packet, void *context);
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
 static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context);
@@ -51,7 +31,7 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_CALIBRATE,      0U,                     LF_CommandCalibrate},
     {LF_CMD_READ_NVM_DATA,  0U,                     LF_ReadNvmData},
     {LF_CMD_WRITE_NVM_DATA, sizeof(NVM_Layout_T),   LF_WriteNvmData},
-    {LF_CMD_GET_DEBUG_DATA, 1U,                     LF_SendDebugData},
+    {LF_CMD_SET_DEBUG_MODE, 1U,                     LF_SetDebugMode},
 
     {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
     {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
@@ -107,14 +87,31 @@ static void LF_WriteNvmData(const SCP_Packet *const packet, void *context)
     LF_CommandTransmitResponse(me, LF_CMD_WRITE_NVM_DATA, NULL, 0);
 }
 
-static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
+static void LF_SetDebugMode(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
-    Lf_CommandDebugData_T debugData;
+    HAL_StatusTypeDef status;
+    enum
+    {
+        LF_DEBUG_MODE_OFF,
+        LF_DEBUG_MODE_ON
+    } debugMode = packet->data[0];
 
-    Sensors_GetRawData(debugData.sensorsValues);
+    me->isDebugMode = (debugMode == LF_DEBUG_MODE_ON);
 
-    LF_CommandTransmitResponse(me, LF_CMD_GET_DEBUG_DATA, &debugData, sizeof(debugData));
+    if (me->isDebugMode)
+    {
+        status = HAL_TIM_Base_Start_IT(me->debugModeTimer);
+    }
+    else
+    {
+        status = HAL_TIM_Base_Stop_IT(me->debugModeTimer);
+    }
+
+    if (status == HAL_OK)
+    {
+        LF_CommandTransmitResponse(me, LF_CMD_SET_DEBUG_MODE, NULL, 0);
+    }
 }
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context)

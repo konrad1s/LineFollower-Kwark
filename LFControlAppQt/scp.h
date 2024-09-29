@@ -35,19 +35,19 @@ private:
 
     constexpr static uint8_t START_BYTE = 0x7E;
     constexpr static uint16_t CRC_POLYNOMIAL = 0x8408;
-    constexpr static qsizetype ACK_RESPONSE_SIZE = 2;
     constexpr static qsizetype NVM_LAYOUT_SIZE = NVMLayout().size();
     constexpr static qsizetype DEBUG_DATA_SIZE = DebugData().size();
 
     const std::unordered_map<Command, qsizetype> commandDataSize = {
-        {Command::SetMode,          ACK_RESPONSE_SIZE},
+        {Command::SetMode,          0},
         {Command::Reset,            0},
-        {Command::Calibrate,        ACK_RESPONSE_SIZE},
+        {Command::Calibrate,        0},
         {Command::ReadNvmData,      NVM_LAYOUT_SIZE},
-        {Command::WriteNvmData,     ACK_RESPONSE_SIZE},
-        {Command::GetDebugData,     DEBUG_DATA_SIZE},
-        {Command::SetPID,           ACK_RESPONSE_SIZE},
-        {Command::SetSensorWeights, ACK_RESPONSE_SIZE},
+        {Command::WriteNvmData,     0},
+        {Command::SetDebugMode,     0},
+        {Command::DebugData,        DEBUG_DATA_SIZE},
+        {Command::SetPID,           0},
+        {Command::SetSensorWeights, 0},
         {Command::GetSensorWeights, 0}
     };
 

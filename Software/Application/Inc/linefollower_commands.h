@@ -5,6 +5,22 @@
 
 #define LINEFOLLOWER_COMMANDS_NUMBER 6U
 
+enum LF_Commands
+{
+    LF_CMD_SET_MODE         = 0x0000,
+    LF_CMD_RESET            = 0x0001,
+    LF_CMD_CALIBRATE        = 0x0002,
+    LF_CMD_READ_NVM_DATA    = 0x0003,
+    LF_CMD_WRITE_NVM_DATA   = 0x0004,
+    LF_CMD_SET_DEBUG_MODE   = 0x0005,
+    LF_CMD_SEND_DEBUG_DATA  = 0x0006,
+
+    LF_CMD_SET_PID              = 0x0100,
+    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0101,
+
+    LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
+};
+
 extern const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER];
 
 #endif /* __LINEFOLLOWER_COMMANDS_H__ */

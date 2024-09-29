@@ -1,9 +1,24 @@
 #include "lf_main.h"
 #include "lf_calibrate.h"
 
+typedef struct
+{
+    uint16_t sensorsValues[SENSORS_NUMBER];
+} Lf_DebugData_T;
+
 static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
+
+static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
+{
+    LineFollower_T *const me = (LineFollower_T *const )context;
+    Lf_DebugData_T debugData;
+
+    Sensors_GetRawData(debugData.sensorsValues);
+
+    SCP_Transmit(&me->scpInstance, LF_CMD_SEND_DEBUG_DATA, &debugData, sizeof(debugData));
+}
 
 static void Linefollower_DataUpdateCallback(void *data)
 {
@@ -25,6 +40,9 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
         break;
     case LF_SIG_ADC_DATA_UPDATED:
         Sensors_UpdateLeds();
+        break;
+    case LF_SIG_SEND_DEBUG_DATA:
+        LF_SendDebugData(NULL, me);
         break;
     default:
         break;
@@ -64,6 +82,9 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         TB6612Motor_SetSpeed(me->motorRightConfig, 100U + output);
         Sensors_UpdateLeds();
         break;
+    case LF_SIG_SEND_DEBUG_DATA:
+        LF_SendDebugData(NULL, me);
+        break;
     default:
         break;
     }
@@ -72,6 +93,7 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
 int LF_Init(LineFollower_T *const me)
 {
     me->state = LF_IDLE;
+    me->isDebugMode = false;
     me->timer = 0U;
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
 
@@ -132,4 +154,11 @@ void LF_SendSignal(LineFollower_T *const me, LF_Signal_T sig)
     {
         /* TODO: Handle queue full */
     }
+}
+
+void LF_DebugModeTimerCallback(void *context)
+{
+    LineFollower_T *const me = (LineFollower_T *const )context;
+
+    LF_SendSignal(me, LF_SIG_SEND_DEBUG_DATA);
 }

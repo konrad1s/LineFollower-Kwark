@@ -11,7 +11,8 @@ typedef enum
     LF_SIG_START,
     LF_SIG_STOP,
     LF_SIG_CALIBRATE,
-    LF_SIG_ADC_DATA_UPDATED
+    LF_SIG_ADC_DATA_UPDATED,
+    LF_SIG_SEND_DEBUG_DATA
 } LF_Signal_T;
 
 typedef struct
