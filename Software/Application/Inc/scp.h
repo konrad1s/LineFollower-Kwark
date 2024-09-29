@@ -45,6 +45,7 @@ typedef enum
     SCP_PACKET_STATE_GOT_CRC_LOW,
     SCP_PACKET_STATE_GOT_CRC_HIGH,
     SCP_PACKET_STATE_GOT_ID_LOW,
+    SCP_PACKET_STATE_GOT_SIZE,
     SCP_PACKET_STATE_GETTING_DATA,
     SCP_PACKET_STATE_PACKET_COMPLETE
 } SCP_PacketState_T;
@@ -59,6 +60,7 @@ typedef struct
     void (*errorHandler)(const char *command);
 
     SCP_Packet receivedPacket;
+    uint8_t dataBytesReceived;
     SCP_PacketState_T state;
     SCP_DispatcherQueue_T queue;
 } SCP_Instance_T;

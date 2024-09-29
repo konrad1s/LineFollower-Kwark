@@ -119,7 +119,13 @@ void SCP_Dispatcher_Process(SCP_Instance_T *scp, void *context)
             break;
         case SCP_PACKET_STATE_GOT_ID_LOW:
             scp->receivedPacket.header.id |= (uint16_t)(byte << 8);
-            if (scp->receivedPacket.header.size > 0)
+            scp->state = SCP_PACKET_STATE_GOT_SIZE;
+            break;
+        case SCP_PACKET_STATE_GOT_SIZE:
+            scp->receivedPacket.header.size = byte;
+            scp->dataBytesReceived = 0U;
+
+            if (scp->receivedPacket.header.size > 0U)
             {
                 scp->state = SCP_PACKET_STATE_GETTING_DATA;
             }
@@ -127,10 +133,10 @@ void SCP_Dispatcher_Process(SCP_Instance_T *scp, void *context)
             {
                 scp->state = SCP_PACKET_STATE_PACKET_COMPLETE;
             }
-            break;;
+            break;
         case SCP_PACKET_STATE_GETTING_DATA:
-            scp->receivedPacket.data[scp->receivedPacket.header.size++] = byte;
-            if (scp->receivedPacket.header.size == scp->receivedPacket.header.size)
+            scp->receivedPacket.data[scp->dataBytesReceived++] = byte;
+            if (scp->dataBytesReceived == scp->receivedPacket.header.size)
             {
                 scp->state = SCP_PACKET_STATE_PACKET_COMPLETE;
             }

@@ -13,14 +13,14 @@
 enum LF_Commands
 {
     LF_CMD_SET_MODE         = 0x0000,
-    LF_CMD_RESET            = 0x0002,
-    LF_CMD_CALIBRATE        = 0x0004,
-    LF_CMD_READ_NVM_DATA    = 0x0006,
-    LF_CMD_WRITE_NVM_DATA   = 0x0008,
-    LF_CMD_GET_DEBUG_DATA   = 0x00010,
+    LF_CMD_RESET            = 0x0001,
+    LF_CMD_CALIBRATE        = 0x0002,
+    LF_CMD_READ_NVM_DATA    = 0x0003,
+    LF_CMD_WRITE_NVM_DATA   = 0x0004,
+    LF_CMD_GET_DEBUG_DATA   = 0x0005,
 
     LF_CMD_SET_PID              = 0x0100,
-    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0102,
+    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0101,
 
     LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
 };
@@ -39,7 +39,7 @@ static void LF_CommandReset(const SCP_Packet *const packet, void *context);
 static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
 static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
 static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
-static void LF_GetDebugData(const SCP_Packet *const packet, void *context);
+static void LF_SendDebugData(const SCP_Packet *const packet, void *context);
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
 static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context);
@@ -51,7 +51,7 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_CALIBRATE,      0U,                     LF_CommandCalibrate},
     {LF_CMD_READ_NVM_DATA,  0U,                     LF_ReadNvmData},
     {LF_CMD_WRITE_NVM_DATA, sizeof(NVM_Layout_T),   LF_WriteNvmData},
-    {LF_CMD_GET_DEBUG_DATA, 1U,                     LF_GetDebugData},
+    {LF_CMD_GET_DEBUG_DATA, 1U,                     LF_SendDebugData},
 
     {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
     {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
@@ -59,11 +59,9 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_GET_SENSOR_WEIGHTS, 0U, LF_CommandGetSensorWeights},
 };
 
-static void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
+static inline void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
 {
-    uint16_t responseCmd = command_id + 1U;
-
-    SCP_Transmit(&me->scpInstance, responseCmd, responseData, responseSize);
+    SCP_Transmit(&me->scpInstance, command_id, responseData, responseSize);
 }
 
 static void LF_SetMode(const SCP_Packet *const packet, void *context)
@@ -109,7 +107,7 @@ static void LF_WriteNvmData(const SCP_Packet *const packet, void *context)
     LF_CommandTransmitResponse(me, LF_CMD_WRITE_NVM_DATA, NULL, 0);
 }
 
-static void LF_GetDebugData(const SCP_Packet *const packet, void *context)
+static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
     Lf_CommandDebugData_T debugData;
