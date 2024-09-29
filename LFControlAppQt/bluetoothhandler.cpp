@@ -1,19 +1,37 @@
 #include "bluetoothhandler.h"
+#include <QBluetoothUuid>
+#include <QDataStream>
 
 BluetoothHandler::BluetoothHandler(QObject *parent)
-    : QObject{parent}, discoveryAgent(new QBluetoothDeviceDiscoveryAgent(this)), bluetoothSocket(new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this)),
-      connectionTimer(new QTimer(this)), responseTimer(new QTimer(this))
+    : QObject{parent},
+    discoveryAgent(new QBluetoothDeviceDiscoveryAgent(this)),
+    bluetoothSocket(new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this)),
+    connectionTimer(new QTimer(this)),
+    responseTimer(new QTimer(this)),
+    currentCommand(Command::InvalidCommand),
+    scpHandler(new SCP(this))
 {
-    connect(discoveryAgent, SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)), this, SLOT(handleDeviceDiscovered(QBluetoothDeviceInfo)));
-    connect(discoveryAgent, SIGNAL(finished()), this, SLOT(handleDiscoveryFinished()));
-    connect(bluetoothSocket, SIGNAL(disconnected()), this, SLOT(handleConnectionLost()));
-    connect(bluetoothSocket, SIGNAL(connected()), this, SLOT(handleConnectionEstablished()));
-    connect(bluetoothSocket, SIGNAL(readyRead()), this, SLOT(handleSocketReadyRead()));
-    connect(connectionTimer, SIGNAL(timeout()), this, SLOT(handleConnectionTimeout));
-    connect(responseTimer, SIGNAL(timeout()), this, SLOT(handleResponseTimeout));
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothHandler::handleDeviceDiscovered);
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &BluetoothHandler::handleDiscoveryFinished);
+
+    connect(bluetoothSocket, &QBluetoothSocket::connected, this, &BluetoothHandler::handleConnectionEstablished);
+    connect(bluetoothSocket, &QBluetoothSocket::disconnected, this, &BluetoothHandler::handleConnectionLost);
+    connect(bluetoothSocket, &QBluetoothSocket::readyRead, this, &BluetoothHandler::handleSocketReadyRead);
+
+    connect(connectionTimer, &QTimer::timeout, this, &BluetoothHandler::handleConnectionTimeout);
+    connect(responseTimer, &QTimer::timeout, this, &BluetoothHandler::handleResponseTimeout);
 
     connectionTimer->setSingleShot(true);
     responseTimer->setSingleShot(true);
+
+    connect(scpHandler, &SCP::packetReadyToSend, this, &BluetoothHandler::handlePacketReadyToSend);
+    connect(scpHandler, &SCP::commandReceived, this, &BluetoothHandler::handleCommandReceived);
+    connect(scpHandler, &SCP::errorOccurred, this, &BluetoothHandler::handleProtocolError);
+}
+
+BluetoothHandler::~BluetoothHandler()
+{
+    disconnectFromDevice();
 }
 
 void BluetoothHandler::startDeviceDiscovery()
@@ -43,10 +61,6 @@ void BluetoothHandler::disconnectFromDevice()
     {
         bluetoothSocket->disconnectFromService();
     }
-    else
-    {
-        emit errorOccurred("No device to disconnect.");
-    }
 }
 
 bool BluetoothHandler::isConnected() const
@@ -62,18 +76,15 @@ void BluetoothHandler::sendCommand(Command command, const QByteArray &data)
         return;
     }
 
-    QByteArray commandData;
-    QDataStream stream(&commandData, QIODevice::WriteOnly);
-    stream << command;
-
-    if (!data.isEmpty())
+    if (currentCommand != Command::InvalidCommand)
     {
-        commandData.append(data);
+        emit errorOccurred("Previous command is still pending.");
+        return;
     }
 
-    bluetoothSocket->write(commandData);
     currentCommand = command;
     responseTimer->start(RESPONSE_TIMEOUT);
+    scpHandler->sendCommand(command, data);
 }
 
 QList<QBluetoothDeviceInfo> BluetoothHandler::discoveredDevices() const
@@ -104,43 +115,8 @@ void BluetoothHandler::handleConnectionLost()
 
 void BluetoothHandler::handleSocketReadyRead()
 {
-    dataBuffer.append(bluetoothSocket->readAll());
-    const qsizetype dataSize = dataBuffer.size();
-
-    if (dataSize < ACK_RESPONSE_SIZE) {
-        return;
-    }
-
-    int receivedCommand = static_cast<uint8_t>(dataBuffer.at(0)) | (static_cast<uint8_t>(dataBuffer.at(1)) << 8);
-
-    qsizetype expectedResponseSize = 0;
-    if (commandResponseSize.contains(currentCommand))
-    {
-        expectedResponseSize = commandResponseSize.at(currentCommand);
-    }
-    else
-    {
-        emit errorOccurred("Unexpected command received, no matching entry in response size map.");
-        return;
-    }
-
-    int expectedResponseCommand = static_cast<int>(currentCommand) + 1;
-
-    if ((dataSize == expectedResponseSize) && (receivedCommand == expectedResponseCommand))
-    {
-        responseTimer->stop();
-        processReceivedData();
-        dataBuffer.clear();
-        currentCommand = Command::InvalidCommand;
-    }
-    else if ((dataSize > expectedResponseSize) || (dataSize > 0U && receivedCommand != expectedResponseCommand))
-    {
-        responseTimer->stop();
-        dataBuffer.clear();
-        currentCommand = Command::InvalidCommand;
-        emit errorOccurred("Received incorrect or mismatched data, expected response size: " +
-                           QString::number(expectedResponseSize) + ", received data size: " + QString::number(dataSize));
-    }
+    QByteArray data = bluetoothSocket->readAll();
+    scpHandler->receiveData(data);
 }
 
 void BluetoothHandler::handleConnectionTimeout()
@@ -156,10 +132,24 @@ void BluetoothHandler::handleResponseTimeout()
 {
     emit errorOccurred("Response timeout occurred.");
     currentCommand = Command::InvalidCommand;
-    dataBuffer.clear();
 }
 
-void BluetoothHandler::processReceivedData()
+void BluetoothHandler::handlePacketReadyToSend(const QByteArray &packet)
 {
-    emit dataReceived(currentCommand, dataBuffer.mid(ACK_RESPONSE_SIZE));
+    bluetoothSocket->write(packet);
+}
+
+void BluetoothHandler::handleCommandReceived(Command command, const QByteArray &data)
+{
+    if (command == currentCommand)
+    {
+        responseTimer->stop();
+        currentCommand = Command::InvalidCommand;
+    }
+    emit dataReceived(command, data);
+}
+
+void BluetoothHandler::handleProtocolError(const QString &error)
+{
+    emit errorOccurred(error);
 }

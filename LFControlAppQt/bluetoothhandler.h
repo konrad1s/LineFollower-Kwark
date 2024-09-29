@@ -6,14 +6,14 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QTimer>
 #include "command.h"
-#include "nvmlayout.h"
-#include "debugdata.h"
+#include "scp.h"
 
 class BluetoothHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit BluetoothHandler(QObject *parent = nullptr);
+    ~BluetoothHandler();
 
     void startDeviceDiscovery();
     void stopDeviceDiscovery();
@@ -31,6 +31,9 @@ private slots:
     void handleSocketReadyRead();
     void handleConnectionTimeout();
     void handleResponseTimeout();
+    void handlePacketReadyToSend(const QByteArray &packet);
+    void handleCommandReceived(Command command, const QByteArray &data);
+    void handleProtocolError(const QString &error);
 
 signals:
     void deviceFound(const QBluetoothDeviceInfo &device);
@@ -41,34 +44,17 @@ signals:
     void errorOccurred(const QString &error);
 
 private:
-    constexpr static int CONNECTION_TIMEOUT = 10000;
-    constexpr static int RESPONSE_TIMEOUT = 1000;
-    constexpr static size_t NVM_LAYOUT_SIZE = NVMLayout().size();
-    constexpr static size_t DEBUG_DATA_SIZE = DebugData().size();
-    constexpr static int ACK_RESPONSE_SIZE = 2;
-
-    const std::unordered_map<Command, qsizetype> commandResponseSize =
-    {
-        {Command::SetMode,          ACK_RESPONSE_SIZE},
-        {Command::Reset,            0},
-        {Command::Calibrate,        ACK_RESPONSE_SIZE},
-        {Command::ReadNvmData,      NVM_LAYOUT_SIZE + ACK_RESPONSE_SIZE},
-        {Command::WriteNvmData,     ACK_RESPONSE_SIZE},
-        {Command::GetDebugData,     DEBUG_DATA_SIZE + ACK_RESPONSE_SIZE},
-        {Command::SetPID,           ACK_RESPONSE_SIZE},
-        {Command::SetSensorWeights, ACK_RESPONSE_SIZE},
-        {Command::GetSensorWeights, 0}
-    };
+    static constexpr int CONNECTION_TIMEOUT = 5000;
+    static constexpr int RESPONSE_TIMEOUT = 2000;
 
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
     QBluetoothSocket *bluetoothSocket;
     QTimer *connectionTimer;
     QTimer *responseTimer;
 
-    QByteArray dataBuffer;
     Command currentCommand;
 
-    void processReceivedData();
+    SCP *scpHandler;
 };
 
 #endif // BLUETOOTHHANDLER_H
