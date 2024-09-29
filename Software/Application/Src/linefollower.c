@@ -71,7 +71,7 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         me->state = LF_IDLE;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
-        me->debugData.sensorError = Sensors_CalculateError(me->nvmBlock);
+        me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
         int16_t output = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, 1.0);
         TB6612Motor_SetSpeed(me->motorLeftConfig, 100U - output);
         TB6612Motor_SetSpeed(me->motorRightConfig, 100U + output);
@@ -111,6 +111,8 @@ int LF_Init(LineFollower_T *const me)
 
     (void)TB6612Motor_Init(me->motorLeftConfig);
     (void)TB6612Motor_Init(me->motorRightConfig);
+
+    return 0;
 }
 
 void LF_MainFunction(LineFollower_T *const me)

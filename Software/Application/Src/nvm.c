@@ -202,14 +202,14 @@ int NVM_Write(Nvm_Instance_T *const nvm)
         {
             return -1;
         }
-        if (NVM_FlashWrite(currentAddress, pData, size) == -1)
+        if (NVM_FlashWrite(currentAddress, pData, size) == false)
         {
             return -1;
         }
 
         /* Write the calculated CRC value after the data */
         uint32_t crcAddress = currentAddress + size;
-        if (NVM_FlashWrite(crcAddress, (uint8_t *)&calculatedCrc, sizeof(calculatedCrc)) == -1)
+        if (NVM_FlashWrite(crcAddress, (uint8_t *)&calculatedCrc, sizeof(calculatedCrc)) == false)
         {
             return -1;
         }

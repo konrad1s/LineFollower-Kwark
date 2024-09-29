@@ -84,7 +84,7 @@ uint8_t SCP_Dispatcher_Dequeue(SCP_DispatcherQueue_T *scpQueue, uint8_t *data)
 static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *context)
 {
     uint16_t crcDataSize = scp->receivedPacket.header.size + sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
-    uint16_t crc = CRC_CalculateCRC16(&scp->receivedPacket.header.id, crcDataSize, SCP_PACKET_CRC_INIT);
+    uint16_t crc = CRC_CalculateCRC16((uint8_t *)&scp->receivedPacket.header.id, crcDataSize, SCP_PACKET_CRC_INIT);
 
     if (crc == scp->receivedPacket.header.crc)
     {

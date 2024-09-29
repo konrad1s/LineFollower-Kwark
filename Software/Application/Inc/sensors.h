@@ -17,7 +17,7 @@ typedef struct
 {
     bool isActive;
     int8_t positionWeight;
-    Sensor_Led_T *led;
+    const Sensor_Led_T *led;
 } Sensor_Instance_T;
 
 typedef void (*Sensor_DataUpdatedCb_T)(void *data);

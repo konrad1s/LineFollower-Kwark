@@ -3,7 +3,7 @@
 
 #include "scp.h"
 
-#define LINEFOLLOWER_COMMANDS_NUMBER 6U
+#define LINEFOLLOWER_COMMANDS_NUMBER 9U
 
 enum LF_Commands
 {

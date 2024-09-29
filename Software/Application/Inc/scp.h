@@ -55,7 +55,7 @@ typedef struct
     uint8_t *buffer;
     uint16_t size;
     UART_HandleTypeDef *huart;
-    SCP_Command_T *commands;
+    const SCP_Command_T *commands;
     size_t numCommands;
     void (*errorHandler)(const char *command);
 
