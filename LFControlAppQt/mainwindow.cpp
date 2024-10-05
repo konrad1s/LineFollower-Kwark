@@ -9,7 +9,7 @@
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this)),
+    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this)), bootloader(new Bootloader(bluetoothHandler, this)),
       autoConnectInProgress(false)
 {
     ui->setupUi(this);
@@ -35,6 +35,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(bluetoothHandler, &BluetoothHandler::dataReceived, this, &MainWindow::handleDataReceived);
     connect(bluetoothHandler, &BluetoothHandler::errorOccurred, [this](const QString &error)
             { addToLogs(error, false); });
+    connect(bootloader, &Bootloader::bootloaderMessage, this, [this](const QString &message)
+            { addToLogs(message, true); });
+    connect(bootloader, &Bootloader::progressUpdated, ui->progressBarBootloader, &QProgressBar::setValue);
+    connect(bootloader, &Bootloader::errorOccurred, [this](const QString &error)
+            {
+                addToLogs(error, false);
+                QMessageBox::warning(this, tr("Bootloader Error"), error);
+            });
 }
 
 MainWindow::~MainWindow()
@@ -136,6 +144,27 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
     case Command::DebugData:
     {
         updateDebugData(data);
+        break;
+    }
+    case Command::BootStartDownload:
+    {
+        addToLogs("Bootloader Mode enabled.", true);
+        break;
+    }
+    case Command::BootGetVersion:
+    {
+        QString version = QString::fromLatin1(data);
+        addToLogs("Bootloader version received: " + version, true);
+        break;
+    }
+    case Command::BootEraseApp:
+    {
+        addToLogs("Application erase completed.", true);
+        break;
+    }
+    case Command::BootValidateApp:
+    {
+        addToLogs("Application validation completed.", true);
         break;
     }
     default:
@@ -410,48 +439,62 @@ void MainWindow::on_pushButtonSaveLogs_clicked()
 
 void MainWindow::on_pushButtonBootEnter_clicked()
 {
-
+    bootloader->enterBootloader();
 }
-
 
 void MainWindow::on_pushButtonBootReadVersion_clicked()
 {
-
+    bootloader->getBootloaderVersion();
 }
-
 
 void MainWindow::on_pushButtonBootSelectFile_clicked()
 {
-
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Select Firmware File"), "", tr("IntelHex Files (*.hex);;All Files (*)"));
+    if (!filePath.isEmpty())
+    {
+        if (bootloader->selectFirmwareFile(filePath))
+        {
+            ui->lineEditBootFile->setText(filePath);
+        }
+    }
 }
-
 
 void MainWindow::on_pushButtonBootLoadKey_clicked()
 {
-
+    QString keyFilePath = QFileDialog::getOpenFileName(this, tr("Select Key File"), "", tr("Key Files (*.key);;All Files (*)"));
+    if (!keyFilePath.isEmpty())
+    {
+        QFile keyFile(keyFilePath);
+        if (keyFile.open(QIODevice::ReadOnly))
+        {
+            QByteArray keyData = keyFile.readAll();
+            bootloader->loadKey(keyData);
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Load Key"), tr("Failed to open key file."));
+        }
+    }
 }
-
 
 void MainWindow::on_pushButtonBootErase_clicked()
 {
-
+    bootloader->eraseApplication();
 }
-
 
 void MainWindow::on_pushButtonBootFlash_clicked()
 {
-
+    bootloader->flashFirmware();
 }
-
 
 void MainWindow::on_pushButtonBootValidate_clicked()
 {
-
+    bootloader->validateApplication();
 }
-
 
 void MainWindow::on_pushButtonBootJumpApp_clicked()
 {
-
+    bootloader->jumpToApplication();
 }
+
 

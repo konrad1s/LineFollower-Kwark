@@ -207,7 +207,7 @@
          <item>
           <widget class="QPushButton" name="pushButtonBootEnter">
            <property name="text">
-            <string>Enter Boot</string>
+            <string>Enter Bootloader</string>
            </property>
           </widget>
          </item>

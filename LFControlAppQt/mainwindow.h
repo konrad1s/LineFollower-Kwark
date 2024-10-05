@@ -11,6 +11,7 @@
 #include "nvmlayout.h"
 #include "bluetoothhandler.h"
 #include "plot.h"
+#include "bootloader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -46,24 +47,19 @@ private slots:
     void on_pushButtonWriteNvm_clicked();
     void on_pushButtonClearLogs_clicked();
     void on_pushButtonSaveLogs_clicked();
-
     void on_pushButtonBootEnter_clicked();
-
     void on_pushButtonBootReadVersion_clicked();
-
     void on_pushButtonBootSelectFile_clicked();
-
     void on_pushButtonBootLoadKey_clicked();
-
     void on_pushButtonBootErase_clicked();
-
     void on_pushButtonBootFlash_clicked();
-
     void on_pushButtonBootValidate_clicked();
+    void on_pushButtonBootJumpApp_clicked();
 
 private:
     Ui::MainWindow *ui;
     BluetoothHandler *bluetoothHandler;
+    Bootloader *bootloader;
     bool autoConnectInProgress;
     QString autoConnectDeviceName;
 

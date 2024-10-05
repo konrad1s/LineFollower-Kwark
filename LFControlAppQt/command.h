@@ -16,7 +16,15 @@ enum class Command : uint16_t
     SetSensorWeights = 0x0101,
     GetSensorWeights = 0x0200,
 
-    InvalidCommand   = 0xFFFF
+    BootGetVersion      = 0xF001,
+    BootStartDownload   = 0xF002,
+    BootEraseApp        = 0xF003,
+    BootFlashData       = 0xF004,
+    BootFlashMac        = 0xF005,
+    BootValidateApp     = 0xF006,
+    BootJumpToApp       = 0xF007,
+
+    InvalidCommand  = 0xFFFF
 };
 
 enum class CommandSetMode : uint8_t

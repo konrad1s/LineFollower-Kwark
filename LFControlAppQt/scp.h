@@ -74,16 +74,24 @@ private:
     };
 
     const std::unordered_map<Command, qsizetype> commandDataSize = {
-        {Command::SetMode,          0},
-        {Command::Reset,            0},
-        {Command::Calibrate,        0},
-        {Command::ReadNvmData,      NVM_LAYOUT_SIZE},
-        {Command::WriteNvmData,     0},
-        {Command::SetDebugMode,     0},
-        {Command::DebugData,        DEBUG_DATA_SIZE},
-        {Command::SetPID,           0},
-        {Command::SetSensorWeights, 0},
-        {Command::GetSensorWeights, 0}
+        {Command::SetMode,              0},
+        {Command::Reset,                0},
+        {Command::Calibrate,            0},
+        {Command::ReadNvmData,          NVM_LAYOUT_SIZE},
+        {Command::WriteNvmData,         0},
+        {Command::SetDebugMode,         0},
+        {Command::DebugData,            DEBUG_DATA_SIZE},
+        {Command::SetPID,               0},
+        {Command::SetSensorWeights,     0},
+        {Command::GetSensorWeights,     0},
+
+        {Command::BootGetVersion,       4U},
+        {Command::BootStartDownload,    0},
+        {Command::BootEraseApp,         0},
+        {Command::BootFlashData,        0},
+        {Command::BootFlashMac,         0},
+        {Command::BootValidateApp,      0},
+        {Command::BootJumpToApp,        0}
     };
 
     PacketState packetState;
