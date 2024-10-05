@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define BOOT_EVENT_QUEUE_SIZE 5U
+#define BOOT_EVENT_QUEUE_SIZE 10U
 
 typedef enum 
 {
@@ -12,7 +12,9 @@ typedef enum
     BOOT_EVENT_ERASE_APP,
     BOOT_EVENT_FLASH_DATA,
     BOOT_EVENT_FLASH_MAC,
-    BOOT_EVENT_VALIDATE_APP
+    BOOT_EVENT_VALIDATE_APP,
+    BOOT_EVENT_TIMER_TICK,
+    BOOT_EVENT_FRAME_WAIT_TIMEOUT,
 } Boot_Event_T;
 
 typedef struct
