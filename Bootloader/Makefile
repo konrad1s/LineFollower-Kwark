@@ -65,7 +65,12 @@ Core/Src/usart.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart_ex.c
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart_ex.c \
+Bootloader/Src/scp.c \
+Bootloader/Src/scp_dispatcher.c \
+Bootloader/Src/boot.c \
+Bootloader/Src/boot_commands.c \
+Bootloader/Src/boot_event_queue.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -129,7 +134,8 @@ C_INCLUDES =  \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-IBootloader/Inc \
 
 
 # compile gcc flags
