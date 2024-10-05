@@ -71,6 +71,7 @@ Bootloader/Src/scp_dispatcher.c \
 Bootloader/Src/boot.c \
 Bootloader/Src/boot_commands.c \
 Bootloader/Src/boot_event_queue.c \
+Bootloader/Src/flash_manager.c \
 
 # ASM sources
 ASM_SOURCES =  \
