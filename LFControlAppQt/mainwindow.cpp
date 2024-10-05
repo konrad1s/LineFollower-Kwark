@@ -407,3 +407,51 @@ void MainWindow::on_pushButtonSaveLogs_clicked()
 
     QMessageBox::information(this, tr("Logs Saved"), tr("Logs have been saved to %1").arg(fileName));
 }
+
+void MainWindow::on_pushButtonBootEnter_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootReadVersion_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootSelectFile_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootLoadKey_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootErase_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootFlash_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootValidate_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButtonBootJumpApp_clicked()
+{
+
+}
+

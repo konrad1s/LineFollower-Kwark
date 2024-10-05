@@ -47,6 +47,20 @@ private slots:
     void on_pushButtonClearLogs_clicked();
     void on_pushButtonSaveLogs_clicked();
 
+    void on_pushButtonBootEnter_clicked();
+
+    void on_pushButtonBootReadVersion_clicked();
+
+    void on_pushButtonBootSelectFile_clicked();
+
+    void on_pushButtonBootLoadKey_clicked();
+
+    void on_pushButtonBootErase_clicked();
+
+    void on_pushButtonBootFlash_clicked();
+
+    void on_pushButtonBootValidate_clicked();
+
 private:
     Ui::MainWindow *ui;
     BluetoothHandler *bluetoothHandler;
