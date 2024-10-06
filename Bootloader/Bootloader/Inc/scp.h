@@ -10,6 +10,7 @@
 #define SCP_MAX_HUART_INSTANCES 1U
 #define SCP_PACKET_START        0x7EU
 #define SCP_PACKET_CRC_INIT     0x1D0FU
+#define SCP_PACKET_MAX_SIZE     2060U
 
 typedef uint16_t SCP_CommandId_T;
 
@@ -26,7 +27,7 @@ static_assert(6 == sizeof(SCP_PacketHeader), "6 != sizeof(SCP_PacketHeader)");
 typedef struct __attribute__((packed))
 {
     SCP_PacketHeader header;
-    uint8_t data[];
+    uint8_t data[SCP_PACKET_MAX_SIZE];
 } SCP_Packet;
 
 typedef void (*SCP_CommandHandler)(const SCP_Packet *const packet, void *context);

@@ -90,8 +90,7 @@ static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *conte
     {
         for (size_t i = 0U; i < scp->numCommands; i++)
         {
-            if ((scp->receivedPacket.header.id == scp->commands[i].id) &&
-                (scp->receivedPacket.header.size == scp->commands[i].size))
+            if (scp->receivedPacket.header.id == scp->commands[i].id)
             {
                 scp->commands[i].handler(&scp->receivedPacket, context);
                 break;

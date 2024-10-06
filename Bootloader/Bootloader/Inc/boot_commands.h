@@ -3,15 +3,17 @@
 
 #include "scp.h"
 
-#define BOOT_CMD_NUMBERS    5U
+#define BOOT_CMD_NUMBERS    7U
 
 enum Boot_ScpCommands
 {
-    BOOT_CMD_GET_VERSION    = 0x0001,
-    BOOT_CMD_ERASE_APP      = 0x0002,
-    BOOT_CMD_FLASH_DATA     = 0x0003,
-    BOOT_CMD_FLASH_MAC      = 0x0004,
-    BOOT_CMD_VALIDATE_APP   = 0x0005,
+    BOOT_CMD_GET_VERSION    = 0xF001,
+    BOOT_CMD_START_DOWNLOAD = 0xF002,
+    BOOT_CMD_ERASE_APP      = 0xF003,
+    BOOT_CMD_FLASH_DATA     = 0xF004,
+    BOOT_CMD_FLASH_MAC      = 0xF005,
+    BOOT_CMD_VALIDATE_APP   = 0xF006,
+    BOOT_CMD_JUMP_TO_APP    = 0xF007,
 };
 
 extern const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS];
