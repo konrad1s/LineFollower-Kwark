@@ -46,7 +46,6 @@ Software/Output/*
 Software/build/*
 *.ioc
 *.s
-*.ld
 *.jlink
 *.jdebug
 *icf
