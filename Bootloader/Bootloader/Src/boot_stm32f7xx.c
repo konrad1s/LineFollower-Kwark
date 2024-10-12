@@ -1,9 +1,16 @@
 #include "boot.h"
 #include "stm32f722xx.h"
+#include "usart.h"
+#include "crc.h"
 
 void Boot_JumpToApp(uint32_t address)
 {
     __disable_irq();
+
+    /* Deinitialize all peripherals */
+    HAL_CRC_MspDeInit(&hcrc);
+    HAL_UART_MspDeInit(&huart4);
+    HAL_DeInit();
 
     /* Disable all interrupts */
     const uint32_t nvicRegsNum = sizeof(NVIC->ICER) / sizeof(NVIC->ICER[0]);

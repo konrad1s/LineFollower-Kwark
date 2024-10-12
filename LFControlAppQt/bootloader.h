@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QByteArray>
 #include <QTimer>
+#include <QMap>
+#include <QDataStream>
 #include "command.h"
 #include "bluetoothhandler.h"
 
@@ -44,18 +46,23 @@ private:
         StartLinearAddress = 5
     };
 
-    const int FLASH_BLOCK_SIZE = 64;
+    static const int FLASH_BLOCK_SIZE = 64;
+    static const quint32 APP_START_ADDRESS = 0x0800C000U;
+    static const quint32 APP_END_ADDRESS = 0x0805FFFFU;
+    static const quint32 CRC_SIZE = 4U;
+
     BluetoothHandler *bluetoothHandler;
     QFile firmwareFile;
-    QByteArray firmwareData;
-    int currentOffset;
     QMap<quint32, quint8> firmwareMap;
     QMap<quint32, quint8>::const_iterator firmwareIterator;
     quint32 baseAddress;
-    quint32 totalBytes;
+    quint32 totalBytesToFlash;
     quint32 bytesSent;
+    quint32 crcValue;
 
+    quint32 calculateCRC32();
     void sendNextFirmwareChunk();
+    void prepareFirmwareData();
 };
 
 #endif // BOOTLOADER_H

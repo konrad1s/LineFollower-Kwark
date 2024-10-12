@@ -89,7 +89,7 @@ private:
         {Command::BootStartDownload,    0},
         {Command::BootEraseApp,         0},
         {Command::BootFlashData,        0},
-        {Command::BootFlashMac,         0},
+        {Command::BootFlashCrc,         0},
         {Command::BootValidateApp,      0},
         {Command::BootJumpToApp,        0}
     };

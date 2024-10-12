@@ -20,7 +20,7 @@ enum class Command : uint16_t
     BootStartDownload   = 0xF002,
     BootEraseApp        = 0xF003,
     BootFlashData       = 0xF004,
-    BootFlashMac        = 0xF005,
+    BootFlashCrc        = 0xF005,
     BootValidateApp     = 0xF006,
     BootJumpToApp       = 0xF007,
 

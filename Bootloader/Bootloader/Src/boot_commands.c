@@ -16,7 +16,7 @@ const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS] = {
      {BOOT_CMD_START_DOWNLOAD,  0,  Boot_StartDownloadCmd},
      {BOOT_CMD_ERASE_APP,       0,  Boot_EraseAppCmd},
      {BOOT_CMD_FLASH_DATA,      0,  Boot_FlashDataCmd},
-     {BOOT_CMD_FLASH_MAC,       0,  Boot_FlashMacCmd},
+     {BOOT_CMD_FLASH_CRC,       0,  Boot_FlashMacCmd},
      {BOOT_CMD_VALIDATE_APP,    0,  Boot_ValidateAppCmd},
      {BOOT_CMD_JUMP_TO_APP,     0,  Boot_JumpToAppCmd},
 };
@@ -63,7 +63,7 @@ static void Boot_FlashMacCmd(const SCP_Packet *const packet, void *context)
         memcpy(me->flashBuffer, packet->data, packet->header.size);
     }
 
-    Boot_AddEvent(BOOT_EVENT_FLASH_MAC);
+    Boot_AddEvent(BOOT_EVENT_FLASH_CRC);
 };
 
 static void Boot_ValidateAppCmd(const SCP_Packet *const packet, void *context)

@@ -146,6 +146,7 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   LF_Init(&LineFollower);
+  __enable_irq();
   /* USER CODE END 2 */
 
   /* Infinite loop */
