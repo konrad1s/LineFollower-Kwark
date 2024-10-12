@@ -5,6 +5,8 @@
 #define BOOT_BACKDOOR_TIMEOUT 50000U
 #define BOOT_SCP_BUFFER_SIZE 4096U
 
+extern void Boot_JumpToApp(uint32_t address);
+
 static uint8_t scpBuffer[BOOT_SCP_BUFFER_SIZE];
 
 static Bootloader_T bootloader = {
@@ -19,7 +21,8 @@ static Bootloader_T bootloader = {
     .flashManager = {
         .appSectorRange = {
             .startSector = FLASH_SECTOR_1,
-            .sectorCount = 1U}
+            .sectorCount = 1U},
+        .appAddress = 0x08004000U
         },
 };
 
@@ -42,6 +45,10 @@ static void Boot_HandleStateIdle(Boot_Event_T event)
             bootloader.backdoorTimer = 0U;
             bootloader.state = BOOT_STATE_ERASING;
             break;
+        case BOOT_EVENT_JUMP_TO_APP:
+            bootloader.backdoorTimer = 0U;
+            bootloader.state = BOOT_STATE_BOOTING;
+            break;
         default:
             break;
     }
@@ -51,6 +58,22 @@ static void Boot_HandleStateBooting(Boot_Event_T event)
 {
     switch (event)
     {
+        case BOOT_EVENT_TIMER_TICK:
+            if (bootloader.isAppValid == true)
+            {
+                Boot_JumpToApp(bootloader.flashManager.appAddress);
+            }
+            else if (/* TODO: check if application is valid */ true)
+            {
+                Boot_JumpToApp(bootloader.flashManager.appAddress);
+            }
+            else
+            {
+                /* Stay in bootloader */
+                bootloader.state = BOOT_STATE_ERASING;
+                bootloader.isAppValid = false;
+            }
+            break;
         default:
             break;
     }
@@ -61,6 +84,7 @@ static void Boot_HandleStateErasing(Boot_Event_T event)
     switch (event)
     {
         case BOOT_EVENT_ERASE_APP:
+            bootloader.isAppValid = false;
             if (FlashManager_Erase(&bootloader.flashManager) == 0)
             {
                 SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_ERASE_APP, NULL, 0);
@@ -102,15 +126,18 @@ static void Boot_HandleStateVerifying(Boot_Event_T event)
 {
     switch (event)
     {
-        default:
+        case BOOT_EVENT_VALIDATE_APP:
+            if (true /* TODO: validate application */)
+            {
+                bootloader.isAppValid = true;
+                bootloader.state = BOOT_STATE_IDLE;
+                SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_VALIDATE_APP, NULL, 0);
+            }
+            else
+            {
+                bootloader.state = BOOT_STATE_ERASING;
+            }
             break;
-    }
-}
-
-static void Boot_HandleStateInvalidAppDetected(Boot_Event_T event)
-{
-    switch (event)
-    {
         default:
             break;
     }
@@ -122,6 +149,7 @@ void Boot_Init(void)
     (void)SCP_Init(&bootloader.scpInstance);
 
     bootloader.backdoorTimer = 0U;
+    bootloader.isAppValid = false;
 }
 
 void Boot_MainFunction(void)
@@ -146,9 +174,6 @@ void Boot_MainFunction(void)
             break;
         case BOOT_STATE_VERIFYING:
             Boot_HandleStateVerifying(event);
-            break;
-        case BOOT_STATE_INVALID_APP_DETECTED:
-            Boot_HandleStateInvalidAppDetected(event);
             break;
         default:
             break;

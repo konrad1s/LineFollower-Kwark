@@ -14,8 +14,7 @@ typedef enum
     BOOT_STATE_BOOTING,
     BOOT_STATE_ERASING,
     BOOT_STATE_FLASHING,
-    BOOT_STATE_VERIFYING,
-    BOOT_STATE_INVALID_APP_DETECTED
+    BOOT_STATE_VERIFYING
 } Boot_State_T;
 
 typedef struct
@@ -24,6 +23,7 @@ typedef struct
     uint32_t backdoorTimer;
     uint8_t flashBuffer[BOOT_FLASH_BUFFER_SIZE];
     Boot_EventQueue_T eventQueue;
+    bool isAppValid;
 
     SCP_Instance_T scpInstance;
     Flash_Manager_T flashManager;

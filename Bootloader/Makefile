@@ -72,6 +72,7 @@ Bootloader/Src/boot.c \
 Bootloader/Src/boot_commands.c \
 Bootloader/Src/boot_event_queue.c \
 Bootloader/Src/flash_manager.c \
+Bootloader/Src/boot_stm32f7xx.c \
 
 # ASM sources
 ASM_SOURCES =  \

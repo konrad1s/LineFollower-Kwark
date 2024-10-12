@@ -14,6 +14,7 @@ typedef struct
 typedef struct
 {
     Flash_SectorRange_T appSectorRange;
+    uint32_t appAddress;
 } Flash_Manager_T;
 
 int FlashManager_Erase(Flash_Manager_T *const manager);
