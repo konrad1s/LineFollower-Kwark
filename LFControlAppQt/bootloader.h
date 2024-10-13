@@ -46,7 +46,7 @@ private:
         StartLinearAddress = 5
     };
 
-    static const int FLASH_BLOCK_SIZE = 240;
+    static const int FLASH_BLOCK_SIZE = 120;
     static const quint32 APP_START_ADDRESS = 0x0800C000U;
     static const quint32 APP_END_ADDRESS = 0x0805FFFFU;
     static const quint32 CRC_SIZE = 4U;

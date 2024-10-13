@@ -236,19 +236,20 @@ void Bootloader::sendNextFirmwareChunk()
         ++bytesInChunk;
     }
 
+    bytesSent += bytesInChunk;
+    quint8 progress = (bytesSent * 100) / totalBytesToFlash;
+
     QByteArray packetData;
     QDataStream out(&packetData, QIODevice::WriteOnly);
     out.setByteOrder(QDataStream::LittleEndian);
 
     out << startAddress;
     out << static_cast<quint16>(bytesInChunk);
+    out << progress;
     packetData.append(chunkData);
 
     bluetoothHandler->sendCommand(Command::BootFlashData, packetData);
 
-    bytesSent += bytesInChunk;
-
-    int progress = (bytesSent * 100) / totalBytesToFlash;
     emit progressUpdated(progress);
 }
 

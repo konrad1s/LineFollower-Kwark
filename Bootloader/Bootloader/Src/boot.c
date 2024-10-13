@@ -3,13 +3,15 @@
 #include "boot_commands.h"
 #include "crc.h"
 
-#define BOOT_BACKDOOR_TIMEOUT 50U
-#define BOOT_EXTENDED_TIMEOUT 30000U
-#define BOOT_APP_RESET_FLAG 0xDEADBEEF
-#define BOOT_SCP_BUFFER_SIZE 4096U
+#define BOOT_BACKDOOR_TIMEOUT   50U
+#define BOOT_EXTENDED_TIMEOUT   30000U
+#define BOOT_BLINK_TIME         1000U
+#define BOOT_APP_RESET_FLAG     0xDEADBEEF
+#define BOOT_SCP_BUFFER_SIZE    512U
 
 extern void Boot_JumpToApp(uint32_t address);
 static void Boot_CheckAndClearBootShared(uint32_t *bootFlags);
+static void Boot_HandleBlinking(void);
 
 __attribute__((section(".noinit_shared"))) static uint32_t bootFlags;
 static uint8_t scpBuffer[BOOT_SCP_BUFFER_SIZE];
@@ -30,6 +32,20 @@ static Bootloader_T bootloader = {
         .appStartAddress = 0x0800C000U,
         .appEndAddress = 0x0805FFFFU
         },
+    .leds = {
+        {LED1_GPIO_Port, LED1_Pin},
+        {LED2_GPIO_Port, LED2_Pin},
+        {LED3_GPIO_Port, LED3_Pin},
+        {LED4_GPIO_Port, LED4_Pin},
+        {LED5_GPIO_Port, LED5_Pin},
+        {LED6_GPIO_Port, LED6_Pin},
+        {LED7_GPIO_Port, LED7_Pin},
+        {LED8_GPIO_Port, LED8_Pin},
+        {LED9_GPIO_Port, LED9_Pin},
+        {LED10_GPIO_Port, LED10_Pin},
+        {LED11_GPIO_Port, LED11_Pin},
+        {LED12_GPIO_Port, LED12_Pin},
+    },
 };
 
 static bool Boot_ValidateApp(void)
@@ -47,6 +63,22 @@ static bool Boot_ValidateApp(void)
     return (crcCalculated == storedCRC);
 }
 
+static void Boot_HandleBlinking(void)
+{
+    if (bootloader.blinkingEnabled)
+    {
+        bootloader.blinkTimer++;
+        if (bootloader.blinkTimer >= BOOT_BLINK_TIME)
+        {
+            bootloader.blinkTimer = 0U;
+            /* Toggle LEDs */
+            for (uint32_t i = 0U; i < BOOT_LED_NUMBER; i++)
+            {
+                HAL_GPIO_TogglePin(bootloader.leds[i].port, bootloader.leds[i].pin);
+            }
+        }
+    }
+}
 
 static void Boot_HandleStateIdle(Boot_Event_T event)
 {
@@ -62,8 +94,10 @@ static void Boot_HandleStateIdle(Boot_Event_T event)
                 /* Boot backdoor timeout, try to boot the application */
                 bootloader.state = BOOT_STATE_BOOTING;
             }
+            Boot_HandleBlinking();
             break;
         case BOOT_EVENT_START_DOWNLOAD:
+            bootloader.blinkingEnabled = true;
             bootloader.backdoorTimer = 0U;
             bootloader.backdoorTimerTimeout = BOOT_EXTENDED_TIMEOUT;
             bootloader.state = BOOT_STATE_ERASING;
@@ -82,6 +116,7 @@ static void Boot_HandleStateBooting(Boot_Event_T event)
     switch (event)
     {
         case BOOT_EVENT_TIMER_TICK:
+            Boot_HandleBlinking();
             if (bootloader.isAppValid)
             {
                 Boot_JumpToApp(bootloader.flashManager.appStartAddress);
@@ -107,6 +142,9 @@ static void Boot_HandleStateErasing(Boot_Event_T event)
 {
     switch (event)
     {
+        case BOOT_EVENT_TIMER_TICK:
+            Boot_HandleBlinking();
+            break;
         case BOOT_EVENT_JUMP_TO_APP:
             /* Still jump to app is possible before erase event */
             bootloader.backdoorTimer = 0U;
@@ -118,6 +156,13 @@ static void Boot_HandleStateErasing(Boot_Event_T event)
             {
                 SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_ERASE_APP, NULL, 0);
                 bootloader.state = BOOT_STATE_FLASHING;
+                bootloader.blinkingEnabled = false;
+
+                /* Turn off all LEDs */
+                for (uint32_t i = 0U; i < BOOT_LED_NUMBER; i++)
+                {
+                    HAL_GPIO_WritePin(bootloader.leds[i].port, bootloader.leds[i].pin, GPIO_PIN_RESET);
+                }
             }
             else
             {
@@ -136,10 +181,30 @@ static void Boot_HandleStateFlashing(Boot_Event_T event)
         case BOOT_EVENT_FLASH_DATA:
         {
             /* Don't care about endianness, the data is sent in little endian */
-            uint32_t address = *(uint32_t *)bootloader.flashBuffer;
-            uint16_t size = *(uint16_t *)(bootloader.flashBuffer + 4);
-            FlashManager_Write(&bootloader.flashManager, address, bootloader.flashBuffer + 6, size);
+            struct __attribute__((packed))
+            {
+                uint32_t address;
+                uint16_t size;
+                uint8_t progress;
+                uint8_t data[];
+            } *packet = bootloader.flashBuffer;
+
+            FlashManager_Write(&bootloader.flashManager, packet->address, packet->data, packet->size);
             SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_FLASH_DATA, NULL, 0);
+
+            uint8_t numLedsOn = (packet->progress * BOOT_LED_NUMBER) / 100U;
+            for (uint32_t i = 0U; i < BOOT_LED_NUMBER; i++)
+            {
+                if (i < numLedsOn)
+                {
+                    HAL_GPIO_WritePin(bootloader.leds[i].port, bootloader.leds[i].pin, GPIO_PIN_SET);
+                }
+                else
+                {
+                    HAL_GPIO_WritePin(bootloader.leds[i].port, bootloader.leds[i].pin, GPIO_PIN_RESET);
+                }
+            }
+            break;
             break;
         }
         case BOOT_EVENT_FLASH_CRC:
@@ -165,6 +230,7 @@ static void Boot_HandleStateVerifying(Boot_Event_T event)
             {
                 bootloader.isAppValid = true;
                 bootloader.state = BOOT_STATE_IDLE;
+                bootloader.blinkingEnabled = true;
                 SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_VALIDATE_APP, NULL, 0);
             }
             else
@@ -195,6 +261,8 @@ void Boot_Init(void)
     bootloader.noInitFlags = &bootFlags;
     bootloader.state = BOOT_STATE_IDLE;
     bootloader.backdoorTimerTimeout = BOOT_BACKDOOR_TIMEOUT;
+    bootloader.blinkTimer = 0;
+    bootloader.blinkingEnabled = false;
 
     Boot_EventQueueInit(&bootloader.eventQueue);
     (void)SCP_Init(&bootloader.scpInstance);

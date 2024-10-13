@@ -2,11 +2,14 @@
 #define __BOOT_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "boot_event_queue.h"
 #include "scp.h"
 #include "flash_manager.h"
+#include "gpio.h"
 
-#define BOOT_FLASH_BUFFER_SIZE 2048U
+#define BOOT_FLASH_BUFFER_SIZE 260U
+#define BOOT_LED_NUMBER        12U
 
 typedef enum
 {
@@ -19,12 +22,21 @@ typedef enum
 
 typedef struct
 {
+    GPIO_TypeDef *port;
+    uint16_t pin;
+} Boot_Led_T;
+
+typedef struct
+{
     Boot_State_T state;
     uint32_t backdoorTimer;
     uint32_t backdoorTimerTimeout;
+    uint32_t blinkTimer;
     uint32_t *noInitFlags;
-    bool isAppValid;
     uint8_t flashBuffer[BOOT_FLASH_BUFFER_SIZE];
+    bool isAppValid;
+    bool blinkingEnabled;
+    Boot_Led_T leds[BOOT_LED_NUMBER];
     Boot_EventQueue_T eventQueue;
 
     SCP_Instance_T scpInstance;
