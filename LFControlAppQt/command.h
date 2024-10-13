@@ -13,9 +13,6 @@ enum class Command : uint16_t
     SetDebugMode     = 0x0005,
     DebugData        = 0x0006,
     GetActiveSession = 0x0007,
-    SetPID           = 0x0100,
-    SetSensorWeights = 0x0101,
-    GetSensorWeights = 0x0200,
 
     BootGetVersion      = 0xF001,
     BootStartDownload   = 0xF002,

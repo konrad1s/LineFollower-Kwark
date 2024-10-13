@@ -3,7 +3,7 @@
 
 #include "scp.h"
 
-#define LINEFOLLOWER_COMMANDS_NUMBER 12U
+#define LINEFOLLOWER_COMMANDS_NUMBER 9U
 
 enum LF_Commands
 {
@@ -15,12 +15,6 @@ enum LF_Commands
     LF_CMD_SET_DEBUG_MODE   = 0x0005,
     LF_CMD_SEND_DEBUG_DATA  = 0x0006,
     LF_CMD_GET_SESSION      = 0x0007,
-
-    LF_CMD_SET_PID              = 0x0100,
-    LF_CMD_SET_SENSOR_WEIGHTS   = 0x0101,
-
-    LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
-
     LF_CMD_ENTER_BOOTLOADER = 0xF002,
 };
 

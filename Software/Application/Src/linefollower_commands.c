@@ -23,11 +23,7 @@ static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
 static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
 static void LF_SetDebugMode(const SCP_Packet *const packet, void *context);
 static void LF_GetSession(const SCP_Packet *const packet, void *context);
-static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context);
-
-static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
-static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context);
-static void LF_CommandSetSensorWeights(const SCP_Packet *const packet, void *context);
+static void LF_EnterBootloader(const SCP_Packet *const packet, void *context);
 
 const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_SET_MODE,       1U,                     LF_SetMode},
@@ -38,12 +34,7 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_SET_DEBUG_MODE, 1U,                     LF_SetDebugMode},
     {LF_CMD_GET_SESSION,    0U,                     LF_GetSession},
 
-    {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
-    {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
-
-    {LF_CMD_GET_SENSOR_WEIGHTS, 0U, LF_CommandGetSensorWeights},
-
-    {LF_CMD_ENTER_BOOTLOADER, 0U, LF_CommandEnterBootloader},
+    {LF_CMD_ENTER_BOOTLOADER, 0U, LF_EnterBootloader},
 };
 
 static inline void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
@@ -131,66 +122,10 @@ static void LF_GetSession(const SCP_Packet *const packet, void *context)
     SCP_Transmit(&me->scpInstance, LF_CMD_GET_SESSION, responseData, sizeof(responseData) - 1);
 };
 
-static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context)
+static void LF_EnterBootloader(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
 
     *me->bootFlags = LF_COMMAND_ENTER_BOOT_FLAG;
     HAL_NVIC_SystemReset();
-}
-
-static void LF_CommandSetPID(const SCP_Packet *const packet, void *context)
-{
-    struct pidData
-    {
-        uint8_t pidType;
-        float kp;
-        float ki;
-        float kd;
-    } __attribute__((__packed__));
-
-    LineFollower_T *const me = (LineFollower_T *const)context;
-    const struct pidData *input = (const struct pidData *)packet->data;
-
-    switch (input->pidType)
-    {
-    case 0:
-        me->nvmBlock->pidStgSensor.kp = input->kp;
-        me->nvmBlock->pidStgSensor.ki = input->ki;
-        me->nvmBlock->pidStgSensor.kd = input->kd;
-        PID_Init(&me->pidSensorInstance);
-        break;
-    /* TODO: Handle other PID controllers after implementation
-    case 1:
-        NVM_Block.pidStgMotorLeft.kp = input->kp;
-        NVM_Block.pidStgMotorLeft.ki = input->ki;
-        NVM_Block.pidStgMotorLeft.kd = input->kd;
-        PID_Init(&PidMotorLeftInstance, &NVM_Block.pidStgMotorLeft);
-        break;
-    case 2:
-        NVM_Block.pidStgMotorRight.kp = input->kp;
-        NVM_Block.pidStgMotorRight.ki = input->ki;
-        NVM_Block.pidStgMotorRight.kd = input->kd;
-        PID_Init(&PidMotorRightInstance, &NVM_Block.pidStgMotorRight);
-        break;
-    */
-    default:
-        break;
-    }
-}
-
-static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context)
-{
-    LineFollower_T *const me = (LineFollower_T *const )context;
-
-    LF_CommandTransmitResponse(me, LF_CMD_GET_SENSOR_WEIGHTS,
-                               me->nvmBlock->sensors.weights, sizeof(me->nvmBlock->sensors.weights));
-}
-
-static void LF_CommandSetSensorWeights(const SCP_Packet *const packet, void *context)
-{
-    // memcpy(NVM_Block.sensorWeights, buffer, size);
-    // // Sensors_Config_Init(&hadc1, NVM_Block.sensorWeights);
-
-    // SCP_Transmit(&ScpInstance, response, sizeof(response));
 }
