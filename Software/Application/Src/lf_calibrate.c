@@ -19,10 +19,8 @@ typedef struct
 
 static LF_CalibrationData_T LF_CalibrationData;
 
-static void LF_ApplySensorThresholds(void)
+static int LF_ApplySensorThresholds(LineFollower_T *const me)
 {
-    uint16_t thresholds[SENSORS_NUMBER];
-
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
         uint16_t minValue = LF_CalibrationData.sensorValues[i][CALIB_MIN_VALUE_IDX];
@@ -30,10 +28,11 @@ static void LF_ApplySensorThresholds(void)
         uint16_t range = maxValue - minValue;
         uint16_t threshold = minValue + (range / 2U);
 
-        thresholds[i] = threshold;
+        me->nvmBlock->sensors.thresholds[i] = threshold;
     }
 
-    Sensors_SetThresholds(thresholds);
+    Sensors_SetThresholds(me->nvmBlock->sensors.thresholds);
+    return NVM_Write(&me->nvmInstance);
 }
 
 static void LF_StopCalibration(LineFollower_T *const me)
@@ -89,9 +88,16 @@ LF_CalibrationStatus_T LF_CalibrateSensors(LineFollower_T *const me)
 
     if ((currentTime - LF_CalibrationData.startTime) >= LF_CalibrationData.calibrationTime)
     {
-        LF_ApplySensorThresholds();
         LF_StopCalibration(me);
-        return LF_CALIBRATION_COMPLETE;
+
+        if (0 == LF_ApplySensorThresholds(me))
+        {
+            return LF_CALIBRATION_COMPLETE;
+        }
+        else
+        {
+            return LF_CALIBRATION_ERROR;
+        }
     }
 
     return LF_CALIBRATION_IN_PROGRESS;

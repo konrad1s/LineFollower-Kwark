@@ -53,6 +53,12 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
 
         if (LF_CALIBRATION_COMPLETE == status)
         {
+            SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
+            me->state = LF_IDLE;
+        }
+        else if (LF_CALIBRATION_ERROR == status)
+        {
+            SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
             me->state = LF_IDLE;
         }
         break;

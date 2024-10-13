@@ -45,7 +45,7 @@ signals:
 
 private:
     static constexpr int CONNECTION_TIMEOUT = 5000;
-    static constexpr int RESPONSE_TIMEOUT = 2000;
+    static constexpr int RESPONSE_TIMEOUT = 5000;
 
     QBluetoothDeviceDiscoveryAgent *discoveryAgent;
     QBluetoothSocket *bluetoothSocket;
