@@ -3,11 +3,15 @@
 #include "boot_commands.h"
 #include "crc.h"
 
-#define BOOT_BACKDOOR_TIMEOUT 50000U
+#define BOOT_BACKDOOR_TIMEOUT 50U
+#define BOOT_EXTENDED_TIMEOUT 30000U
+#define BOOT_APP_RESET_FLAG 0xDEADBEEF
 #define BOOT_SCP_BUFFER_SIZE 4096U
 
 extern void Boot_JumpToApp(uint32_t address);
+static void Boot_CheckAndClearBootShared(uint32_t *bootFlags);
 
+__attribute__((section(".noinit_shared"))) static uint32_t bootFlags;
 static uint8_t scpBuffer[BOOT_SCP_BUFFER_SIZE];
 
 static Bootloader_T bootloader = {
@@ -49,7 +53,7 @@ static void Boot_HandleStateIdle(Boot_Event_T event)
     switch (event)
     {
         case BOOT_EVENT_TIMER_TICK:
-            if (bootloader.backdoorTimer < BOOT_BACKDOOR_TIMEOUT)
+            if (bootloader.backdoorTimer < bootloader.backdoorTimerTimeout)
             {
                 bootloader.backdoorTimer++;
             }
@@ -61,6 +65,7 @@ static void Boot_HandleStateIdle(Boot_Event_T event)
             break;
         case BOOT_EVENT_START_DOWNLOAD:
             bootloader.backdoorTimer = 0U;
+            bootloader.backdoorTimerTimeout = BOOT_EXTENDED_TIMEOUT;
             bootloader.state = BOOT_STATE_ERASING;
             break;
         case BOOT_EVENT_JUMP_TO_APP:
@@ -102,6 +107,11 @@ static void Boot_HandleStateErasing(Boot_Event_T event)
 {
     switch (event)
     {
+        case BOOT_EVENT_JUMP_TO_APP:
+            /* Still jump to app is possible before erase event */
+            bootloader.backdoorTimer = 0U;
+            bootloader.state = BOOT_STATE_BOOTING;
+            break;
         case BOOT_EVENT_ERASE_APP:
             bootloader.isAppValid = false;
             if (FlashManager_Erase(&bootloader.flashManager) == 0)
@@ -167,13 +177,35 @@ static void Boot_HandleStateVerifying(Boot_Event_T event)
     }
 }
 
+static void Boot_CheckAndClearBootShared(uint32_t *bootFlags)
+{
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST))
+    {
+        *bootFlags = 0U;
+    }
+
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+}
+
+
 void Boot_Init(void)
 {
+    bootloader.backdoorTimer = 0U;
+    bootloader.isAppValid = false;
+    bootloader.noInitFlags = &bootFlags;
+    bootloader.state = BOOT_STATE_IDLE;
+    bootloader.backdoorTimerTimeout = BOOT_BACKDOOR_TIMEOUT;
+
     Boot_EventQueueInit(&bootloader.eventQueue);
     (void)SCP_Init(&bootloader.scpInstance);
 
-    bootloader.backdoorTimer = 0U;
-    bootloader.isAppValid = false;
+    Boot_CheckAndClearBootShared(bootloader.noInitFlags);
+    if (*bootloader.noInitFlags == BOOT_APP_RESET_FLAG)
+    {
+        /* Reset from application detected */
+        Boot_AddEvent(BOOT_EVENT_START_DOWNLOAD);
+        SCP_Transmit(&bootloader.scpInstance, BOOT_CMD_START_DOWNLOAD, NULL, 0);
+    }
 }
 
 void Boot_MainFunction(void)

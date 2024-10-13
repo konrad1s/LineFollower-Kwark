@@ -6,7 +6,8 @@
 typedef enum
 {
     LF_CALIBRATION_IN_PROGRESS,
-    LF_CALIBRATION_COMPLETE
+    LF_CALIBRATION_ERROR,
+    LF_CALIBRATION_COMPLETE,
 } LF_CalibrationStatus_T;
 
 void LF_StartCalibration(LineFollower_T *const me);

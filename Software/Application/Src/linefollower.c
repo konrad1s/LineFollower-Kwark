@@ -6,6 +6,8 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig);
 static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig);
 
+__attribute__((section(".noinit_shared"))) static uint32_t bootloaderFlags;
+
 static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const )context;
@@ -97,6 +99,7 @@ int LF_Init(LineFollower_T *const me)
     me->isDebugMode = false;
     me->timer = 0U;
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
+    me->bootFlags = &bootloaderFlags;
 
     LF_SignalQueue_Init(&me->signals);
     memset(&me->debugData, 0, sizeof(me->debugData));

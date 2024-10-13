@@ -10,6 +10,8 @@
 #define LF_COMMAND_MODE_START   0x00U
 #define LF_COMMAND_MODE_STOP    0x01U
 
+#define LF_COMMAND_ENTER_BOOT_FLAG 0xDEADBEEF
+
 extern NVM_Layout_T NVM_Block;
 extern PID_Instance_T PidSensorInstance;
 extern SCP_Instance_T ScpInstance;
@@ -20,6 +22,7 @@ static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
 static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
 static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
 static void LF_SetDebugMode(const SCP_Packet *const packet, void *context);
+static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context);
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
 static void LF_CommandGetSensorWeights(const SCP_Packet *const packet, void *context);
@@ -37,6 +40,8 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
 
     {LF_CMD_GET_SENSOR_WEIGHTS, 0U, LF_CommandGetSensorWeights},
+
+    {LF_CMD_ENTER_BOOTLOADER, 0U, LF_CommandEnterBootloader},
 };
 
 static inline void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
@@ -114,6 +119,14 @@ static void LF_SetDebugMode(const SCP_Packet *const packet, void *context)
     {
         LF_CommandTransmitResponse(me, LF_CMD_SET_DEBUG_MODE, NULL, 0);
     }
+}
+
+static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context)
+{
+    LineFollower_T *const me = (LineFollower_T *const )context;
+
+    *me->bootFlags = LF_COMMAND_ENTER_BOOT_FLAG;
+    HAL_NVIC_SystemReset();
 }
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context)

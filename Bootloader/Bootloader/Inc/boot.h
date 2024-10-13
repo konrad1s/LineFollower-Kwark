@@ -21,9 +21,11 @@ typedef struct
 {
     Boot_State_T state;
     uint32_t backdoorTimer;
+    uint32_t backdoorTimerTimeout;
+    uint32_t *noInitFlags;
+    bool isAppValid;
     uint8_t flashBuffer[BOOT_FLASH_BUFFER_SIZE];
     Boot_EventQueue_T eventQueue;
-    bool isAppValid;
 
     SCP_Instance_T scpInstance;
     Flash_Manager_T flashManager;

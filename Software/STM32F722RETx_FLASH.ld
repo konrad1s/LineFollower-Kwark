@@ -61,8 +61,9 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 256K
-FLASH (rx)      : ORIGIN = 0x800C000, LENGTH = 512K - 0xC000
+RAM_NOINIT (xrw)  : ORIGIN = 0x20000000, LENGTH = 0x10
+RAM (xrw)         : ORIGIN = 0x20000010, LENGTH = 256K - 0x10
+FLASH (rx)        : ORIGIN = 0x800C000, LENGTH = 512K - 0xC000
 }
 
 /* Define output sections */
@@ -147,6 +148,14 @@ SECTIONS
 
   
   /* Uninitialized data section */
+  . = ALIGN(4);
+  .noinit_shared :
+  {
+      . = ALIGN(4);
+      *(.noinit_shared)
+      . = ALIGN(4);
+  } >RAM_NOINIT
+
   . = ALIGN(4);
   .bss :
   {

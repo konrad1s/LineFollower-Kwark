@@ -3,7 +3,7 @@
 
 #include "scp.h"
 
-#define LINEFOLLOWER_COMMANDS_NUMBER 9U
+#define LINEFOLLOWER_COMMANDS_NUMBER 11U
 
 enum LF_Commands
 {
@@ -19,6 +19,8 @@ enum LF_Commands
     LF_CMD_SET_SENSOR_WEIGHTS   = 0x0101,
 
     LF_CMD_GET_SENSOR_WEIGHTS = 0x0200,
+
+    LF_CMD_ENTER_BOOTLOADER = 0xF002,
 };
 
 extern const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER];

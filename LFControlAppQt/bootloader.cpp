@@ -250,7 +250,6 @@ void Bootloader::sendNextFirmwareChunk()
 
     int progress = (bytesSent * 100) / totalBytesToFlash;
     emit progressUpdated(progress);
-    emit bootloaderMessage(QString("Flashing firmware: %1%").arg(progress));
 }
 
 void Bootloader::validateApplication()
@@ -262,6 +261,7 @@ void Bootloader::validateApplication()
 void Bootloader::jumpToApplication()
 {
     bluetoothHandler->sendCommand(Command::BootJumpToApp, QByteArray());
+    emit progressUpdated(0);
     emit bootloaderMessage("Jump to application command sent.");
 }
 

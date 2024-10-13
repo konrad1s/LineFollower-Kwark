@@ -54,13 +54,7 @@ int FlashManager_Write(Flash_Manager_T *const manager, uint32_t startAddress, co
 
     while (size > 0)
     {
-        if (size >= 8 && currentAddress % 8 == 0)
-        {
-            programType = FLASH_TYPEPROGRAM_DOUBLEWORD;
-            programData = *(uint64_t *)pData;
-            increment = 8;
-        }
-        else if (size >= 4 && currentAddress % 4 == 0)
+        if (size >= 4 && currentAddress % 4 == 0)
         {
             programType = FLASH_TYPEPROGRAM_WORD;
             programData = *(uint32_t *)pData;
