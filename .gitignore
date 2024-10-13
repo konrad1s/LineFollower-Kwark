@@ -42,14 +42,14 @@
 .settings/
 
 # Project specific files
-Software/Output/*
-Software/build/*
+*/Output/*
+*/build/*
 *.ioc
 *.s
 *.jlink
 *.jdebug
 *icf
 
-.vscode/*
+*/.vscode/*
 *.user
 .mxproject

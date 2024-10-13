@@ -50,18 +50,18 @@ const NVM_Layout_T NvmDefaultData = {
 /* --------------------------------- SENSORS CONFIG --------------------------------- */
 
 const Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
-    {GPIOC, LED12_Pin},
-    {GPIOC, LED11_Pin},
-    {GPIOC, LED10_Pin},
-    {GPIOC, LED9_Pin},
-    {GPIOC, LED8_Pin},
-    {GPIOC, LED7_Pin},
-    {GPIOB, LED6_Pin},
-    {GPIOB, LED5_Pin},
-    {GPIOB, LED4_Pin},
-    {GPIOB, LED3_Pin},
-    {GPIOB, LED2_Pin},
     {GPIOB, LED1_Pin},
+    {GPIOB, LED2_Pin},
+    {GPIOB, LED3_Pin},
+    {GPIOB, LED4_Pin},
+    {GPIOB, LED5_Pin},
+    {GPIOB, LED6_Pin},
+    {GPIOC, LED7_Pin},
+    {GPIOC, LED8_Pin},
+    {GPIOC, LED9_Pin},
+    {GPIOC, LED10_Pin},
+    {GPIOC, LED11_Pin},
+    {GPIOC, LED12_Pin},
 };
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */
