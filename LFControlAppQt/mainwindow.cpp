@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabChart1->setLayout(tab1Layout);
 
     plot2 = new Plot(this, "Sensor error", "Time", "Error");
+    plot2->setAxisRange(0,0, -10, 10);
     QVBoxLayout *tab2Layout = new QVBoxLayout(ui->tabChart2);
     tab2Layout->addWidget(plot2);
     ui->tabChart2->setLayout(tab2Layout);
@@ -386,8 +387,6 @@ void MainWindow::updateDebugData(const QByteArray &data)
 
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch() - plotStartTime;
     plot2->addDataPoint(currentTime, debugData.sensorError);
-
-    addToLogs("Debug data updated: \n" + debugData.toString(), true);
 }
 
 void MainWindow::addToLogs(const QString &msg, bool isDebugMsg)

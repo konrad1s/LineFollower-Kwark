@@ -192,7 +192,7 @@
      <property name="title">
       <string>Bootloader</string>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1156,6 +1156,9 @@
      </property>
      <property name="text">
       <string>DebugLogs</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButtonSaveLogs">

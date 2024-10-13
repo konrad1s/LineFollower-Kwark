@@ -7,7 +7,7 @@
 #include "scp.h"
 #include "tb6612_motor.h"
 
-#define NVM_SECTOR_USED  FLASH_SECTOR_7
+#define NVM_SECTOR_USED  FLASH_SECTOR_2
 
 #define SCP_BUFFER_SIZE  256U
 

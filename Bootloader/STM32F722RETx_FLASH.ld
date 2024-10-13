@@ -63,7 +63,7 @@ MEMORY
 {
 RAM_NOINIT (xrw)  : ORIGIN = 0x20000000, LENGTH = 0x10
 RAM (xrw)      : ORIGIN = 0x20000010, LENGTH = 256K - 0x10
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 512K
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 32K
 }
 
 /* Define output sections */

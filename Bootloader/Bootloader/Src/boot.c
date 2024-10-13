@@ -26,7 +26,7 @@ static Bootloader_T bootloader = {
     .flashManager = {
         .appSectorRange = {
             .startSector = FLASH_SECTOR_3,
-            .sectorCount = 4U},
+            .sectorCount = 5U},
         .appStartAddress = 0x0800C000U,
         .appEndAddress = 0x0805FFFFU
         },
