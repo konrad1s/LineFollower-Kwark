@@ -56,28 +56,21 @@ void QLedIndicator::resizeEvent(QResizeEvent *event)
 
 void QLedIndicator::paintEvent(QPaintEvent *event)
 {
-    static QPixmap cachedPixmap;
+    QPixmap pixmap(size());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
 
-    if (cachedPixmap.size() != size() || m_on)
+    if (m_on)
     {
-        QPixmap pixmap(size());
-        pixmap.fill(Qt::transparent);
-        QPainter painter(&pixmap);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        if (m_on)
-        {
-            painter.setBrush(m_color);
-        }
-        else
-        {
-            painter.setBrush(Qt::darkGray);
-        }
-        painter.drawEllipse(0, 0, width(), height());
-
-        cachedPixmap = pixmap;
+        painter.setBrush(m_color);
     }
+    else
+    {
+        painter.setBrush(Qt::darkGray);
+    }
+    painter.drawEllipse(0, 0, width(), height());
 
-    QPainter painter(this);
-    painter.drawPixmap(0, 0, cachedPixmap);
+    QPainter widgetPainter(this);
+    widgetPainter.drawPixmap(0, 0, pixmap);
 }
