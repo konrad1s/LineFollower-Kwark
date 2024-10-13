@@ -2,6 +2,7 @@
 #include "boot.h"
 #include <string.h>
 
+static void Boot_GetSession(const SCP_Packet *const packet, void *context);
 static void Boot_GetVersionCmd(const SCP_Packet *const packet, void *context);
 static void Boot_StartDownloadCmd(const SCP_Packet *const packet, void *context);
 static void Boot_EraseAppCmd(const SCP_Packet *const packet, void *context);
@@ -12,6 +13,7 @@ static void Boot_JumpToAppCmd(const SCP_Packet *const packet, void *context);
 
 
 const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS] = {
+     {BOOT_CMD_GET_SESSION,     0,  Boot_GetSession},
      {BOOT_CMD_GET_VERSION,     0,  Boot_GetVersionCmd},
      {BOOT_CMD_START_DOWNLOAD,  0,  Boot_StartDownloadCmd},
      {BOOT_CMD_ERASE_APP,       0,  Boot_EraseAppCmd},
@@ -21,10 +23,18 @@ const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS] = {
      {BOOT_CMD_JUMP_TO_APP,     0,  Boot_JumpToAppCmd},
 };
 
+static void Boot_GetSession(const SCP_Packet *const packet, void *context)
+{
+    Bootloader_T *const me = (Bootloader_T *const )context;
+    const uint8_t responseData[] = "Bootloader ";
+
+    SCP_Transmit(&me->scpInstance, BOOT_CMD_GET_SESSION, responseData, sizeof(responseData) - 1);
+};
+
 static void Boot_GetVersionCmd(const SCP_Packet *const packet, void *context)
 {
-    const uint8_t responseData[] = {0x01, 0x00, 0x00, 0x00};
     Bootloader_T *const me = (Bootloader_T *const )context;
+    const uint8_t responseData[] = {'1', '.', '0', '0'};
 
     SCP_Transmit(&me->scpInstance, BOOT_CMD_GET_VERSION, responseData, sizeof(responseData));
 };

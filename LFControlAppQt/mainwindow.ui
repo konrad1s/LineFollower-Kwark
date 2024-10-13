@@ -197,8 +197,8 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>258</width>
-        <height>188</height>
+        <width>261</width>
+        <height>201</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -207,25 +207,36 @@
          <item>
           <widget class="QPushButton" name="pushButtonBootEnter">
            <property name="text">
-            <string>Enter Bootloader</string>
+            <string>Enter bootloader</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonBootJumpApp">
            <property name="text">
-            <string>Jump To App</string>
+            <string>Jump to app</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonBootReadVersion">
-         <property name="text">
-          <string>Read Boot Version</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_37">
+         <item>
+          <widget class="QPushButton" name="pushButtonBootReadVersion">
+           <property name="text">
+            <string>Read boot version</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonBootGetSession">
+           <property name="text">
+            <string>Get active session</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -240,24 +251,6 @@
            </item>
            <item>
             <widget class="QLineEdit" name="lineEditBootFile">
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_33">
-           <item>
-            <widget class="QPushButton" name="pushButtonBootLoadKey">
-             <property name="text">
-              <string>Load Key</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditBootKey">
              <property name="readOnly">
               <bool>true</bool>
              </property>
@@ -282,13 +275,6 @@
             <widget class="QPushButton" name="pushButtonBootFlash">
              <property name="text">
               <string>Flash</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonBootValidate">
-             <property name="text">
-              <string>Validate</string>
              </property>
             </widget>
            </item>

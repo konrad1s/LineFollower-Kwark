@@ -155,7 +155,7 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
     case Command::BootGetVersion:
     {
         QString version = QString::fromLatin1(data);
-        addToLogs("Bootloader version received: " + version, true);
+        addToLogs("Bootloader version received: " + version, false);
         break;
     }
     case Command::BootEraseApp:
@@ -166,6 +166,12 @@ void MainWindow::handleDataReceived(Command command, const QByteArray &data)
     case Command::BootValidateApp:
     {
         addToLogs("Application validation completed.", true);
+        break;
+    }
+    case Command::GetActiveSession:
+    {
+        QString session = QString::fromLatin1(data);
+        addToLogs("Active session: " + session, false);
         break;
     }
     default:
@@ -458,24 +464,6 @@ void MainWindow::on_pushButtonBootSelectFile_clicked()
     }
 }
 
-void MainWindow::on_pushButtonBootLoadKey_clicked()
-{
-    QString keyFilePath = QFileDialog::getOpenFileName(this, tr("Select Key File"), "", tr("Key Files (*.key);;All Files (*)"));
-    if (!keyFilePath.isEmpty())
-    {
-        QFile keyFile(keyFilePath);
-        if (keyFile.open(QIODevice::ReadOnly))
-        {
-            QByteArray keyData = keyFile.readAll();
-            bootloader->loadKey(keyData);
-        }
-        else
-        {
-            QMessageBox::warning(this, tr("Load Key"), tr("Failed to open key file."));
-        }
-    }
-}
-
 void MainWindow::on_pushButtonBootErase_clicked()
 {
     bootloader->eraseApplication();
@@ -486,14 +474,13 @@ void MainWindow::on_pushButtonBootFlash_clicked()
     bootloader->flashFirmware();
 }
 
-void MainWindow::on_pushButtonBootValidate_clicked()
-{
-    bootloader->validateApplication();
-}
-
 void MainWindow::on_pushButtonBootJumpApp_clicked()
 {
     bootloader->jumpToApplication();
 }
 
-
+void MainWindow::on_pushButtonBootGetSession_clicked()
+{
+    bluetoothHandler->sendCommand(Command::GetActiveSession, nullptr);
+    addToLogs("Get session command sent", true);
+}

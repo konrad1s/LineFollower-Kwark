@@ -22,6 +22,7 @@ static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
 static void LF_ReadNvmData(const SCP_Packet *const packet, void *context);
 static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
 static void LF_SetDebugMode(const SCP_Packet *const packet, void *context);
+static void LF_GetSession(const SCP_Packet *const packet, void *context);
 static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context);
 
 static void LF_CommandSetPID(const SCP_Packet *const packet, void *context);
@@ -35,6 +36,7 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_READ_NVM_DATA,  0U,                     LF_ReadNvmData},
     {LF_CMD_WRITE_NVM_DATA, sizeof(NVM_Layout_T),   LF_WriteNvmData},
     {LF_CMD_SET_DEBUG_MODE, 1U,                     LF_SetDebugMode},
+    {LF_CMD_GET_SESSION,    0U,                     LF_GetSession},
 
     {LF_CMD_SET_PID,            13U, LF_CommandSetPID},
     {LF_CMD_SET_SENSOR_WEIGHTS, 12U, LF_CommandSetSensorWeights},
@@ -120,6 +122,14 @@ static void LF_SetDebugMode(const SCP_Packet *const packet, void *context)
         LF_CommandTransmitResponse(me, LF_CMD_SET_DEBUG_MODE, NULL, 0);
     }
 }
+
+static void LF_GetSession(const SCP_Packet *const packet, void *context)
+{
+    LineFollower_T *const me = (LineFollower_T *const )context;
+    const uint8_t responseData[] = "Application";
+
+    SCP_Transmit(&me->scpInstance, LF_CMD_GET_SESSION, responseData, sizeof(responseData) - 1);
+};
 
 static void LF_CommandEnterBootloader(const SCP_Packet *const packet, void *context)
 {

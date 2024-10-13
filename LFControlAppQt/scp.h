@@ -84,8 +84,8 @@ private:
         {Command::SetPID,               0},
         {Command::SetSensorWeights,     0},
         {Command::GetSensorWeights,     0},
-
-        {Command::BootGetVersion,       4U},
+        {Command::GetActiveSession,     11},
+        {Command::BootGetVersion,       4},
         {Command::BootStartDownload,    0},
         {Command::BootEraseApp,         0},
         {Command::BootFlashData,        0},

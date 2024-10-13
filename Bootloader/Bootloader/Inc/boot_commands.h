@@ -3,10 +3,11 @@
 
 #include "scp.h"
 
-#define BOOT_CMD_NUMBERS    7U
+#define BOOT_CMD_NUMBERS    8U
 
 enum Boot_ScpCommands
 {
+    BOOT_CMD_GET_SESSION    = 0x0007,
     BOOT_CMD_GET_VERSION    = 0xF001,
     BOOT_CMD_START_DOWNLOAD = 0xF002,
     BOOT_CMD_ERASE_APP      = 0xF003,

@@ -12,6 +12,7 @@ enum class Command : uint16_t
     WriteNvmData     = 0x0004,
     SetDebugMode     = 0x0005,
     DebugData        = 0x0006,
+    GetActiveSession = 0x0007,
     SetPID           = 0x0100,
     SetSensorWeights = 0x0101,
     GetSensorWeights = 0x0200,
