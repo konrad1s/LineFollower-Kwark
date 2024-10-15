@@ -25,7 +25,7 @@ int Encoder_Init(Encoder_Instance_T *const encoder)
     encoder->count = 0;
     encoder->countPrev = 0;
     encoder->deltaCount = 0;
-    encoder->settings->velocity = 0.0f;
+    encoder->velocity = 0.0f;
 
     return 0;
 }
@@ -105,6 +105,6 @@ void Encoder_Update(Encoder_Instance_T *const encoder, float dt)
     /* Calculate linear distance traveled */
     float distance = wheelRotations * PI * encoder->settings->wheelDiameter;
 
-    /* Calculate settings->velocity (distance per time interval) */
-    encoder->settings->velocity = distance / dt;
+    /* Calculate velocity (distance per time interval) */
+    encoder->velocity = distance / dt;
 }

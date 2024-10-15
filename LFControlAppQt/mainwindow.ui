@@ -110,7 +110,7 @@
        <x>40</x>
        <y>150</y>
        <width>203</width>
-       <height>151</height>
+       <height>251</height>
       </rect>
      </property>
      <property name="title">
@@ -175,6 +175,85 @@
            <string>Write NvM</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_28">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_50">
+          <item>
+           <widget class="QLabel" name="label_42">
+            <property name="text">
+             <string>Current speed:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_48">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditCurrentSpeed">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_53">
+          <item>
+           <widget class="QLabel" name="label_43">
+            <property name="text">
+             <string>Current error:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_47">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditCurrentError">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -1198,122 +1277,24 @@
     </property>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
-      <string>Sensors</string>
+      <string>General</string>
      </attribute>
-     <widget class="QWidget" name="layoutWidget_4">
+     <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>10</y>
-        <width>722</width>
-        <height>28</height>
+        <width>421</width>
+        <height>94</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_43">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_42">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="QLabel" name="label_40">
-           <property name="text">
-            <string>fallbackError-</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_49">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditfallbackNegative"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_41">
-         <item>
-          <widget class="QLabel" name="label_39">
-           <property name="text">
-            <string>fallbackError+</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_48">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditfallbackPositive"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_40">
-         <item>
-          <widget class="QLabel" name="label_38">
-           <property name="text">
-            <string>errorThreshold</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_47">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditErrorThreshold"/>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab">
-     <attribute name="title">
-      <string>PID1</string>
-     </attribute>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>546</width>
-        <height>98</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_44">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_24">
+          <layout class="QHBoxLayout" name="horizontalLayout_40">
            <item>
-            <spacer name="horizontalSpacer_31">
+            <spacer name="horizontalSpacer_3">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1326,46 +1307,19 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_22">
+            <widget class="QLabel" name="label_38">
              <property name="text">
-              <string>output min:</string>
+              <string>errorThreshold:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid1OutputMin"/>
+            <widget class="QLineEdit" name="lineEditErrorThreshold"/>
            </item>
           </layout>
          </item>
          <item>
-          <spacer name="horizontalSpacer_30">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>output max:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditPid1OutputMax"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QHBoxLayout" name="horizontalLayout_41">
            <item>
             <spacer name="horizontalSpacer_29">
              <property name="orientation">
@@ -1380,52 +1334,21 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_20">
+            <widget class="QLabel" name="label_39">
              <property name="text">
-              <string>integral min:</string>
+              <string>fallbackError+:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid1IntMin"/>
+            <widget class="QLineEdit" name="lineEditfallbackPositive"/>
            </item>
           </layout>
          </item>
-         <item row="0" column="1">
-          <spacer name="horizontalSpacer_28">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="0" column="2">
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="label_19">
-             <property name="text">
-              <string>integral max:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid1IntMax"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_46">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <layout class="QHBoxLayout" name="horizontalLayout_42">
            <item>
-            <spacer name="horizontalSpacer_27">
+            <spacer name="horizontalSpacer_33">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1438,21 +1361,100 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_18">
+            <widget class="QLabel" name="label_40">
              <property name="text">
-              <string>kd:</string>
+              <string>fallbackError-:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid1Kd"/>
+            <widget class="QLineEdit" name="lineEditfallbackNegative"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_46">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_28">
+         <item>
+          <widget class="QLabel" name="label_41">
+           <property name="text">
+            <string>target speed:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditTargetSpeed">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>PID Sensors</string>
+     </attribute>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>821</width>
+        <height>94</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_38">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_18">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_45">
+           <item>
+            <spacer name="horizontalSpacer_38">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>kp:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid1Kp"/>
            </item>
           </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
-            <spacer name="horizontalSpacer_4">
+            <spacer name="horizontalSpacer_37">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1477,9 +1479,9 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_45">
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
            <item>
-            <spacer name="horizontalSpacer_3">
+            <spacer name="horizontalSpacer_39">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1492,181 +1494,172 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>kp:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid1Kp"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>PID2</string>
-     </attribute>
-     <widget class="QWidget" name="layoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>546</width>
-        <height>98</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_47">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_25">
-           <item>
-            <spacer name="horizontalSpacer_32">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_23">
-             <property name="text">
-              <string>output min:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid2OutputMin"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_33">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_24">
-           <property name="text">
-            <string>output max:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditPid2OutputMax"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
-           <item>
-            <spacer name="horizontalSpacer_34">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_25">
-             <property name="text">
-              <string>integral min:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid2IntMin"/>
-           </item>
-          </layout>
-         </item>
-         <item row="0" column="1">
-          <spacer name="horizontalSpacer_35">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="0" column="2">
-          <layout class="QHBoxLayout" name="horizontalLayout_23">
-           <item>
-            <widget class="QLabel" name="label_26">
-             <property name="text">
-              <string>integral max:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid2IntMax"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_48">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_26">
-           <item>
-            <spacer name="horizontalSpacer_36">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_27">
+            <widget class="QLabel" name="label_18">
              <property name="text">
               <string>kd:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid2Kd"/>
+            <widget class="QLineEdit" name="lineEditPid1Kd"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_27">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_22">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>integral min:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid1IntMin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>integral max:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid1IntMax"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_28">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_24">
+           <item>
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>output min:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid1OutputMin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_33">
+           <item>
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>output max:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid1OutputMax"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_30">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>PID EncoderLeft</string>
+     </attribute>
+     <widget class="QWidget" name="layoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>821</width>
+        <height>94</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_44">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_49">
+           <item>
+            <spacer name="horizontalSpacer_40">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_29">
+             <property name="text">
+              <string>kp:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid2Kp"/>
            </item>
           </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_27">
            <item>
-            <spacer name="horizontalSpacer_37">
+            <spacer name="horizontalSpacer_41">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1691,9 +1684,9 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_49">
+          <layout class="QHBoxLayout" name="horizontalLayout_26">
            <item>
-            <spacer name="horizontalSpacer_38">
+            <spacer name="horizontalSpacer_42">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
@@ -1706,152 +1699,143 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_29">
+            <widget class="QLabel" name="label_27">
              <property name="text">
-              <string>kp:</string>
+              <string>kd:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid2Kp"/>
+            <widget class="QLineEdit" name="lineEditPid2Kd"/>
            </item>
           </layout>
          </item>
         </layout>
        </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_3">
-     <attribute name="title">
-      <string>PID3</string>
-     </attribute>
-     <widget class="QWidget" name="layoutWidget_3">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>546</width>
-        <height>98</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_50">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_28">
-           <item>
-            <spacer name="horizontalSpacer_39">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_30">
-             <property name="text">
-              <string>output min:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditPid3OutputMin"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_40">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_31">
-           <property name="text">
-            <string>output max:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEditPid3OutputMax"/>
-         </item>
-        </layout>
+        <spacer name="horizontalSpacer_31">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_29">
+        <layout class="QVBoxLayout" name="verticalLayout_25">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <spacer name="horizontalSpacer_41">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_32">
+            <widget class="QLabel" name="label_25">
              <property name="text">
               <string>integral min:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid3IntMin"/>
+            <widget class="QLineEdit" name="lineEditPid2IntMin"/>
            </item>
           </layout>
          </item>
-         <item row="0" column="1">
-          <spacer name="horizontalSpacer_42">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="0" column="2">
-          <layout class="QHBoxLayout" name="horizontalLayout_30">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_23">
            <item>
-            <widget class="QLabel" name="label_33">
+            <widget class="QLabel" name="label_26">
              <property name="text">
               <string>integral max:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid3IntMax"/>
+            <widget class="QLineEdit" name="lineEditPid2IntMax"/>
            </item>
           </layout>
          </item>
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_51">
+        <spacer name="horizontalSpacer_32">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_24">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_31">
+          <layout class="QHBoxLayout" name="horizontalLayout_47">
+           <item>
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>output min:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid2OutputMin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_46">
+           <item>
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>output max:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid2OutputMax"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>PID EncoderRight</string>
+     </attribute>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>821</width>
+        <height>94</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_25">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_26">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_52">
            <item>
             <spacer name="horizontalSpacer_43">
              <property name="orientation">
@@ -1866,14 +1850,14 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_34">
+            <widget class="QLabel" name="label_36">
              <property name="text">
-              <string>kd:</string>
+              <string>kp:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid3Kd"/>
+            <widget class="QLineEdit" name="lineEditPid3Kp"/>
            </item>
           </layout>
          </item>
@@ -1905,7 +1889,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_52">
+          <layout class="QHBoxLayout" name="horizontalLayout_31">
            <item>
             <spacer name="horizontalSpacer_45">
              <property name="orientation">
@@ -1920,18 +1904,121 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label_36">
+            <widget class="QLabel" name="label_34">
              <property name="text">
-              <string>kp:</string>
+              <string>kd:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditPid3Kp"/>
+            <widget class="QLineEdit" name="lineEditPid3Kd"/>
            </item>
           </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_34">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_23">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_29">
+           <item>
+            <widget class="QLabel" name="label_32">
+             <property name="text">
+              <string>integral min:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid3IntMin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_30">
+           <item>
+            <widget class="QLabel" name="label_33">
+             <property name="text">
+              <string>integral max:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid3IntMax"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_35">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_27">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_48">
+           <item>
+            <widget class="QLabel" name="label_30">
+             <property name="text">
+              <string>output min:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid3OutputMin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_51">
+           <item>
+            <widget class="QLabel" name="label_31">
+             <property name="text">
+              <string>output max:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditPid3OutputMax"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_36">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -2017,8 +2104,6 @@
   <tabstop>lineEditfallbackNegative</tabstop>
   <tabstop>lineEditfallbackPositive</tabstop>
   <tabstop>lineEditfallbackPositive</tabstop>
-  <tabstop>lineEditPid1OutputMin</tabstop>
-  <tabstop>lineEditPid1OutputMax</tabstop>
   <tabstop>lineEditPid1IntMax</tabstop>
   <tabstop>pushButtonAutoConnect</tabstop>
   <tabstop>lineEditPid1Ki</tabstop>

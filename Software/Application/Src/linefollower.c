@@ -36,6 +36,7 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
         me->state = LF_CALIBRATION;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
+        me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
         Sensors_UpdateLeds();
         break;
     case LF_SIG_SEND_DEBUG_DATA:

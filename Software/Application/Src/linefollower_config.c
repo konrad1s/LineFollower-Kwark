@@ -19,7 +19,7 @@ const NVM_Layout_T NvmDefaultData = {
         .output_max = 100.0f,
         .output_min = -100.0f,
     },
-    .pidStgMotorLeft = {
+    .pidStgEncoderLeft = {
         .kp = 1.0f,
         .ki = 0.0f,
         .kd = 0.0f,
@@ -28,7 +28,7 @@ const NVM_Layout_T NvmDefaultData = {
         .output_max = 100.0f,
         .output_min = -100.0f,
     },
-    .pidStgMotorRight = {
+    .pidStgEncoderRight = {
         .kp = 1.0f,
         .ki = 0.0f,
         .kd = 0.0f,
@@ -38,13 +38,13 @@ const NVM_Layout_T NvmDefaultData = {
         .output_min = -100.0f,
     },
     .sensors = {
-        .weights = { -7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7},
-        .thresholds = { 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U},
+        .weights = {-7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7},
+        .thresholds = {3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U},
         .errorThreshold = 1.0f,
         .fallbackErrorPositive = 15.0f,
         .fallbackErrorNegative = -15.0f
-    }
-
+    },
+    .targetSpeed = 1.0f
 };
 
 /* --------------------------------- SENSORS CONFIG --------------------------------- */

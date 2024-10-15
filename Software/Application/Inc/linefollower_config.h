@@ -25,9 +25,10 @@ typedef struct
 typedef struct
 {
     PID_Settings_T pidStgSensor;
-    PID_Settings_T pidStgMotorLeft;
-    PID_Settings_T pidStgMotorRight;
+    PID_Settings_T pidStgEncoderLeft;
+    PID_Settings_T pidStgEncoderRight;
     NVM_Sensors_T sensors;
+    float targetSpeed;
 } NVM_Layout_T;
 
 extern const NVM_Layout_T NvmDefaultData;

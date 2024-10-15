@@ -6,7 +6,6 @@
 
 typedef struct
 {
-    float velocity;
     float gearRatio;
     float wheelDiameter;
 } Encoder_Settings_T;
@@ -20,6 +19,7 @@ typedef struct
     int32_t countPrev;
     int32_t deltaCount;
     uint32_t timerMax;
+    float velocity;
 } Encoder_Instance_T;
 
 int Encoder_Init(Encoder_Instance_T *const encoder);

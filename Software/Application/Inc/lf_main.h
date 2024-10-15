@@ -11,6 +11,7 @@
 #include "tb6612_motor.h"
 #include "linefollower_config.h"
 #include "linefollower_commands.h"
+#include "encoder.h"
 
 typedef enum 
 {
@@ -40,6 +41,11 @@ typedef struct
     NVM_Layout_T *const nvmBlock;
     SCP_Instance_T scpInstance;
     PID_Instance_T pidSensorInstance;
+    PID_Instance_T pidEncoderLeftInstance;
+    PID_Instance_T pidEncoderRightInstance;
+    Encoder_Instance_T encoderLeft;
+    Encoder_Instance_T encoderRight;
+    Encoder_Settings_T encoderStg;
     Sensor_Instance_T sensors[SENSORS_NUMBER];
 
     const Sensor_Led_T *const sensorLedsConfig;

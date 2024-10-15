@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabChart1->setLayout(tab1Layout);
 
     plot2 = new Plot(this, "Sensor error", "Time", "Error");
-    plot2->setAxisRange(0,0, -10, 10);
     QVBoxLayout *tab2Layout = new QVBoxLayout(ui->tabChart2);
     tab2Layout->addWidget(plot2);
     ui->tabChart2->setLayout(tab2Layout);
@@ -268,6 +267,7 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
     nvmLayout.sensors.errorThreshold = ui->lineEditErrorThreshold->text().toFloat();
     nvmLayout.sensors.fallbackErrorPositive = ui->lineEditfallbackPositive->text().toFloat();
     nvmLayout.sensors.fallbackErrorNegative = ui->lineEditfallbackNegative->text().toFloat();
+    nvmLayout.targetSpeed = ui->lineEditTargetSpeed->text().toFloat();
 
     struct PidSettingsUI
     {
@@ -284,9 +284,9 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
     PidSettingsUI pidSettingsUI[] = {
         {nvmLayout.pidStgSensor, ui->lineEditPid1Kp, ui->lineEditPid1Ki, ui->lineEditPid1Kd,
          ui->lineEditPid1IntMax, ui->lineEditPid1IntMin, ui->lineEditPid1OutputMax, ui->lineEditPid1OutputMin},
-        {nvmLayout.pidStgMotorLeft, ui->lineEditPid2Kp, ui->lineEditPid2Ki, ui->lineEditPid2Kd,
+        {nvmLayout.pidStgEncoderLeft, ui->lineEditPid2Kp, ui->lineEditPid2Ki, ui->lineEditPid2Kd,
          ui->lineEditPid2IntMax, ui->lineEditPid2IntMin, ui->lineEditPid2OutputMax, ui->lineEditPid2OutputMin},
-        {nvmLayout.pidStgMotorRight, ui->lineEditPid3Kp, ui->lineEditPid3Ki, ui->lineEditPid3Kd,
+        {nvmLayout.pidStgEncoderRight, ui->lineEditPid3Kp, ui->lineEditPid3Ki, ui->lineEditPid3Kd,
          ui->lineEditPid3IntMax, ui->lineEditPid3IntMin, ui->lineEditPid3OutputMax, ui->lineEditPid3OutputMin}};
 
     for (const PidSettingsUI &settings : pidSettingsUI)
@@ -334,6 +334,8 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
     ui->lineEditErrorThreshold->setText(QString::number(nvmLayout.sensors.errorThreshold));
     ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.sensors.fallbackErrorPositive));
     ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.sensors.fallbackErrorNegative));
+    ui->lineEditTargetSpeed->setText(QString::number(nvmLayout.targetSpeed));
+    plot2->setAxisRange(0, 0, nvmLayout.sensors.fallbackErrorNegative - 1, nvmLayout.sensors.fallbackErrorPositive + 1);
 
     struct PidSettings
     {
@@ -350,9 +352,9 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
     PidSettings pidSettings[] = {
         {nvmLayout.pidStgSensor, ui->lineEditPid1Kp, ui->lineEditPid1Ki, ui->lineEditPid1Kd,
          ui->lineEditPid1IntMax, ui->lineEditPid1IntMin, ui->lineEditPid1OutputMax, ui->lineEditPid1OutputMin},
-        {nvmLayout.pidStgMotorLeft, ui->lineEditPid2Kp, ui->lineEditPid2Ki, ui->lineEditPid2Kd,
+        {nvmLayout.pidStgEncoderLeft, ui->lineEditPid2Kp, ui->lineEditPid2Ki, ui->lineEditPid2Kd,
          ui->lineEditPid2IntMax, ui->lineEditPid2IntMin, ui->lineEditPid2OutputMax, ui->lineEditPid2OutputMin},
-        {nvmLayout.pidStgMotorRight, ui->lineEditPid3Kp, ui->lineEditPid3Ki, ui->lineEditPid3Kd,
+        {nvmLayout.pidStgEncoderRight, ui->lineEditPid3Kp, ui->lineEditPid3Ki, ui->lineEditPid3Kd,
          ui->lineEditPid3IntMax, ui->lineEditPid3IntMin, ui->lineEditPid3OutputMax, ui->lineEditPid3OutputMin}};
 
     for (const PidSettings &settings : pidSettings)
@@ -384,6 +386,8 @@ void MainWindow::updateDebugData(const QByteArray &data)
         ui->sensorLed1, ui->sensorLed2, ui->sensorLed3, ui->sensorLed4,
         ui->sensorLed5, ui->sensorLed6, ui->sensorLed7, ui->sensorLed8,
         ui->sensorLed9, ui->sensorLed10, ui->sensorLed11, ui->sensorLed12};
+
+    ui->lineEditCurrentError->setText(QString::number(debugData.sensorError));
 
     for (int i = 0; i < DebugData::SENSORS_NUMBER; ++i)
     {

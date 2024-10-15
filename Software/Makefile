@@ -81,7 +81,8 @@ Application/Src/sensors.c \
 Application/Src/linefollower_commands.c \
 Application/Src/tb6612_motor.c \
 Application/Src/lf_calibrate.c \
-Application/Src/lf_signal_queue.c
+Application/Src/lf_signal_queue.c \
+Application/Src/encoder.c
 
 # ASM sources
 ASM_SOURCES =  \
