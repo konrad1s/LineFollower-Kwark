@@ -12,6 +12,8 @@ public:
 
     std::array<uint16_t, SENSORS_NUMBER> sensorValues;
     float sensorError;
+    float motorLeftVelocity;
+    float motorRightVelocity;
 
     DebugData() = default;
 
@@ -21,17 +23,21 @@ public:
 
         for (size_t i = 0U; i < sensorValues.size(); ++i)
         {
-            sensorValues[i] = static_cast<uint16_t>(data[offset]) |
-                              (static_cast<uint16_t>(data[offset + 1]) << 8);
+            std::memcpy(&sensorValues[i], data + offset, sizeof(sensorValues[i]));
             offset += sizeof(sensorValues[i]);
         }
         sensorError = *reinterpret_cast<const float *>(data + offset);
+        offset += sizeof(sensorError);
+        motorLeftVelocity = *reinterpret_cast<const float *>(data + offset);
+        offset += sizeof(sensorError);
+        motorRightVelocity = *reinterpret_cast<const float *>(data + offset);
         offset += sizeof(sensorError);
     }
 
     constexpr size_t size() const
     {
-        return sizeof(sensorError) + (sensorValues.size() * sizeof(uint16_t));
+        return sizeof(sensorError) + (sensorValues.size() * sizeof(uint16_t)) +
+               sizeof(motorLeftVelocity) + sizeof(motorRightVelocity);
     }
 
     QString toString() const
@@ -46,6 +52,8 @@ public:
                               .arg(sensorValues[i]));
         }
         output.append(QString("Sensor Error: %1\n").arg(sensorError));
+        output.append(QString("Motor Left Velocity: %1\n").arg(motorLeftVelocity));
+        output.append(QString("Motor Right Velocity: %1\n").arg(motorRightVelocity));
 
         return output;
     }

@@ -62,7 +62,6 @@ static LineFollower_T LineFollower = {
         .sector = NVM_SECTOR_USED
     },
     .nvmBlock = &NvmBlock,
-
     .scpInstance = {
         .buffer = ScpBuffer,
         .size = SCP_BUFFER_SIZE,
@@ -71,15 +70,20 @@ static LineFollower_T LineFollower = {
         .numCommands = sizeof(lineFollowerCommands) / sizeof(lineFollowerCommands[0]),
         .errorHandler = NULL
     },
-
     .pidSensorInstance = {
         .settings = &NvmBlock.pidStgSensor
     },
     .pidEncoderLeftInstance = {
       .settings =&NvmBlock.pidStgEncoderLeft
     },
-    .pidEncoderLeftInstance = {
+    .pidEncoderRightInstance = {
       .settings =&NvmBlock.pidStgEncoderRight
+    },
+    .encoderLeft = {
+      .htim = &htim8
+    },
+    .encoderRight = {
+      .htim = &htim4
     },
     .encoderStg = &encoderSettings,
     .sensorLedsConfig = sensorLeds,

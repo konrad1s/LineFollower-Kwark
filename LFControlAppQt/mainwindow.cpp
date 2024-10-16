@@ -14,16 +14,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    plot1 = new Plot(this, "Robot speed", "Time", "Speed");
-    plot1->setSeriesName("Motor Left");
-    plot1->addSeries("Motor Right");
+    motorPlot = new Plot(this, "Robot speed", "Time", "Speed");
+    motorPlot->setSeriesName("Motor Left");
+    motorPlot->addSeries("Motor Right");
     QVBoxLayout *tab1Layout = new QVBoxLayout(ui->tabChart1);
-    tab1Layout->addWidget(plot1);
+    tab1Layout->addWidget(motorPlot);
     ui->tabChart1->setLayout(tab1Layout);
 
-    plot2 = new Plot(this, "Sensor error", "Time", "Error");
+    sensorPlot = new Plot(this, "Sensor error", "Time", "Error");
     QVBoxLayout *tab2Layout = new QVBoxLayout(ui->tabChart2);
-    tab2Layout->addWidget(plot2);
+    tab2Layout->addWidget(sensorPlot);
     ui->tabChart2->setLayout(tab2Layout);
 
     plotStartTime = 0;
@@ -223,8 +223,8 @@ void MainWindow::on_radioButtonDebugMode_clicked(bool checked)
     if (checked)
     {
         plotStartTime = QDateTime::currentMSecsSinceEpoch();
-        plot1->clear();
-        plot2->clear();
+        motorPlot->clear();
+        sensorPlot->clear();
         data.append(static_cast<char>(true));
         addToLogs("Debug mode enabled", true);
     }
@@ -335,7 +335,7 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
     ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.sensors.fallbackErrorPositive));
     ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.sensors.fallbackErrorNegative));
     ui->lineEditTargetSpeed->setText(QString::number(nvmLayout.targetSpeed));
-    plot2->setAxisRange(0, 0, nvmLayout.sensors.fallbackErrorNegative - 1, nvmLayout.sensors.fallbackErrorPositive + 1);
+    sensorPlot->setAxisRange(0, 0, nvmLayout.sensors.fallbackErrorNegative - 1, nvmLayout.sensors.fallbackErrorPositive + 1);
 
     struct PidSettings
     {
@@ -387,7 +387,10 @@ void MainWindow::updateDebugData(const QByteArray &data)
         ui->sensorLed5, ui->sensorLed6, ui->sensorLed7, ui->sensorLed8,
         ui->sensorLed9, ui->sensorLed10, ui->sensorLed11, ui->sensorLed12};
 
+    auto averageVelocity = (debugData.motorLeftVelocity + debugData.motorRightVelocity) / 2.0;
+
     ui->lineEditCurrentError->setText(QString::number(debugData.sensorError));
+    ui->lineEditCurrentSpeed->setText(QString::number(averageVelocity));
 
     for (int i = 0; i < DebugData::SENSORS_NUMBER; ++i)
     {
@@ -396,7 +399,9 @@ void MainWindow::updateDebugData(const QByteArray &data)
     }
 
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch() - plotStartTime;
-    plot2->addDataPoint(currentTime, debugData.sensorError);
+    sensorPlot->addDataPoint(currentTime, debugData.sensorError);
+    motorPlot->addDataPoint(0, currentTime, debugData.motorLeftVelocity);
+    motorPlot->addDataPoint(1, currentTime, debugData.motorRightVelocity);
 }
 
 void MainWindow::addToLogs(const QString &msg, bool isDebugMsg)

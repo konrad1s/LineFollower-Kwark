@@ -13,6 +13,8 @@ static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
     LineFollower_T *const me = (LineFollower_T *const )context;
 
     Sensors_GetRawData(me->debugData.sensorsValues);
+    me->debugData.motorLeftVelocity = me->encoderLeft.velocity;
+    me->debugData.motorRightVelocity = me->encoderRight.velocity;
 
     SCP_Transmit(&me->scpInstance, LF_CMD_SEND_DEBUG_DATA, &me->debugData, sizeof(me->debugData));
 }
@@ -93,7 +95,7 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         me->pidEncoderRightInstance.setpoint = targetSpeedRight;
 
         float pidEncoderLeftOutput = PID_Update(&me->pidEncoderLeftInstance, me->encoderLeft.velocity, dt);
-        float pidEncoderRightOutput = PID_Update(&me->pidEncoderRightInstance, me->encoderLeft.velocity, dt);
+        float pidEncoderRightOutput = PID_Update(&me->pidEncoderRightInstance, me->encoderRight.velocity, dt);
 
         TB6612Motor_SetSpeed(me->motorLeftConfig, (uint16_t)pidEncoderLeftOutput);
         TB6612Motor_SetSpeed(me->motorRightConfig, (uint16_t)pidEncoderRightOutput);
@@ -161,7 +163,6 @@ void LF_MainFunction(LineFollower_T *const me)
             LF_StateRun(me, sig);
             break;
         case LF_ERROR:
-
             break;
         default:
             break;

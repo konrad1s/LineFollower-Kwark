@@ -62,8 +62,8 @@ private:
     bool autoConnectInProgress;
     QString autoConnectDeviceName;
 
-    Plot *plot1;
-    Plot *plot2;
+    Plot *motorPlot;
+    Plot *sensorPlot;
     size_t plotStartTime;
 
     void updateNvmLayout(const QByteArray &data);

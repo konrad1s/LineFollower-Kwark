@@ -25,6 +25,8 @@ typedef struct
 {
     uint16_t sensorsValues[SENSORS_NUMBER];
     float sensorError;
+    float motorLeftVelocity;
+    float motorRightVelocity;
 } Lf_DebugData_T;
 
 typedef struct
@@ -45,7 +47,7 @@ typedef struct
     PID_Instance_T pidEncoderRightInstance;
     Encoder_Instance_T encoderLeft;
     Encoder_Instance_T encoderRight;
-    Encoder_Settings_T *const encoderStg;
+    const Encoder_Settings_T *const encoderStg;
     Sensor_Instance_T sensors[SENSORS_NUMBER];
 
     const Sensor_Led_T *const sensorLedsConfig;
