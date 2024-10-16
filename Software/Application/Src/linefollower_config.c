@@ -25,8 +25,8 @@ const NVM_Layout_T NvmDefaultData = {
         .kd = 0.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
-        .output_max = 100.0f,
-        .output_min = -100.0f,
+        .output_max = 1000.0f,
+        .output_min = -1000.0f,
     },
     .pidStgEncoderRight = {
         .kp = 1.0f,
@@ -34,8 +34,8 @@ const NVM_Layout_T NvmDefaultData = {
         .kd = 0.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
-        .output_max = 100.0f,
-        .output_min = -100.0f,
+        .output_max = 1000.0f,
+        .output_min = -1000.0f,
     },
     .sensors = {
         .weights = {-7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7},
@@ -78,4 +78,11 @@ const TB6612MotorDriver_T RightMotor = {
     .in2 = {GPIOD, MOTOR2_BIN_Pin},
     .pwmTimer = &htim3,
     .pwmChannel = TIM_CHANNEL_1
+};
+
+/* -------------------------------- ENCODERS CONFIG -------------------------------- */
+
+const Encoder_Settings_T encoderSettings = {
+    .gearRatio = 9.96f,
+    .wheelDiameter = 0.0245f
 };

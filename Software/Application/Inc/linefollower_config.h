@@ -6,6 +6,7 @@
 #include "pid.h"
 #include "scp.h"
 #include "tb6612_motor.h"
+#include "encoder.h"
 
 #define NVM_SECTOR_USED  FLASH_SECTOR_2
 
@@ -34,5 +35,6 @@ typedef struct
 extern const NVM_Layout_T NvmDefaultData;
 extern const TB6612MotorDriver_T LeftMotor;
 extern const TB6612MotorDriver_T RightMotor;
+extern const Encoder_Settings_T encoderSettings;
 
 #endif /* __LINEFOLLOWER_CONFIG_H__ */

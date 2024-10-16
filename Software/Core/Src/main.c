@@ -75,7 +75,13 @@ static LineFollower_T LineFollower = {
     .pidSensorInstance = {
         .settings = &NvmBlock.pidStgSensor
     },
-
+    .pidEncoderLeftInstance = {
+      .settings =&NvmBlock.pidStgEncoderLeft
+    },
+    .pidEncoderLeftInstance = {
+      .settings =&NvmBlock.pidStgEncoderRight
+    },
+    .encoderStg = &encoderSettings,
     .sensorLedsConfig = sensorLeds,
     .motorLeftConfig = &LeftMotor,
     .motorRightConfig = &RightMotor

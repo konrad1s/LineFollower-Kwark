@@ -80,10 +80,24 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         me->state = LF_IDLE;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
+        float dt = 20.0;
         me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
-        int16_t output = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, 1.0);
-        TB6612Motor_SetSpeed(me->motorLeftConfig, 100U - output);
-        TB6612Motor_SetSpeed(me->motorRightConfig, 100U + output);
+        float pidSensorOutput = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, dt);
+        float targetSpeedLeft = me->nvmBlock->targetSpeed - pidSensorOutput;
+        float targetSpeedRight = me->nvmBlock->targetSpeed + pidSensorOutput;
+
+        Encoder_Update(&me->encoderLeft, dt);
+        Encoder_Update(&me->encoderRight, dt);
+
+        me->pidEncoderLeftInstance.setpoint = targetSpeedLeft;
+        me->pidEncoderRightInstance.setpoint = targetSpeedRight;
+
+        float pidEncoderLeftOutput = PID_Update(&me->pidEncoderLeftInstance, me->encoderLeft.velocity, dt);
+        float pidEncoderRightOutput = PID_Update(&me->pidEncoderRightInstance, me->encoderLeft.velocity, dt);
+
+        TB6612Motor_SetSpeed(me->motorLeftConfig, (uint16_t)pidEncoderLeftOutput);
+        TB6612Motor_SetSpeed(me->motorRightConfig, (uint16_t)pidEncoderRightOutput);
+
         Sensors_UpdateLeds();
         break;
     case LF_SIG_SEND_DEBUG_DATA:
@@ -109,7 +123,11 @@ int LF_Init(LineFollower_T *const me)
     (void)NVM_Read(&me->nvmInstance);
 
     (void)PID_Init(&me->pidSensorInstance);
+    (void)PID_Init(&me->pidEncoderLeftInstance);
+    (void)PID_Init(&me->pidEncoderRightInstance);
     (void)SCP_Init(&me->scpInstance);
+    (void)Encoder_Init(&me->encoderLeft);
+    (void)Encoder_Init(&me->encoderRight);
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
