@@ -80,12 +80,13 @@ static LineFollower_T LineFollower = {
       .settings =&NvmBlock.pidStgEncoderRight
     },
     .encoderLeft = {
+      .settings = &encoderSettings,
       .htim = &htim8
     },
     .encoderRight = {
+      .settings = &encoderSettings,
       .htim = &htim4
     },
-    .encoderStg = &encoderSettings,
     .sensorLedsConfig = sensorLeds,
     .motorLeftConfig = &LeftMotor,
     .motorRightConfig = &RightMotor

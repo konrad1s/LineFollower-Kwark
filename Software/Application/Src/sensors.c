@@ -131,7 +131,7 @@ float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors)
         }
         else if (lastError < nvmSensors->errorThreshold)
         {
-            currentError = nvmSensors->fallbackErrorPositive;
+            currentError = nvmSensors->fallbackErrorNegative;
         }
         else
         {

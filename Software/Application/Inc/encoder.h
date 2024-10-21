@@ -12,7 +12,7 @@ typedef struct
 
 typedef struct
 {
-    Encoder_Settings_T *settings;
+    const Encoder_Settings_T *const settings;
 
     TIM_HandleTypeDef *htim;
     int32_t count;

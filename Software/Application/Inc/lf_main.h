@@ -47,7 +47,6 @@ typedef struct
     PID_Instance_T pidEncoderRightInstance;
     Encoder_Instance_T encoderLeft;
     Encoder_Instance_T encoderRight;
-    const Encoder_Settings_T *const encoderStg;
     Sensor_Instance_T sensors[SENSORS_NUMBER];
 
     const Sensor_Led_T *const sensorLedsConfig;
