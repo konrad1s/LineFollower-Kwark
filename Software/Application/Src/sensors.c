@@ -12,6 +12,7 @@ typedef struct
     ADC_HandleTypeDef *adcHandle;
     Sensor_Instance_T *sensors;
     uint16_t thresholds[SENSORS_NUMBER];
+    bool anySensorDetectedLine;
     Sensor_DataUpdatedCb_T callback;
     void *callbackContext;
 } Sensors_Manager_T;
@@ -20,9 +21,19 @@ static Sensors_Manager_T SensorsManager;
 
 static void Sensors_UpdateState(void)
 {
+    SensorsManager.anySensorDetectedLine = false;
+
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        SensorsManager.sensors[i].isActive = (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i]);
+        if (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i])
+        {
+            SensorsManager.anySensorDetectedLine = true;
+            SensorsManager.sensors[i].isActive = true;
+        }
+        else
+        {
+            SensorsManager.sensors[i].isActive = false;
+        }
     }
 }
 
@@ -41,6 +52,7 @@ int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
     SensorsManager.sensors = sensorInstances;
     SensorsManager.callback = callback;
     SensorsManager.callbackContext = callbackContext;
+    SensorsManager.anySensorDetectedLine = false;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -147,6 +159,11 @@ float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors)
     lastError = currentError;
 
     return currentError;
+}
+
+bool Sensors_AnySensorDetectedLine(void)
+{
+    return SensorsManager.anySensorDetectedLine;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)

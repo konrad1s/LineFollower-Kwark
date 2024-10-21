@@ -1279,12 +1279,12 @@
      <attribute name="title">
       <string>General</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>10</y>
-        <width>421</width>
+        <width>481</width>
         <height>94</height>
        </rect>
       </property>
@@ -1388,20 +1388,42 @@
         </spacer>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_28">
+        <layout class="QVBoxLayout" name="verticalLayout_29">
          <item>
-          <widget class="QLabel" name="label_41">
-           <property name="text">
-            <string>target speed:</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_28">
+           <item>
+            <widget class="QLabel" name="label_41">
+             <property name="text">
+              <string>target speed:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditTargetSpeed">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditTargetSpeed">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_55">
+           <item>
+            <widget class="QLabel" name="label_45">
+             <property name="text">
+              <string>no line detected timeout:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditNoLineDetectedTimeout">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -1412,7 +1434,7 @@
      <attribute name="title">
       <string>PID Sensors</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1822,7 +1844,7 @@
      <attribute name="title">
       <string>PID EncoderRight</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>

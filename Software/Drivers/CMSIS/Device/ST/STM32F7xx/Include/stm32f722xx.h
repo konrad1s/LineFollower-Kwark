@@ -917,7 +917,7 @@ typedef struct
   */
 #define RAMITCM_BASE           0x00000000UL /*!< Base address of : 16KB RAM reserved for CPU execution/instruction accessible over ITCM  */
 #define FLASHITCM_BASE         0x00200000UL /*!< Base address of : (up to 512 KB) embedded FLASH memory  accessible over ITCM            */
-#define FLASHAXI_BASE          0x08000000UL /*!< Base address of : (up to 512 KB) embedded FLASH memory accessible over AXI              */
+#define FLASHAXI_BASE          0x0800C000UL /*!< Base address of : (up to 512 KB) embedded FLASH memory accessible over AXI              */
 #define RAMDTCM_BASE           0x20000000UL /*!< Base address of : 64KB system data RAM accessible over DTCM                             */
 #define PERIPH_BASE            0x40000000UL /*!< Base address of : AHB/ABP Peripherals                                                   */
 #define BKPSRAM_BASE           0x40024000UL /*!< Base address of : Backup SRAM(4 KB)                                                     */

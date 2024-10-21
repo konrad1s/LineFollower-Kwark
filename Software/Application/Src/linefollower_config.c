@@ -44,7 +44,8 @@ const NVM_Layout_T NvmDefaultData = {
         .fallbackErrorPositive = 15.0f,
         .fallbackErrorNegative = -15.0f
     },
-    .targetSpeed = 1.0f
+    .targetSpeed = 1.0f,
+    .noLineDetectedTimeout = 2000U
 };
 
 /* --------------------------------- SENSORS CONFIG --------------------------------- */

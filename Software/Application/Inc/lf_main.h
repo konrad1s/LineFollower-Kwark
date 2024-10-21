@@ -38,6 +38,7 @@ typedef struct
     TIM_HandleTypeDef *const debugModeTimer;
     LF_SignalQueue_T signals;
     Lf_DebugData_T debugData;
+    uint32_t noLineDetectedCounter;
 
     Nvm_Instance_T nvmInstance;
     NVM_Layout_T *const nvmBlock;

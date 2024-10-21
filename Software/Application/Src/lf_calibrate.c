@@ -4,15 +4,14 @@
 #include "tb6612_motor.h"
 #include "lf_calibrate.h"
 
-#define CALIB_MIN_VALUE_IDX   0
-#define CALIB_MAX_VALUE_IDX   1
-#define DEFAULT_CALIBRATION_TIME 3000U
-#define DEFAULT_MOTOR_SPEED   50U
+#define CALIB_MIN_VALUE_IDX       0
+#define CALIB_MAX_VALUE_IDX       1
+#define DEFAULT_CALIBRATION_TIME_MS 3000U
+#define DEFAULT_MOTOR_SPEED       50U
 
 typedef struct
 {
-    uint32_t startTime;
-    uint16_t calibrationTime;
+    uint32_t elapsedTicks;
     uint16_t sensorValues[SENSORS_NUMBER][2];
     uint16_t motorSpeed;
 } LF_CalibrationData_T;
@@ -37,7 +36,7 @@ static int LF_ApplySensorThresholds(LineFollower_T *const me)
 
 static void LF_StopCalibration(LineFollower_T *const me)
 {
-    LF_CalibrationData.startTime = UINT32_MAX;
+    LF_CalibrationData.elapsedTicks = 0U;
 
     TB6612Motor_Brake(me->motorLeftConfig);
     TB6612Motor_Brake(me->motorRightConfig);
@@ -47,8 +46,7 @@ static void LF_StopCalibration(LineFollower_T *const me)
 
 void LF_StartCalibration(LineFollower_T *const me)
 {
-    LF_CalibrationData.startTime = HAL_GetTick();
-    LF_CalibrationData.calibrationTime = DEFAULT_CALIBRATION_TIME;
+    LF_CalibrationData.elapsedTicks = 0U;
     LF_CalibrationData.motorSpeed = DEFAULT_MOTOR_SPEED;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
@@ -63,7 +61,7 @@ void LF_StartCalibration(LineFollower_T *const me)
     TB6612Motor_SetSpeed(me->motorRightConfig, LF_CalibrationData.motorSpeed);
 }
 
-LF_CalibrationStatus_T LF_CalibrateSensors(LineFollower_T *const me)
+void LF_UpdateCalibrationData(LineFollower_T *const me)
 {
     uint16_t sensorRawData[SENSORS_NUMBER] = {0U};
 
@@ -82,11 +80,13 @@ LF_CalibrationStatus_T LF_CalibrateSensors(LineFollower_T *const me)
             LF_CalibrationData.sensorValues[i][CALIB_MAX_VALUE_IDX] = sensorRawData[i];
         }
     }
+}
 
-    /* Check if calibration time has passed */
-    uint32_t currentTime = HAL_GetTick();
+LF_CalibrationStatus_T LF_UpdateCalibrationTimer(LineFollower_T *const me)
+{
+    LF_CalibrationData.elapsedTicks++;
 
-    if ((currentTime - LF_CalibrationData.startTime) >= LF_CalibrationData.calibrationTime)
+    if (LF_CalibrationData.elapsedTicks >= DEFAULT_CALIBRATION_TIME_MS)
     {
         LF_StopCalibration(me);
 

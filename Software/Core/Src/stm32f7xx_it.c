@@ -22,6 +22,7 @@
 #include "stm32f7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "lf_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern LineFollower_T LineFollower;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -190,7 +191,7 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-
+  LF_SendSignal(&LineFollower, LF_SIG_TIMER_TICK);
   /* USER CODE END SysTick_IRQn 1 */
 }
 

@@ -54,17 +54,22 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
     switch (sig)
     {
     case LF_SIG_ADC_DATA_UPDATED:
-        LF_CalibrationStatus_T status = LF_CalibrateSensors(me);
+        LF_UpdateCalibrationData(me);
+        break;
+    case LF_SIG_TIMER_TICK:
+        {
+            LF_CalibrationStatus_T status = LF_UpdateCalibrationTimer(me);
 
-        if (LF_CALIBRATION_COMPLETE == status)
-        {
-            SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
-            me->state = LF_IDLE;
-        }
-        else if (LF_CALIBRATION_ERROR == status)
-        {
-            SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
-            me->state = LF_IDLE;
+            if (LF_CALIBRATION_COMPLETE == status)
+            {
+                SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
+                me->state = LF_IDLE;
+            }
+            else if (LF_CALIBRATION_ERROR == status)
+            {
+                SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
+                me->state = LF_IDLE;
+            }
         }
         break;
     default:
@@ -83,6 +88,10 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         break;
     case LF_SIG_ADC_DATA_UPDATED:
         float dt = 20.0;
+        if (true == Sensors_AnySensorDetectedLine())
+        {
+            me->noLineDetectedCounter = 0U;
+        }
         me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
         float pidSensorOutput = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, dt);
         float targetSpeedLeft = me->nvmBlock->targetSpeed - pidSensorOutput;
@@ -105,6 +114,16 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
     case LF_SIG_SEND_DEBUG_DATA:
         LF_SendDebugData(NULL, me);
         break;
+    case LF_SIG_TIMER_TICK:
+        me->noLineDetectedCounter++;
+        if (me->noLineDetectedCounter >= me->nvmBlock->noLineDetectedTimeout)
+        {
+            TB6612Motor_Stop(me->motorLeftConfig);
+            TB6612Motor_Stop(me->motorRightConfig);
+            me->noLineDetectedCounter = 0U;
+            me->state = LF_IDLE;
+        }
+        break;
     default:
         break;
     }
@@ -117,6 +136,7 @@ int LF_Init(LineFollower_T *const me)
     me->timer = 0U;
     me->nvmInstance.data = (uint8_t *)me->nvmBlock;
     me->bootFlags = &bootloaderFlags;
+    me->noLineDetectedCounter = 0U;
 
     LF_SignalQueue_Init(&me->signals);
     memset(&me->debugData, 0, sizeof(me->debugData));

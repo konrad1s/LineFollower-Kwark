@@ -23,6 +23,7 @@ public:
         float fallbackErrorNegative;
     } sensors;
     float targetSpeed;
+    uint32_t noLineDetectedTimeout;
 
     NVMLayout() = default;
 
@@ -59,6 +60,9 @@ public:
 
         std::memcpy(&targetSpeed, data + offset, sizeof(targetSpeed));
         offset += sizeof(targetSpeed);
+
+        std::memcpy(&noLineDetectedTimeout, data + offset, sizeof(noLineDetectedTimeout));
+        offset += sizeof(noLineDetectedTimeout);
     }
 
     void serializeToArray(uint8_t *data) const
@@ -94,6 +98,9 @@ public:
 
         std::memcpy(data + offset, &targetSpeed, sizeof(targetSpeed));
         offset += sizeof(targetSpeed);
+
+        std::memcpy(data + offset, &noLineDetectedTimeout, sizeof(noLineDetectedTimeout));
+        offset += sizeof(noLineDetectedTimeout);
     }
 
     constexpr size_t size() const
@@ -102,7 +109,7 @@ public:
                (sensors.weights.size() * sizeof(int8_t)) +
                (sensors.thresholds.size() * sizeof(uint16_t)) +
                sizeof(sensors.errorThreshold) + sizeof(sensors.fallbackErrorPositive) +
-               sizeof(sensors.fallbackErrorNegative) + sizeof(targetSpeed);
+               sizeof(sensors.fallbackErrorNegative) + sizeof(targetSpeed) + sizeof(noLineDetectedTimeout);
     }
 
     QString toString() const
@@ -155,6 +162,7 @@ public:
         output.append(QString("Fallback Error Positive: %1\n").arg(sensors.fallbackErrorPositive));
         output.append(QString("Fallback Error Negative: %1\n").arg(sensors.fallbackErrorNegative));
         output.append(QString("\nTarget Speed: %1\n").arg(targetSpeed));
+        output.append(QString("\nNo line detected timeout: %1\n").arg(noLineDetectedTimeout));
 
         return output;
     }

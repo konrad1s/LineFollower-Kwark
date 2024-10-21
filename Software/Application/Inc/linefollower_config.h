@@ -30,6 +30,7 @@ typedef struct
     PID_Settings_T pidStgEncoderRight;
     NVM_Sensors_T sensors;
     float targetSpeed;
+    uint32_t noLineDetectedTimeout;
 } NVM_Layout_T;
 
 extern const NVM_Layout_T NvmDefaultData;

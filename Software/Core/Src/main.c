@@ -54,7 +54,7 @@ extern const Sensor_Led_T sensorLeds[SENSORS_NUMBER];
 static NVM_Layout_T NvmBlock;
 static uint8_t ScpBuffer[SCP_BUFFER_SIZE];
 
-static LineFollower_T LineFollower = {
+LineFollower_T LineFollower = {
     .debugModeTimer = &htim6,
     .nvmInstance = {
         .defaultData = (const uint8_t *)&NvmDefaultData,

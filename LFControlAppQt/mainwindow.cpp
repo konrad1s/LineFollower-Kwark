@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     plotStartTime = 0;
 
+    motorPlot->setAxisRange(0, 0, -3, 3);
+
     connect(bluetoothHandler, &BluetoothHandler::deviceFound, this, &MainWindow::captureDeviceProperties);
     connect(bluetoothHandler, &BluetoothHandler::discoveryFinished, this, &MainWindow::searchingFinished);
     connect(bluetoothHandler, &BluetoothHandler::connectionEstablished, this, &MainWindow::connectionEstablished);
@@ -268,6 +270,7 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
     nvmLayout.sensors.fallbackErrorPositive = ui->lineEditfallbackPositive->text().toFloat();
     nvmLayout.sensors.fallbackErrorNegative = ui->lineEditfallbackNegative->text().toFloat();
     nvmLayout.targetSpeed = ui->lineEditTargetSpeed->text().toFloat();
+    nvmLayout.noLineDetectedTimeout = ui->lineEditNoLineDetectedTimeout->text().toFloat();
 
     struct PidSettingsUI
     {
@@ -335,6 +338,7 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
     ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.sensors.fallbackErrorPositive));
     ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.sensors.fallbackErrorNegative));
     ui->lineEditTargetSpeed->setText(QString::number(nvmLayout.targetSpeed));
+    ui->lineEditNoLineDetectedTimeout->setText(QString::number(nvmLayout.noLineDetectedTimeout));
     sensorPlot->setAxisRange(0, 0, nvmLayout.sensors.fallbackErrorNegative - 1, nvmLayout.sensors.fallbackErrorPositive + 1);
 
     struct PidSettings
