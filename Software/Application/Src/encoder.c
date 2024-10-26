@@ -22,7 +22,6 @@ int Encoder_Init(Encoder_Instance_T *const encoder)
 
     encoder->timerMax = __HAL_TIM_GET_AUTORELOAD(encoder->htim);
 
-    encoder->count = 0;
     encoder->countPrev = 0;
     encoder->deltaCount = 0;
     encoder->velocity = 0.0f;
@@ -59,7 +58,6 @@ void Encoder_ResetCount(Encoder_Instance_T *const encoder)
     }
 
     __HAL_TIM_SET_COUNTER(encoder->htim, 0);
-    encoder->count = 0;
     encoder->countPrev = 0;
     encoder->deltaCount = 0;
 }
@@ -67,7 +65,7 @@ void Encoder_ResetCount(Encoder_Instance_T *const encoder)
 /**
  * @brief Updates the encoder data, should be called periodically
  * @param encoder Pointer to the Encoder_Instance_T structure
- * @param dt Time interval since last update in seconds
+ * @param dt Time interval since last update in miliseconds
  */
 void Encoder_Update(Encoder_Instance_T *const encoder, float dt)
 {
@@ -83,28 +81,32 @@ void Encoder_Update(Encoder_Instance_T *const encoder, float dt)
     delta = rawCount - encoder->countPrev;
 
     /* Handle timer overflow (both directions) */
+    int32_t maxCount = encoder->timerMax + 1;
+
     if (delta > (int32_t)(encoder->timerMax / 2))
     {
         /* Counter overflowed in negative direction */
-        delta -= (int32_t)(encoder->timerMax + 1);
+        delta -= maxCount;
     }
     else if (delta < -(int32_t)(encoder->timerMax / 2))
     {
         /* Counter overflowed in positive direction */
-        delta += (int32_t)(encoder->timerMax + 1);
+        delta += maxCount;
     }
 
     encoder->deltaCount = delta;
-    encoder->count += delta;
     encoder->countPrev = rawCount;
 
+    /* Calculate motor rotations */
+    float motorRotations = (float)(encoder->deltaCount) / (float)(encoder->settings->pulsesPerRevolution);
+
     /* Calculate wheel rotations considering gearbox ratio */
-    float motorRotations = (float)(encoder->deltaCount) / encoder->htim->Init.Period;
     float wheelRotations = motorRotations / encoder->settings->gearRatio;
 
-    /* Calculate linear distance traveled */
-    float distance = wheelRotations * PI * encoder->settings->wheelDiameter;
+    /* Calculate linear distance traveled (in meters) */
+    float circumference = PI * encoder->settings->wheelDiameter;
+    float distance = wheelRotations * circumference;
 
-    /* Calculate velocity (distance per time interval) */
-    encoder->velocity = distance / dt;
+    /* Calculate velocity (multiplied by 1000 to get meters per second) */
+    encoder->velocity = distance * 1000.0 / dt;
 }

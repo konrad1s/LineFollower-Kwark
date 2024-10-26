@@ -85,5 +85,6 @@ const TB6612MotorDriver_T RightMotor = {
 
 const Encoder_Settings_T encoderSettings = {
     .gearRatio = 9.96f,
-    .wheelDiameter = 0.0245f
+    .wheelDiameter = 0.0245f,
+    .pulsesPerRevolution = 512
 };
