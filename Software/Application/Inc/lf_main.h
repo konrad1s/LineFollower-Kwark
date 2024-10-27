@@ -32,7 +32,6 @@ typedef struct
 typedef struct
 {
     LFState_T state;
-    uint32_t timer;
     uint32_t *bootFlags;
     bool isDebugMode;
     TIM_HandleTypeDef *const debugModeTimer;
