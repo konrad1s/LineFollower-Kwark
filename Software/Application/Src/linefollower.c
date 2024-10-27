@@ -106,6 +106,8 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
         float pidEncoderLeftOutput = PID_Update(&me->pidEncoderLeftInstance, me->encoderLeft.velocity, dt);
         float pidEncoderRightOutput = PID_Update(&me->pidEncoderRightInstance, me->encoderRight.velocity, dt);
 
+        TB6612Motor_ChangeDirection(me->motorLeftConfig, MOTOR_FORWARD);
+        TB6612Motor_ChangeDirection(me->motorRightConfig, MOTOR_FORWARD);
         TB6612Motor_SetSpeed(me->motorLeftConfig, (uint16_t)pidEncoderLeftOutput);
         TB6612Motor_SetSpeed(me->motorRightConfig, (uint16_t)pidEncoderRightOutput);
 

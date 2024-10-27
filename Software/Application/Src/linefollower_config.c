@@ -11,38 +11,38 @@
 
 const NVM_Layout_T NvmDefaultData = {
     .pidStgSensor = {
-        .kp = 1.0f,
+        .kp = 0.08f,
         .ki = 0.0f,
         .kd = 0.0f,
-        .integral_max = 100.0f,
-        .integral_min = -100.0f,
-        .output_max = 100.0f,
-        .output_min = -100.0f,
+        .integral_max = 1.0f,
+        .integral_min = -1.0f,
+        .output_max = 1.5f,
+        .output_min = -1.5f,
     },
     .pidStgEncoderLeft = {
         .kp = 1.0f,
-        .ki = 0.0f,
-        .kd = 0.0f,
+        .ki = 10.0f,
+        .kd = 10.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
         .output_max = 1000.0f,
-        .output_min = -1000.0f,
+        .output_min = 0.0f,
     },
     .pidStgEncoderRight = {
         .kp = 1.0f,
-        .ki = 0.0f,
-        .kd = 0.0f,
+        .ki = 10.0f,
+        .kd = 10.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
         .output_max = 1000.0f,
-        .output_min = -1000.0f,
+        .output_min = 0.0f,
     },
     .sensors = {
         .weights = {-7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7},
-        .thresholds = {3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U, 3200U},
+        .thresholds = {1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U},
         .errorThreshold = 1.0f,
-        .fallbackErrorPositive = 15.0f,
-        .fallbackErrorNegative = -15.0f
+        .fallbackErrorPositive = 10.0f,
+        .fallbackErrorNegative = -10.0f
     },
     .targetSpeed = 1.0f,
     .noLineDetectedTimeout = 2000U

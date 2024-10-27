@@ -11,6 +11,8 @@ int TB6612Motor_Init(const TB6612MotorDriver_T *const driver)
     {
         return -1;
     }
+
+    HAL_TIM_PWM_Start(driver->pwmTimer, driver->pwmChannel);
     TB6612Motor_Stop(driver);
 
     return 0;
@@ -27,12 +29,12 @@ void TB6612Motor_ChangeDirection(const TB6612MotorDriver_T *const driver, TB6612
     switch (direction)
     {
     case MOTOR_FORWARD:
-        HAL_GPIO_WritePin(driver->in1.port, driver->in1.pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(driver->in2.port, driver->in2.pin, GPIO_PIN_RESET);
-        break;
-    case MOTOR_BACKWARD:
         HAL_GPIO_WritePin(driver->in1.port, driver->in1.pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(driver->in2.port, driver->in2.pin, GPIO_PIN_SET);
+        break;
+    case MOTOR_BACKWARD:
+        HAL_GPIO_WritePin(driver->in1.port, driver->in1.pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(driver->in2.port, driver->in2.pin, GPIO_PIN_RESET);
         break;
     case MOTOR_STOP:
         HAL_GPIO_WritePin(driver->in1.port, driver->in1.pin, GPIO_PIN_RESET);
