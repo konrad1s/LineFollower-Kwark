@@ -1,3 +1,6 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include "linefollower_config.h"
 #include "linefollower_commands.h"
 #include "usart.h"
@@ -5,9 +8,21 @@
 #include "sensors.h"
 #include "stm32f7xx_hal.h"
 
-/* TODO: Dummy values, replace it after tests */
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
 
-/* ----------------------------------- NVM CONFIG ----------------------------------- */
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
 
 const NVM_Layout_T NvmDefaultData = {
     .pidStgSensor = {
@@ -49,7 +64,6 @@ const NVM_Layout_T NvmDefaultData = {
 };
 
 /* --------------------------------- SENSORS CONFIG --------------------------------- */
-
 const Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {LED1_GPIO_Port, LED1_Pin},
     {LED2_GPIO_Port, LED2_Pin},
@@ -66,15 +80,16 @@ const Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
 };
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */
-
-const TB6612MotorDriver_T LeftMotor = {
+const TB6612MotorDriver_T LeftMotor = 
+{
     .in1 = {GPIOA, MOTOR1_AIN_Pin},
     .in2 = {GPIOA, MOTOR1_BIN_Pin},
     .pwmTimer = &htim1,
     .pwmChannel = TIM_CHANNEL_4
 };
 
-const TB6612MotorDriver_T RightMotor = {
+const TB6612MotorDriver_T RightMotor =
+{
     .in1 = {GPIOB, MOTOR2_AIN_Pin},
     .in2 = {GPIOD, MOTOR2_BIN_Pin},
     .pwmTimer = &htim3,
@@ -82,9 +97,13 @@ const TB6612MotorDriver_T RightMotor = {
 };
 
 /* -------------------------------- ENCODERS CONFIG -------------------------------- */
-
 const Encoder_Settings_T encoderSettings = {
     .gearRatio = 9.96f,
     .wheelDiameter = 0.0245f,
     .pulsesPerRevolution = 512
 };
+
+
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/

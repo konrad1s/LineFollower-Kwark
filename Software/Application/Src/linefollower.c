@@ -30,7 +30,7 @@ typedef enum
 typedef LF_ErrorCode_T (*LF_ComponentInitFunc)(LineFollower_T *const me);
 
 /******************************************************************************************
- *                             FUNCTIONS PROTOTYPES                                       *
+ *                                   FUNCTIONS PROTOTYPES                                 *
  ******************************************************************************************/
 static void LF_InitState(LineFollower_T *const me);
 static LF_ErrorCode_T LF_InitComponents(LineFollower_T *const me);

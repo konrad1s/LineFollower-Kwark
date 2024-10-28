@@ -1,3 +1,6 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include "linefollower_config.h"
 #include "linefollower_commands.h"
 #include "lf_main.h"
@@ -7,15 +10,21 @@
 #include <string.h>
 #include <stdlib.h>
 
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
 #define LF_COMMAND_MODE_START   0x00U
 #define LF_COMMAND_MODE_STOP    0x01U
 
 #define LF_COMMAND_ENTER_BOOT_FLAG 0xDEADBEEF
 
-extern NVM_Layout_T NVM_Block;
-extern PID_Instance_T PidSensorInstance;
-extern SCP_Instance_T ScpInstance;
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
 
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
 static void LF_SetMode(const SCP_Packet *const packet, void *context);
 static void LF_CommandReset(const SCP_Packet *const packet, void *context);
 static void LF_CommandCalibrate(const SCP_Packet *const packet, void *context);
@@ -24,6 +33,13 @@ static void LF_WriteNvmData(const SCP_Packet *const packet, void *context);
 static void LF_SetDebugMode(const SCP_Packet *const packet, void *context);
 static void LF_GetSession(const SCP_Packet *const packet, void *context);
 static void LF_EnterBootloader(const SCP_Packet *const packet, void *context);
+
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
+extern NVM_Layout_T NVM_Block;
+extern PID_Instance_T PidSensorInstance;
+extern SCP_Instance_T ScpInstance;
 
 const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_SET_MODE,       1U,                     LF_SetMode},
@@ -37,6 +53,9 @@ const SCP_Command_T lineFollowerCommands[LINEFOLLOWER_COMMANDS_NUMBER] = {
     {LF_CMD_ENTER_BOOTLOADER, 0U, LF_EnterBootloader},
 };
 
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/
 static inline void LF_CommandTransmitResponse(LineFollower_T *me, uint16_t command_id, const void *responseData, uint16_t responseSize)
 {
     SCP_Transmit(&me->scpInstance, command_id, responseData, responseSize);

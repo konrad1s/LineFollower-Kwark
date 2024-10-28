@@ -1,11 +1,58 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include <string.h>
 #include <stdio.h>
 #include "scp.h"
 #include "crc.h"
 #include "cmsis_compiler.h"
 
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
 #define SCP_Dispatcher_EnterCritical() __disable_irq()
 #define SCP_Dispatcher_ExitCritical() __enable_irq()
+
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
+static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *context);
+
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/
+/**
+ * @brief Handles the received packet.
+ * 
+ * @param[in] scp Pointer to the SCP instance.
+ * @param[in] context Pointer to the context, to be passed to the command handler.
+ */
+static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *context)
+{
+    uint16_t crcDataSize = scp->receivedPacket.header.size + sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
+    uint16_t crc = CRC_CalculateCRC16((uint8_t *)&scp->receivedPacket.header.id, crcDataSize, SCP_PACKET_CRC_INIT);
+
+    if (crc == scp->receivedPacket.header.crc)
+    {
+        for (size_t i = 0U; i < scp->numCommands; i++)
+        {
+            if ((scp->receivedPacket.header.id == scp->commands[i].id) &&
+                (scp->receivedPacket.header.size == scp->commands[i].size))
+            {
+                scp->commands[i].handler(&scp->receivedPacket, context);
+                break;
+            }
+        }
+    }
+}
 
 /**
  * @brief Initializes the SCP command queue.
@@ -73,31 +120,6 @@ uint8_t SCP_Dispatcher_Dequeue(SCP_DispatcherQueue_T *scpQueue, uint8_t *data)
     SCP_Dispatcher_ExitCritical();
 
     return retVal;
-}
-
-/**
- * @brief Handles the received packet.
- * 
- * @param[in] scp Pointer to the SCP instance.
- * @param[in] context Pointer to the context, to be passed to the command handler.
- */
-static void SCP_Dispatcher_HandlePacketReceived(SCP_Instance_T *scp, void *context)
-{
-    uint16_t crcDataSize = scp->receivedPacket.header.size + sizeof(scp->receivedPacket.header.id) + sizeof(scp->receivedPacket.header.size);
-    uint16_t crc = CRC_CalculateCRC16((uint8_t *)&scp->receivedPacket.header.id, crcDataSize, SCP_PACKET_CRC_INIT);
-
-    if (crc == scp->receivedPacket.header.crc)
-    {
-        for (size_t i = 0U; i < scp->numCommands; i++)
-        {
-            if ((scp->receivedPacket.header.id == scp->commands[i].id) &&
-                (scp->receivedPacket.header.size == scp->commands[i].size))
-            {
-                scp->commands[i].handler(&scp->receivedPacket, context);
-                break;
-            }
-        }
-    }
 }
 
 /**
