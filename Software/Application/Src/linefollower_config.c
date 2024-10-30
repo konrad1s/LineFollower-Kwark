@@ -79,6 +79,12 @@ const Sensor_Led_T sensorLeds[SENSORS_NUMBER] = {
     {LED12_GPIO_Port, LED12_Pin},
 };
 
+const Sensors_Config_T sensorsConfig = {
+    .adcHandle = &hadc1,
+    .ledConfig = sensorLeds,
+    .timer = &htim2,
+};
+
 /* --------------------------------- MOTORS CONFIG --------------------------------- */
 const TB6612MotorDriver_T LeftMotor = 
 {

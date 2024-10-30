@@ -21,7 +21,9 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
+#include"lf_main.h"
 
+extern LineFollower_T LineFollower;
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -285,5 +287,8 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
-
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  Sensors_ADCConvCpltCallback(&LineFollower.sensorsInstance, hadc);
+}
 /* USER CODE END 1 */

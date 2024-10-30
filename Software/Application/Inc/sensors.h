@@ -1,5 +1,5 @@
-#ifndef __SENSORS__H__
-#define __SENSORS__H__
+#ifndef __SENSORS_H__
+#define __SENSORS_H__
 
 /******************************************************************************************
  *                                        INCLUDES                                        *
@@ -11,12 +11,9 @@
 #include "linefollower_config.h"
 
 /******************************************************************************************
- *                                         DEFINES                                        *
- ******************************************************************************************/
-
-/******************************************************************************************
  *                                        TYPEDEFS                                        *
  ******************************************************************************************/
+
 typedef struct
 {
     GPIO_TypeDef *port;
@@ -27,27 +24,39 @@ typedef struct
 {
     bool isActive;
     int8_t positionWeight;
-    const Sensor_Led_T *led;
 } Sensor_Instance_T;
 
-typedef void (*Sensor_DataUpdatedCb_T)(void *data);
+typedef void (*Sensor_DataUpdatedCb_T)(void *context);
 
-/******************************************************************************************
- *                                    GLOBAL VARIABLES                                    *
- ******************************************************************************************/
+typedef struct
+{
+    ADC_HandleTypeDef *adcHandle;
+    const Sensor_Led_T *ledConfig;
+    TIM_HandleTypeDef *timer;
+} Sensors_Config_T;
+
+typedef struct
+{
+    uint16_t adcBuffer[SENSORS_NUMBER];
+    const Sensors_Config_T *const config;
+    Sensor_Instance_T sensors[SENSORS_NUMBER];
+    uint16_t thresholds[SENSORS_NUMBER];
+    bool anySensorDetectedLine;
+    Sensor_DataUpdatedCb_T callback;
+    void *callbackContext;
+} Sensors_Instance_T;
 
 /******************************************************************************************
  *                                   FUNCTION PROTOTYPES                                  *
  ******************************************************************************************/
-int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
-                 const Sensor_Led_T *const ledConfig,
-                 Sensor_Instance_T *const sensorInstances,
+
+int Sensors_Init(Sensors_Instance_T *const instance,
                  Sensor_DataUpdatedCb_T callback,
                  void *callbackContext);
-void Sensors_SetThresholds(uint16_t *const thresholds);
-void Sensors_GetRawData(uint16_t *data);
-void Sensors_UpdateLeds(void);
-float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors);
-bool Sensors_AnySensorDetectedLine(void);
+void Sensors_SetThresholds(Sensors_Instance_T *const instance, uint16_t *const thresholds);
+void Sensors_GetRawData(Sensors_Instance_T *const instance, uint16_t *data);
+void Sensors_UpdateLeds(Sensors_Instance_T *const instance);
+float Sensors_CalculateError(Sensors_Instance_T *const instance, const NVM_Sensors_T *const nvmSensors);
+void Sensors_ADCConvCpltCallback(Sensors_Instance_T *const instance, ADC_HandleTypeDef *hadc);
 
-#endif /* __SENSORS__H__ */
+#endif /* __SENSORS_H__ */

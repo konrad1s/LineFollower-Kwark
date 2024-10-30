@@ -215,28 +215,28 @@ static LF_ErrorCode_T LF_InitSensors(LineFollower_T *const me)
 {
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        me->sensors[i].positionWeight = me->nvmBlock->sensors.weights[i];
-        me->sensors[i].isActive = false;
+        me->sensorsInstance.sensors[i].positionWeight = me->nvmBlock->sensors.weights[i];
+        me->sensorsInstance.sensors[i].isActive = false;
     }
 
-    if (Sensors_Init(&hadc1, me->sensorLedsConfig, me->sensors, LF_DataUpdateCallback, me) != 0)
+    if (Sensors_Init(&me->sensorsInstance, LF_DataUpdateCallback, me) != 0)
     {
         return LF_ERROR_SENSOR_INIT;
     }
 
-    Sensors_SetThresholds(me->nvmBlock->sensors.thresholds);
+    Sensors_SetThresholds(&me->sensorsInstance, me->nvmBlock->sensors.thresholds);
 
     return LF_SUCCESS;
 }
 
 static LF_ErrorCode_T LF_InitMotors(LineFollower_T *const me)
 {
-    if (TB6612Motor_Init(me->motorLeftConfig) != 0)
+    if (TB6612Motor_Init(me->motorLeft) != 0)
     {
         return LF_ERROR_MOTOR_INIT;
     }
 
-    if (TB6612Motor_Init(me->motorRightConfig) != 0)
+    if (TB6612Motor_Init(me->motorRight) != 0)
     {
         return LF_ERROR_MOTOR_INIT;
     }
@@ -292,8 +292,8 @@ static void LF_StateRun(LineFollower_T *const me, LF_Signal_T sig)
  */
 static void LF_HandleStopSignal(LineFollower_T *const me)
 {
-    TB6612Motor_Stop(me->motorLeftConfig);
-    TB6612Motor_Stop(me->motorRightConfig);
+    TB6612Motor_Stop(me->motorLeft);
+    TB6612Motor_Stop(me->motorRight);
     me->state = LF_IDLE;
 }
 
@@ -306,12 +306,12 @@ static void LF_HandleADCDataUpdated(LineFollower_T *const me)
 {
     const float dt = LF_PID_UPDATE_INTERVAL_MS;
 
-    if (Sensors_AnySensorDetectedLine())
+    if (me->sensorsInstance.anySensorDetectedLine)
     {
         me->noLineDetectedCounter = 0U;
     }
 
-    me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
+    me->debugData.sensorError = Sensors_CalculateError(&me->sensorsInstance, &me->nvmBlock->sensors);
     float pidSensorOutput = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, dt);
     float targetSpeedLeft = me->nvmBlock->targetSpeed - pidSensorOutput;
     float targetSpeedRight = me->nvmBlock->targetSpeed + pidSensorOutput;
@@ -328,12 +328,12 @@ static void LF_HandleADCDataUpdated(LineFollower_T *const me)
     uint16_t leftMotorSpeed = LF_ClampMotorSpeed(pidEncoderLeftOutput);
     uint16_t rightMotorSpeed = LF_ClampMotorSpeed(pidEncoderRightOutput);
 
-    TB6612Motor_ChangeDirection(me->motorLeftConfig, MOTOR_FORWARD);
-    TB6612Motor_ChangeDirection(me->motorRightConfig, MOTOR_FORWARD);
-    TB6612Motor_SetSpeed(me->motorLeftConfig, leftMotorSpeed);
-    TB6612Motor_SetSpeed(me->motorRightConfig, rightMotorSpeed);
+    TB6612Motor_ChangeDirection(me->motorLeft, MOTOR_FORWARD);
+    TB6612Motor_ChangeDirection(me->motorRight, MOTOR_FORWARD);
+    TB6612Motor_SetSpeed(me->motorLeft, leftMotorSpeed);
+    TB6612Motor_SetSpeed(me->motorRight, rightMotorSpeed);
 
-    Sensors_UpdateLeds();
+    Sensors_UpdateLeds(&me->sensorsInstance);
 }
 
 /**
@@ -346,8 +346,8 @@ static void LF_HandleTimerTick(LineFollower_T *const me)
     me->noLineDetectedCounter++;
     if (me->noLineDetectedCounter >= me->nvmBlock->noLineDetectedTimeout)
     {
-        TB6612Motor_Stop(me->motorLeftConfig);
-        TB6612Motor_Stop(me->motorRightConfig);
+        TB6612Motor_Stop(me->motorLeft);
+        TB6612Motor_Stop(me->motorRight);
         me->noLineDetectedCounter = 0U;
         me->state = LF_IDLE;
     }
@@ -371,8 +371,8 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
         me->state = LF_CALIBRATION;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
-        me->debugData.sensorError = Sensors_CalculateError(&me->nvmBlock->sensors);
-        Sensors_UpdateLeds();
+        me->debugData.sensorError = Sensors_CalculateError(&me->sensorsInstance, &me->nvmBlock->sensors);
+        Sensors_UpdateLeds(&me->sensorsInstance);
         break;
     case LF_SIG_SEND_DEBUG_DATA:
         LF_SendDebugData(NULL, me);
@@ -433,7 +433,7 @@ static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
 {
     LineFollower_T *const me = (LineFollower_T *const)context;
 
-    Sensors_GetRawData(me->debugData.sensorsValues);
+    memcpy(me->debugData.sensorsValues, me->sensorsInstance.adcBuffer, sizeof(me->sensorsInstance.adcBuffer));
     me->debugData.motorLeftVelocity = me->encoderLeft.velocity;
     me->debugData.motorRightVelocity = me->encoderRight.velocity;
 

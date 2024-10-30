@@ -1,92 +1,83 @@
 /******************************************************************************************
  *                                        INCLUDES                                        *
  ******************************************************************************************/
-#include <stdbool.h>
 #include "sensors.h"
-#include "tim.h"
 #include "cmsis_compiler.h"
+#include <string.h>
 
 /******************************************************************************************
  *                                         DEFINES                                        *
  ******************************************************************************************/
 #define Sensors_EnterCritical() __disable_irq()
-#define Sensors_ExitCritical() __enable_irq()
+#define Sensors_ExitCritical()  __enable_irq()
 
 /******************************************************************************************
- *                                        TYPEDEFS                                        *
+ *                                   FUNCTION PROTOTYPES                                  *
  ******************************************************************************************/
-typedef struct
-{
-    uint16_t adcBuffer[SENSORS_NUMBER];
-    ADC_HandleTypeDef *adcHandle;
-    Sensor_Instance_T *sensors;
-    uint16_t thresholds[SENSORS_NUMBER];
-    bool anySensorDetectedLine;
-    Sensor_DataUpdatedCb_T callback;
-    void *callbackContext;
-} Sensors_Manager_T;
-
-/******************************************************************************************
- *                                   FUNCTIONS PROTOTYPES                                 *
- ******************************************************************************************/
-static void Sensors_UpdateState(void);
-
-/******************************************************************************************
- *                                        VARIABLES                                       *
- ******************************************************************************************/
-static Sensors_Manager_T SensorsManager;
+static void Sensors_UpdateState(Sensors_Instance_T *const instance);
 
 /******************************************************************************************
  *                                        FUNCTIONS                                       *
  ******************************************************************************************/
-static void Sensors_UpdateState(void)
+
+/**
+ * @brief Updates the state of the sensors based on ADC readings.
+ *
+ * @param[in,out] instance Pointer to the sensors instance.
+ */
+static void Sensors_UpdateState(Sensors_Instance_T *const instance)
 {
-    SensorsManager.anySensorDetectedLine = false;
+    instance->anySensorDetectedLine = false;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        if (SensorsManager.adcBuffer[i] > SensorsManager.thresholds[i])
+        if (instance->adcBuffer[i] > instance->thresholds[i])
         {
-            SensorsManager.anySensorDetectedLine = true;
-            SensorsManager.sensors[i].isActive = true;
+            instance->anySensorDetectedLine = true;
+            instance->sensors[i].isActive = true;
         }
         else
         {
-            SensorsManager.sensors[i].isActive = false;
+            instance->sensors[i].isActive = false;
         }
     }
 }
 
-int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
-                 const Sensor_Led_T *const ledConfig,
-                 Sensor_Instance_T *const sensorInstances,
+/**
+ * @brief Initializes the sensor module.
+ *
+ * @param[in,out] instance         Pointer to the sensors instance.
+ * @param[in]     callback         Callback function for data updates.
+ * @param[in]     callbackContext  Context to pass to the callback function.
+ *
+ * @return 0 on success, -1 on failure.
+ */
+int Sensors_Init(Sensors_Instance_T *const instance,
                  Sensor_DataUpdatedCb_T callback,
                  void *callbackContext)
 {
-    if (adcHandle == NULL || sensorInstances == NULL || ledConfig == NULL)
+    if (instance == NULL || instance->config->adcHandle == NULL ||
+        instance->config->ledConfig == NULL || instance->config->timer == NULL)
     {
         return -1;
     }
 
-    SensorsManager.adcHandle = adcHandle;
-    SensorsManager.sensors = sensorInstances;
-    SensorsManager.callback = callback;
-    SensorsManager.callbackContext = callbackContext;
-    SensorsManager.anySensorDetectedLine = false;
+    instance->callback = callback;
+    instance->callbackContext = callbackContext;
+    instance->anySensorDetectedLine = false;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        SensorsManager.sensors[i].isActive = false;
-        SensorsManager.sensors[i].led = &ledConfig[i];
-        SensorsManager.thresholds[i] = 0xFFFFU;
+        instance->sensors[i].isActive = false;
+        instance->thresholds[i] = 0xFFFFU;
     }
 
-    /* Start ADC in DMA mode, trigger by timer */
-    if (HAL_TIM_Base_Start(&htim2) != HAL_OK)
+    /* Start ADC in DMA mode, triggered by timer */
+    if (HAL_TIM_Base_Start(instance->config->timer) != HAL_OK)
     {
         return -1;
     }
-    if (HAL_ADC_Start_DMA(SensorsManager.adcHandle, (uint32_t *)SensorsManager.adcBuffer, SENSORS_NUMBER) != HAL_OK)
+    if (HAL_ADC_Start_DMA(instance->config->adcHandle, (uint32_t *)instance->adcBuffer, SENSORS_NUMBER) != HAL_OK)
     {
         return -1;
     }
@@ -94,62 +85,76 @@ int Sensors_Init(ADC_HandleTypeDef *const adcHandle,
     return 0;
 }
 
-void Sensors_SetThresholds(uint16_t *const thresholds)
+/**
+ * @brief Sets the thresholds for sensor activation.
+ *
+ * @param[in,out] instance    Pointer to the sensors instance.
+ * @param[in]     thresholds  Array of thresholds for each sensor.
+ */
+void Sensors_SetThresholds(Sensors_Instance_T *const instance, uint16_t *const thresholds)
 {
-    if (thresholds == NULL)
+    if (instance == NULL || thresholds == NULL)
     {
         return;
     }
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        SensorsManager.thresholds[i] = thresholds[i];
+        instance->thresholds[i] = thresholds[i];
     }
 }
 
-void Sensors_GetRawData(uint16_t *data)
+/**
+ * @brief Updates the state of the LEDs based on sensor activity.
+ *
+ * @param[in,out] instance Pointer to the sensors instance.
+ */
+void Sensors_UpdateLeds(Sensors_Instance_T *const instance)
 {
-    if (data == NULL)
+    if (instance == NULL)
     {
         return;
     }
 
-    Sensors_EnterCritical();
-
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        data[i] = SensorsManager.adcBuffer[i];
-    }
+        const Sensor_Led_T *const led = &instance->config->ledConfig[i];
+        GPIO_PinState pinState = instance->sensors[i].isActive ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
-    Sensors_ExitCritical();
-}
-
-void Sensors_UpdateLeds(void)
-{
-    for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
-    {
-        Sensor_Instance_T *sensor = &SensorsManager.sensors[i];
-        GPIO_PinState pinState = sensor->isActive ? GPIO_PIN_SET : GPIO_PIN_RESET;
-
-        if (sensor->led != NULL)
+        if (led != NULL)
         {
-            HAL_GPIO_WritePin(sensor->led->port, sensor->led->pin, pinState);
+            HAL_GPIO_WritePin(led->port, led->pin, pinState);
         }
     }
 }
 
-float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors)
+/**
+ * @brief Calculates the error based on sensor readings.
+ *
+ * @param[in,out] instance    Pointer to the sensors instance.
+ * @param[in]     nvmSensors  Pointer to the configuration from NVM.
+ *
+ * @return Calculated error value.
+ */
+float Sensors_CalculateError(Sensors_Instance_T *const instance, const NVM_Sensors_T *const nvmSensors)
 {
     static float lastError = 0.0f;
     float currentError = 0.0f;
     int totalWeight = 0;
     int activeSensors = 0;
 
+    if (instance == NULL || nvmSensors == NULL)
+    {
+        return lastError;
+    }
+
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        if (SensorsManager.sensors[i].isActive)
+        instance->sensors[i].positionWeight = nvmSensors->weights[i];
+
+        if (instance->sensors[i].isActive)
         {
-            totalWeight += SensorsManager.sensors[i].positionWeight;
+            totalWeight += instance->sensors[i].positionWeight;
             activeSensors++;
         }
     }
@@ -181,16 +186,22 @@ float Sensors_CalculateError(const NVM_Sensors_T *const nvmSensors)
     return currentError;
 }
 
-bool Sensors_AnySensorDetectedLine(void)
+/**
+ * @brief ADC conversion complete callback function.
+ *
+ * @param[in,out] instance Pointer to the sensors instance.
+ * @param[in]     hadc     ADC handle.
+ */
+void Sensors_ADCConvCpltCallback(Sensors_Instance_T *const instance, ADC_HandleTypeDef *hadc)
 {
-    return SensorsManager.anySensorDetectedLine;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-    if (SensorsManager.adcHandle == hadc)
+    if (instance == NULL || instance->config->adcHandle != hadc)
     {
-        Sensors_UpdateState();
-        SensorsManager.callback(SensorsManager.callbackContext);
+        return;
+    }
+
+    Sensors_UpdateState(instance);
+    if (instance->callback != NULL)
+    {
+        instance->callback(instance->callbackContext);
     }
 }

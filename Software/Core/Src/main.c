@@ -49,7 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern const Sensor_Led_T sensorLeds[SENSORS_NUMBER];
+extern const Sensors_Config_T sensorsConfig;
 
 static NVM_Layout_T NvmBlock;
 static uint8_t ScpBuffer[SCP_BUFFER_SIZE];
@@ -87,9 +87,11 @@ LineFollower_T LineFollower = {
       .settings = &encoderSettings,
       .htim = &htim4
     },
-    .sensorLedsConfig = sensorLeds,
-    .motorLeftConfig = &LeftMotor,
-    .motorRightConfig = &RightMotor
+    .sensorsInstance = {
+      .config = &sensorsConfig
+    },
+    .motorLeft = &LeftMotor,
+    .motorRight = &RightMotor
 };
 /* USER CODE END PV */
 

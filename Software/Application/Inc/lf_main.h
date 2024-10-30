@@ -57,11 +57,10 @@ typedef struct
     PID_Instance_T pidEncoderRightInstance;
     Encoder_Instance_T encoderLeft;
     Encoder_Instance_T encoderRight;
-    Sensor_Instance_T sensors[SENSORS_NUMBER];
+    Sensors_Instance_T sensorsInstance;
 
-    const Sensor_Led_T *const sensorLedsConfig;
-    const TB6612MotorDriver_T *const motorLeftConfig;
-    const TB6612MotorDriver_T *const motorRightConfig;
+    const TB6612MotorDriver_T *const motorLeft;
+    const TB6612MotorDriver_T *const motorRight;
 } LineFollower_T;
 
 /******************************************************************************************
