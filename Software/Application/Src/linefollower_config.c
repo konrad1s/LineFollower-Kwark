@@ -35,32 +35,32 @@ const NVM_Layout_T NvmDefaultData = {
         .output_min = -1.5f,
     },
     .pidStgEncoderLeft = {
-        .kp = 1.0f,
-        .ki = 10.0f,
-        .kd = 10.0f,
+        .kp = 984.0f,
+        .ki = 21.34f,
+        .kd = 1200.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
         .output_max = 1000.0f,
         .output_min = 0.0f,
     },
     .pidStgEncoderRight = {
-        .kp = 1.0f,
-        .ki = 10.0f,
-        .kd = 10.0f,
+        .kp = 984.0f,
+        .ki = 21.34f,
+        .kd = 1200.0f,
         .integral_max = 100.0f,
         .integral_min = -100.0f,
         .output_max = 1000.0f,
         .output_min = 0.0f,
     },
     .sensors = {
-        .weights = {-7, -5, -4, -2, -1, 0, 0, 1, 2, 4, 5, 7},
+        .weights = {-8, -6, -4, -2, -1, 0, 0, 1, 2, 4, 6, 8},
         .thresholds = {1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U, 1500U},
         .errorThreshold = 1.0f,
         .fallbackErrorPositive = 10.0f,
         .fallbackErrorNegative = -10.0f
     },
     .targetSpeed = 1.0f,
-    .noLineDetectedTimeout = 2000U
+    .noLineDetectedTimeout = 1000U
 };
 
 /* --------------------------------- SENSORS CONFIG --------------------------------- */

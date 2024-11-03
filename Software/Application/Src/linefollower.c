@@ -9,7 +9,7 @@
  *                                         DEFINES                                        *
  ******************************************************************************************/
 #define LF_InitHandleFailure(status)    LF_LogError(__FILE__, __LINE__, status)
-#define LF_PID_UPDATE_INTERVAL_MS       20.0f
+#define LF_PID_UPDATE_INTERVAL_MS       5.0f
 #define LF_MAX_MOTOR_SPEED              999U
 
 /******************************************************************************************
