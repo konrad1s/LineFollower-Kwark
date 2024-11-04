@@ -33,6 +33,7 @@ typedef struct
     ADC_HandleTypeDef *adcHandle;
     const Sensor_Led_T *ledConfig;
     TIM_HandleTypeDef *timer;
+    uint8_t rightAngleWindow;
 } Sensors_Config_T;
 
 typedef struct
@@ -42,6 +43,7 @@ typedef struct
     Sensor_Instance_T sensors[SENSORS_NUMBER];
     uint16_t thresholds[SENSORS_NUMBER];
     bool anySensorDetectedLine;
+    bool rightAngleDetected;
     Sensor_DataUpdatedCb_T callback;
     void *callbackContext;
 } Sensors_Instance_T;

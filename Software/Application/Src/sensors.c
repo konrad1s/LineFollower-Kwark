@@ -14,11 +14,57 @@
 /******************************************************************************************
  *                                   FUNCTION PROTOTYPES                                  *
  ******************************************************************************************/
+static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t i,
+                                        uint8_t *activeCount, uint8_t *windowStart, uint8_t maxStartIndex);
 static void Sensors_UpdateState(Sensors_Instance_T *const instance);
 
 /******************************************************************************************
  *                                        FUNCTIONS                                       *
  ******************************************************************************************/
+
+/**
+ * @brief Updates the sliding window for a side during each iteration.
+ *
+ * @param[in]     instance          Pointer to the sensors instance.
+ * @param[in]     i                 Current index in the main loop.
+ * @param[in,out] activeCount       Pointer to the active count for the side.
+ * @param[in,out] windowStart       Pointer to the window start index for the side.
+ * @param[in]     maxStartIndex     Maximum start index for the sliding window.
+ */
+static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t i,
+                                        uint8_t *activeCount, uint8_t *windowStart, uint8_t maxStartIndex)
+{
+    bool rightAngleDetected = false;
+    uint8_t sensorsPerSide = SENSORS_NUMBER / 2;
+    uint8_t sideStartIndex = i < sensorsPerSide ? 0 : SENSORS_NUMBER / 2;
+    uint8_t relativeIndex = i - sideStartIndex;
+    uint8_t windowSize = instance->config->rightAngleWindow;
+
+    if (relativeIndex < windowSize)
+    {
+        /* Initialize activeCount for the first window */
+        *activeCount += instance->sensors[i].isActive ? 1 : 0;
+        if ((relativeIndex == windowSize - 1) && (*activeCount == windowSize))
+        {
+            rightAngleDetected = true;
+        }
+    }
+    else if (*windowStart <= maxStartIndex)
+    {
+        /* Slide the window */
+        uint8_t outgoingSensorIndex = *windowStart + sideStartIndex;
+        *activeCount -= instance->sensors[outgoingSensorIndex].isActive ? 1 : 0;
+        *activeCount += instance->sensors[i].isActive ? 1 : 0;
+        (*windowStart)++;
+
+        if (*activeCount == windowSize)
+        {
+            rightAngleDetected = true;
+        }
+    }
+
+    return rightAngleDetected;
+}
 
 /**
  * @brief Updates the state of the sensors based on ADC readings.
@@ -28,19 +74,45 @@ static void Sensors_UpdateState(Sensors_Instance_T *const instance);
 static void Sensors_UpdateState(Sensors_Instance_T *const instance)
 {
     instance->anySensorDetectedLine = false;
+    instance->rightAngleDetected = false;
+
+    uint8_t windowSize = instance->config->rightAngleWindow; 
+    uint8_t sensorsPerSide = SENSORS_NUMBER / 2;
+    uint8_t leftActiveCount = 0, rightActiveCount = 0;
+    bool leftHasRightAngle = false, rightHasRightAngle = false;
+
+    /* Initialize maximum start indices for sliding windows */
+    uint8_t leftMaxStartIndex = sensorsPerSide - windowSize;
+    uint8_t rightMaxStartIndex = sensorsPerSide - windowSize;
+    uint8_t leftWindowStart = 0;
+    uint8_t rightWindowStart = sensorsPerSide;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
-        if (instance->adcBuffer[i] > instance->thresholds[i])
+        bool isActive = instance->adcBuffer[i] > instance->thresholds[i];
+        instance->sensors[i].isActive = isActive;
+        if (isActive)
         {
             instance->anySensorDetectedLine = true;
-            instance->sensors[i].isActive = true;
         }
-        else
+
+        if (!leftHasRightAngle && !rightHasRightAngle)
         {
-            instance->sensors[i].isActive = false;
+            if (i < sensorsPerSide)
+            {
+                leftHasRightAngle = Sensors_UpdateSlidingWindow(instance, i, &leftActiveCount,
+                                                                &leftWindowStart, leftMaxStartIndex);
+            }
+            else
+            {
+                rightHasRightAngle = Sensors_UpdateSlidingWindow(instance, i, &rightActiveCount,
+                                                                 &rightWindowStart, rightMaxStartIndex);
+            }
         }
     }
+
+    /* Set the right angle detected flag */
+    instance->rightAngleDetected = (leftHasRightAngle || rightHasRightAngle);
 }
 
 /**

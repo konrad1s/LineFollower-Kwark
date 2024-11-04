@@ -83,6 +83,7 @@ const Sensors_Config_T sensorsConfig = {
     .adcHandle = &hadc1,
     .ledConfig = sensorLeds,
     .timer = &htim2,
+    .rightAngleWindow = 4
 };
 
 /* --------------------------------- MOTORS CONFIG --------------------------------- */
