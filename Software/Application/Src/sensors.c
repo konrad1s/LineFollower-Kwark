@@ -14,8 +14,9 @@
 /******************************************************************************************
  *                                   FUNCTION PROTOTYPES                                  *
  ******************************************************************************************/
-static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t i,
-                                        uint8_t *activeCount, uint8_t *windowStart, uint8_t maxStartIndex);
+static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t sensorIndex,
+                                        uint8_t *activeCount, uint8_t *windowStart,
+                                        uint8_t maxStartIndex, uint8_t sideStartIndex);
 static void Sensors_UpdateState(Sensors_Instance_T *const instance);
 
 /******************************************************************************************
@@ -26,24 +27,25 @@ static void Sensors_UpdateState(Sensors_Instance_T *const instance);
  * @brief Updates the sliding window for a side during each iteration.
  *
  * @param[in]     instance          Pointer to the sensors instance.
- * @param[in]     i                 Current index in the main loop.
+ * @param[in]     sensorIndex       Actual sensor index in the sensors array.
  * @param[in,out] activeCount       Pointer to the active count for the side.
  * @param[in,out] windowStart       Pointer to the window start index for the side.
  * @param[in]     maxStartIndex     Maximum start index for the sliding window.
+ * @param[in]     sideStartIndex    Starting index of the side (0 for left, sensorsPerSide for right).
+ * @return        true if a right angle is detected; false otherwise.
  */
-static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t i,
-                                        uint8_t *activeCount, uint8_t *windowStart, uint8_t maxStartIndex)
+static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint16_t sensorIndex,
+                                        uint8_t *activeCount, uint8_t *windowStart,
+                                        uint8_t maxStartIndex, uint8_t sideStartIndex)
 {
     bool rightAngleDetected = false;
-    uint8_t sensorsPerSide = SENSORS_NUMBER / 2;
-    uint8_t sideStartIndex = i < sensorsPerSide ? 0 : SENSORS_NUMBER / 2;
-    uint8_t relativeIndex = i - sideStartIndex;
     uint8_t windowSize = instance->config->rightAngleWindow;
+    uint8_t relativeIndex = sensorIndex - sideStartIndex;
 
     if (relativeIndex < windowSize)
     {
         /* Initialize activeCount for the first window */
-        *activeCount += instance->sensors[i].isActive ? 1 : 0;
+        *activeCount += instance->sensors[sensorIndex].isActive ? 1 : 0;
         if ((relativeIndex == windowSize - 1) && (*activeCount == windowSize))
         {
             rightAngleDetected = true;
@@ -52,9 +54,9 @@ static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint
     else if (*windowStart <= maxStartIndex)
     {
         /* Slide the window */
-        uint8_t outgoingSensorIndex = *windowStart + sideStartIndex;
+        uint8_t outgoingSensorIndex = sideStartIndex + *windowStart;
         *activeCount -= instance->sensors[outgoingSensorIndex].isActive ? 1 : 0;
-        *activeCount += instance->sensors[i].isActive ? 1 : 0;
+        *activeCount += instance->sensors[sensorIndex].isActive ? 1 : 0;
         (*windowStart)++;
 
         if (*activeCount == windowSize)
@@ -67,25 +69,62 @@ static bool Sensors_UpdateSlidingWindow(Sensors_Instance_T *const instance, uint
 }
 
 /**
+ * @brief Checks if only 2 middle sensors are active.
+ *
+ * @param[in] instance     Pointer to the sensors instance.
+ * @param[in] activeSensors Total number of active sensors.
+ * @return    true if a straight line is detected; false otherwise.
+ */
+static bool Sensors_CheckStraightLine(Sensors_Instance_T *const instance, uint8_t activeSensors)
+{
+    bool straightLine = false;
+    uint16_t midIndex1 = (SENSORS_NUMBER / 2) - 1;
+    uint16_t midIndex2 = SENSORS_NUMBER / 2;
+
+    if ((activeSensors == 2) &&
+        ((instance->sensors[midIndex1].isActive) && (instance->sensors[midIndex2].isActive)))
+    {
+        straightLine = true;
+    }
+
+    return straightLine;
+}
+
+/**
+ * @brief Determines if the stabilization condition is met
+ *
+ * @param[in] allOutsideMiddleInactive  True if all sensors outside the middle are inactive.
+ * @param[in] middleActiveCount         Count of active sensors within the middle region.
+ * @return    true if stabilization is met; false otherwise.
+ */
+static bool Sensors_CheckStabilization(bool allOutsideMiddleInactive, uint8_t middleActiveCount)
+{
+    return allOutsideMiddleInactive && (middleActiveCount >= 1);
+}
+
+/**
  * @brief Updates the state of the sensors based on ADC readings.
  *
  * @param[in,out] instance Pointer to the sensors instance.
  */
 static void Sensors_UpdateState(Sensors_Instance_T *const instance)
 {
-    instance->anySensorDetectedLine = false;
-    instance->rightAngleDetected = false;
+    const uint8_t rightAngleWindowSize = instance->config->rightAngleWindow;
+    const uint8_t stabilizeWindowSize = instance->config->stabilizeWindow;
+    const uint16_t stabilizeStartIdx = (SENSORS_NUMBER - stabilizeWindowSize) / 2;
+    const uint16_t stabilizeEnddx = stabilizeStartIdx + stabilizeWindowSize - 1;
 
-    uint8_t windowSize = instance->config->rightAngleWindow; 
     uint8_t sensorsPerSide = SENSORS_NUMBER / 2;
     uint8_t leftActiveCount = 0, rightActiveCount = 0;
-    bool leftHasRightAngle = false, rightHasRightAngle = false;
+    uint8_t leftWindowStart = 0, rightWindowStart = 0;
+    uint8_t maxStartIndex = sensorsPerSide - rightAngleWindowSize;
 
-    /* Initialize maximum start indices for sliding windows */
-    uint8_t leftMaxStartIndex = sensorsPerSide - windowSize;
-    uint8_t rightMaxStartIndex = sensorsPerSide - windowSize;
-    uint8_t leftWindowStart = 0;
-    uint8_t rightWindowStart = sensorsPerSide;
+    bool leftHasRightAngle = false, rightHasRightAngle = false;
+    uint8_t activeSensorCount = 0;
+    uint8_t middleActiveCount = 0;
+    bool allOutsideMiddleInactive = true;
+
+    instance->anySensorDetectedLine = false;
 
     for (uint16_t i = 0U; i < SENSORS_NUMBER; i++)
     {
@@ -94,25 +133,37 @@ static void Sensors_UpdateState(Sensors_Instance_T *const instance)
         if (isActive)
         {
             instance->anySensorDetectedLine = true;
+            activeSensorCount++;
+
+            if (i >= stabilizeStartIdx && i <= stabilizeEnddx)
+            {
+                middleActiveCount++;
+            }
+            else
+            {
+                allOutsideMiddleInactive = false;
+            }
         }
 
-        if (!leftHasRightAngle && !rightHasRightAngle)
+        /* Right angle detection */
+        if ((!leftHasRightAngle) && (!rightHasRightAngle))
         {
             if (i < sensorsPerSide)
             {
                 leftHasRightAngle = Sensors_UpdateSlidingWindow(instance, i, &leftActiveCount,
-                                                                &leftWindowStart, leftMaxStartIndex);
+                                                                &leftWindowStart, maxStartIndex, 0);
             }
             else
             {
                 rightHasRightAngle = Sensors_UpdateSlidingWindow(instance, i, &rightActiveCount,
-                                                                 &rightWindowStart, rightMaxStartIndex);
+                                                                 &rightWindowStart, maxStartIndex, sensorsPerSide);
             }
         }
     }
 
-    /* Set the right angle detected flag */
     instance->rightAngleDetected = (leftHasRightAngle || rightHasRightAngle);
+    instance->straightLineDetected = Sensors_CheckStraightLine(instance, activeSensorCount);
+    instance->stabilizeDetected = Sensors_CheckStabilization(allOutsideMiddleInactive, middleActiveCount);
 }
 
 /**

@@ -34,6 +34,7 @@ typedef struct
     const Sensor_Led_T *ledConfig;
     TIM_HandleTypeDef *timer;
     uint8_t rightAngleWindow;
+    uint8_t stabilizeWindow;
 } Sensors_Config_T;
 
 typedef struct
@@ -44,6 +45,8 @@ typedef struct
     uint16_t thresholds[SENSORS_NUMBER];
     bool anySensorDetectedLine;
     bool rightAngleDetected;
+    bool straightLineDetected;
+    bool stabilizeDetected;
     Sensor_DataUpdatedCb_T callback;
     void *callbackContext;
 } Sensors_Instance_T;
