@@ -36,6 +36,9 @@ int Encoder_Init(Encoder_Instance_T *const encoder)
         return -1;
     }
 
+    (void)HAL_TIM_Encoder_Stop(encoder->htim, TIM_CHANNEL_ALL);
+    __HAL_TIM_SET_COUNTER(encoder->htim, 0);
+
     if (HAL_TIM_Encoder_Start(encoder->htim, TIM_CHANNEL_ALL) != HAL_OK)
     {
         return -1;

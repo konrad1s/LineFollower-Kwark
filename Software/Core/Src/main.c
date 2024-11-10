@@ -56,6 +56,7 @@ static uint8_t ScpBuffer[SCP_BUFFER_SIZE];
 
 LineFollower_T LineFollower = {
     .debugModeTimer = &htim6,
+    .cycleCountReg = &DWT->CYCCNT,
     .nvmInstance = {
         .defaultData = (const uint8_t *)&NvmDefaultData,
         .size = sizeof(NVM_Layout_T),

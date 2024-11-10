@@ -59,11 +59,11 @@ const NVM_Layout_T NvmDefaultData = {
         .fallbackErrorPositive = 10.0f,
         .fallbackErrorNegative = -10.0f
     },
-    .targetSpeed = 1.0f,
+    .targetSpeed = 1.3f,
     .timerTimeout = {
         [LF_TIMER_NO_LINE_DETECTED]= 1000U,
         [LF_TIMER_REDUCED_SPEED]= 300U,
-        [LF_TIMER_SENSORS_STABILIZE]= 100U,
+        [LF_TIMER_SENSORS_STABILIZE]= 500U,
         [LF_TIMER_CALIBRATION] = 3000u
     }
 };

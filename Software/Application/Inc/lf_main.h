@@ -49,7 +49,9 @@ typedef struct
 {
     LFState_T state;
     uint32_t *bootFlags;
+    uint32_t prevCycleCount;
     bool isDebugMode;
+    volatile uint32_t *const cycleCountReg;
     TIM_HandleTypeDef *const debugModeTimer;
     LF_SignalQueue_T signals;
     Lf_DebugData_T debugData;

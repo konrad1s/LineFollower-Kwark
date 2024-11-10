@@ -96,6 +96,7 @@ static void LF_InitState(LineFollower_T *const me)
     me->state = LF_IDLE;
     me->isDebugMode = false;
     me->bootFlags = &bootloaderFlags;
+    me->prevCycleCount = 0U;
 
     for (LF_TimetId_T timer = 0; timer < LF_TIMER_NB; timer++)
     {
@@ -307,14 +308,13 @@ static void LF_HandleStopSignal(LineFollower_T *const me)
 {
     TB6612Motor_Stop(me->motorLeft);
     TB6612Motor_Stop(me->motorRight);
-    (void)LF_InitPID(me);
-    (void)LF_InitEncoders(me);
 
     for (LF_TimetId_T timer = 0; timer < LF_TIMER_NB; timer++)
     {
         LF_StopTimer(me->timers[timer]);
     }
 
+    me->prevCycleCount = 0U;
     me->state = LF_IDLE;
 }
 
@@ -325,7 +325,17 @@ static void LF_HandleStopSignal(LineFollower_T *const me)
  */
 static void LF_HandleADCDataUpdated(LineFollower_T *const me)
 {
-    const float dt = LF_PID_UPDATE_INTERVAL_MS;
+    uint32_t currCycleCount = *(me->cycleCountReg);
+
+    if (me->prevCycleCount == 0U)
+    {
+        me->prevCycleCount = currCycleCount;
+        return;
+    }
+
+    uint32_t cycleDiff = currCycleCount - me->prevCycleCount;
+    me->prevCycleCount = currCycleCount;
+    float dt = ((float)cycleDiff) / SystemCoreClock * 1000.0f;
     bool isSpeedReduced = false;
 
     if (me->sensorsInstance.anySensorDetectedLine)
@@ -359,8 +369,8 @@ static void LF_HandleADCDataUpdated(LineFollower_T *const me)
 
     me->debugData.sensorError = Sensors_CalculateError(&me->sensorsInstance, &me->nvmBlock->sensors);
     float pidSensorOutput = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, dt);
-    targetSpeedLeft -= me->nvmBlock->targetSpeed - pidSensorOutput;
-    targetSpeedRight += me->nvmBlock->targetSpeed + pidSensorOutput;
+    targetSpeedLeft -= pidSensorOutput;
+    targetSpeedRight += pidSensorOutput;
 
     Encoder_Update(&me->encoderLeft, dt);
     Encoder_Update(&me->encoderRight, dt);
@@ -417,6 +427,8 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
     switch (sig)
     {
     case LF_SIG_START:
+        (void)LF_InitPID(me);
+        (void)LF_InitEncoders(me);
         me->state = LF_RUN;
         break;
     case LF_SIG_CALIBRATE:
