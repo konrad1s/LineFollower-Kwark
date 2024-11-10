@@ -51,8 +51,22 @@ void BluetoothHandler::connectToDevice(const QBluetoothAddress &address)
         emit errorOccurred("Already connected to a device.");
         return;
     }
+    resetSocket();
     bluetoothSocket->connectToService(address, QBluetoothUuid::ServiceClassUuid::SerialPort);
     connectionTimer->start(CONNECTION_TIMEOUT);
+}
+
+void BluetoothHandler::resetSocket()
+{
+    if (bluetoothSocket)
+    {
+        bluetoothSocket->disconnect(this);
+        bluetoothSocket->deleteLater();
+    }
+    bluetoothSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
+    connect(bluetoothSocket, &QBluetoothSocket::connected, this, &BluetoothHandler::handleConnectionEstablished);
+    connect(bluetoothSocket, &QBluetoothSocket::disconnected, this, &BluetoothHandler::handleConnectionLost);
+    connect(bluetoothSocket, &QBluetoothSocket::readyRead, this, &BluetoothHandler::handleSocketReadyRead);
 }
 
 void BluetoothHandler::disconnectFromDevice()
@@ -61,6 +75,7 @@ void BluetoothHandler::disconnectFromDevice()
     {
         bluetoothSocket->disconnectFromService();
     }
+    resetSocket();
 }
 
 bool BluetoothHandler::isConnected() const

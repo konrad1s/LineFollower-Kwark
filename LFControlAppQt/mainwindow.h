@@ -62,6 +62,13 @@ private:
     bool autoConnectInProgress;
     QString autoConnectDeviceName;
 
+    bool wasSpeedReduced;
+    qint64 speedReducedStartTime;
+    qint64 totalSpeedReducedTime;
+    bool isRunning;
+    qint64 runStartTime;
+    qint64 totalRunTime;
+
     Plot *motorPlot;
     Plot *sensorPlot;
     size_t plotStartTime;

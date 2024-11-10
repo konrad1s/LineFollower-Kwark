@@ -14,6 +14,7 @@ public:
     float sensorError;
     float motorLeftVelocity;
     float motorRightVelocity;
+    bool isSpeedReduced;
 
     DebugData() = default;
 
@@ -32,12 +33,14 @@ public:
         offset += sizeof(sensorError);
         motorRightVelocity = *reinterpret_cast<const float *>(data + offset);
         offset += sizeof(sensorError);
+        isSpeedReduced = *reinterpret_cast<const bool *>(data + offset);
+        offset += sizeof(isSpeedReduced);
     }
 
     constexpr size_t size() const
     {
         return sizeof(sensorError) + (sensorValues.size() * sizeof(uint16_t)) +
-               sizeof(motorLeftVelocity) + sizeof(motorRightVelocity);
+               sizeof(motorLeftVelocity) + sizeof(motorRightVelocity) + sizeof(isSpeedReduced);
     }
 
     QString toString() const
@@ -54,6 +57,7 @@ public:
         output.append(QString("Sensor Error: %1\n").arg(sensorError));
         output.append(QString("Motor Left Velocity: %1\n").arg(motorLeftVelocity));
         output.append(QString("Motor Right Velocity: %1\n").arg(motorRightVelocity));
+        output.append(QString("Right angle detected: %1\n").arg(isSpeedReduced));
 
         return output;
     }

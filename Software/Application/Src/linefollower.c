@@ -505,6 +505,8 @@ static void LF_SendDebugData(const SCP_Packet *const packet, void *context)
     memcpy(me->debugData.sensorsValues, me->sensorsInstance.adcBuffer, sizeof(me->sensorsInstance.adcBuffer));
     me->debugData.motorLeftVelocity = me->encoderLeft.velocity;
     me->debugData.motorRightVelocity = me->encoderRight.velocity;
+    me->debugData.isSpeedReduced = LF_IsTimerOn(me->timers[LF_TIMER_SENSORS_STABILIZE]) ||
+                                   LF_IsTimerOn(me->timers[LF_TIMER_REDUCED_SPEED]);
 
     SCP_Transmit(&me->scpInstance, LF_CMD_SEND_DEBUG_DATA, &me->debugData, sizeof(me->debugData));
 }

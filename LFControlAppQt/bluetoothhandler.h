@@ -55,6 +55,8 @@ private:
     Command currentCommand;
 
     SCP *scpHandler;
+
+    void resetSocket();
 };
 
 #endif // BLUETOOTHHANDLER_H

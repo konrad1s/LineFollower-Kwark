@@ -9,14 +9,25 @@
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), bluetoothHandler(new BluetoothHandler(this)), bootloader(new Bootloader(bluetoothHandler, this)),
-      autoConnectInProgress(false)
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+    bluetoothHandler(new BluetoothHandler(this)),
+    bootloader(new Bootloader(bluetoothHandler, this)),
+    autoConnectInProgress(false),
+    wasSpeedReduced(false),
+    speedReducedStartTime(0),
+    totalSpeedReducedTime(0),
+    isRunning(false),
+    runStartTime(0),
+    totalRunTime(0)
 {
     ui->setupUi(this);
 
     motorPlot = new Plot(this, "Robot speed", "Time", "Speed");
     motorPlot->setSeriesName("Motor Left");
     motorPlot->addSeries("Motor Right");
+    motorPlot->addSeries("isSpeedReduced");
+    QPen dashedPen(Qt::DashLine);
+    dashedPen.setColor(Qt::red);
     QVBoxLayout *tab1Layout = new QVBoxLayout(ui->tabChart1);
     tab1Layout->addWidget(motorPlot);
     ui->tabChart1->setLayout(tab1Layout);
@@ -28,17 +39,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     plotStartTime = 0;
 
-    motorPlot->setAxisRange(0, 0, -3, 3);
+    motorPlot->setAxisRange(0, 0, -1, 3);
 
     connect(bluetoothHandler, &BluetoothHandler::deviceFound, this, &MainWindow::captureDeviceProperties);
     connect(bluetoothHandler, &BluetoothHandler::discoveryFinished, this, &MainWindow::searchingFinished);
     connect(bluetoothHandler, &BluetoothHandler::connectionEstablished, this, &MainWindow::connectionEstablished);
     connect(bluetoothHandler, &BluetoothHandler::connectionLost, this, &MainWindow::connectionLost);
     connect(bluetoothHandler, &BluetoothHandler::dataReceived, this, &MainWindow::handleDataReceived);
-    connect(bluetoothHandler, &BluetoothHandler::errorOccurred, [this](const QString &error)
+    connect(bluetoothHandler, &BluetoothHandler::errorOccurred, this, [this](const QString &error)
             { addToLogs(error, false); });
-    connect(bootloader, &Bootloader::bootloaderMessage, this, [this](const QString &message)
-            { addToLogs(message, true); });
+
+    connect(bootloader, &Bootloader::errorOccurred, this, [this](const QString &error)
+            {
+                addToLogs(error, false);
+                QMessageBox::warning(this, tr("Bootloader Error"), error);
+            });
     connect(bootloader, &Bootloader::progressUpdated, ui->progressBarBootloader, &QProgressBar::setValue);
     connect(bootloader, &Bootloader::errorOccurred, [this](const QString &error)
             {
@@ -196,6 +211,16 @@ void MainWindow::on_pushButtonStart_clicked()
     data.append(static_cast<char>(CommandSetMode::Start));
     bluetoothHandler->sendCommand(Command::SetMode, data);
     addToLogs("Start command sent", true);
+
+    totalSpeedReducedTime = 0;
+    wasSpeedReduced = false;
+    speedReducedStartTime = 0;
+    ui->lineEditReducedSpeedTime->setText("0.00");
+
+    isRunning = true;
+    runStartTime = QDateTime::currentMSecsSinceEpoch();
+    totalRunTime = 0;
+    ui->lineEditTurnOnTime->setText("0.00");
 }
 
 void MainWindow::on_pushButtonStop_clicked()
@@ -204,6 +229,20 @@ void MainWindow::on_pushButtonStop_clicked()
     data.append(static_cast<char>(CommandSetMode::Stop));
     bluetoothHandler->sendCommand(Command::SetMode, data);
     addToLogs("Stop command sent", true);
+
+    if (isRunning)
+    {
+        qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+        totalRunTime += currentTime - runStartTime;
+        isRunning = false;
+    }
+
+    if (wasSpeedReduced)
+    {
+        qint64 currentTime = QDateTime::currentMSecsSinceEpoch() - plotStartTime;
+        totalSpeedReducedTime += currentTime - speedReducedStartTime;
+        wasSpeedReduced = false;
+    }
 }
 
 void MainWindow::on_pushButtonReset_clicked()
@@ -412,6 +451,44 @@ void MainWindow::updateDebugData(const QByteArray &data)
     sensorPlot->addDataPoint(currentTime, debugData.sensorError);
     motorPlot->addDataPoint(0, currentTime, debugData.motorLeftVelocity);
     motorPlot->addDataPoint(1, currentTime, debugData.motorRightVelocity);
+    motorPlot->addDataPoint(2, currentTime, debugData.isSpeedReduced ? 1.0 : 0.0);
+
+    if (debugData.isSpeedReduced)
+    {
+        if (!wasSpeedReduced)
+        {
+            speedReducedStartTime = currentTime;
+            wasSpeedReduced = true;
+        }
+    }
+    else
+    {
+        if (wasSpeedReduced)
+        {
+            totalSpeedReducedTime += currentTime - speedReducedStartTime;
+            wasSpeedReduced = false;
+        }
+    }
+
+    double totalTimeInSeconds = totalSpeedReducedTime / 1000.0;
+
+    if (wasSpeedReduced)
+    {
+        totalTimeInSeconds += (currentTime - speedReducedStartTime) / 1000.0;
+    }
+    ui->lineEditReducedSpeedTime->setText(QString::number(totalTimeInSeconds, 'f', 2));
+
+    if (isRunning)
+    {
+        qint64 elapsedTime = totalRunTime + (currentTime + plotStartTime - runStartTime);
+        double elapsedTimeInSeconds = elapsedTime / 1000.0;
+        ui->lineEditTurnOnTime->setText(QString::number(elapsedTimeInSeconds, 'f', 2));
+    }
+    else
+    {
+        double elapsedTimeInSeconds = totalRunTime / 1000.0;
+        ui->lineEditTurnOnTime->setText(QString::number(elapsedTimeInSeconds, 'f', 2));
+    }
 }
 
 void MainWindow::addToLogs(const QString &msg, bool isDebugMsg)

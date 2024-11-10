@@ -18,6 +18,7 @@ public:
     void clear();
     void setSeriesName(const QString &seriesName);
     void setSeriesName(int seriesIndex, const QString &seriesName);
+    void setSeriesPen(int seriesIndex, const QPen &pen);
     void addDataPoint(qreal x, qreal y);
     void addDataPoint(int seriesIndex, qreal x, qreal y);
     int addSeries(const QString &seriesName = "");

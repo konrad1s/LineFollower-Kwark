@@ -31,12 +31,13 @@ typedef enum
     LF_ERROR
 } LFState_T;
 
-typedef struct
+typedef struct __attribute__((packed))
 {
     uint16_t sensorsValues[SENSORS_NUMBER];
     float sensorError;
     float motorLeftVelocity;
     float motorRightVelocity;
+    bool isSpeedReduced;
 } Lf_DebugData_T;
 
 typedef struct

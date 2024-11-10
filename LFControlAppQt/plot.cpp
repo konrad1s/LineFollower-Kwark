@@ -59,6 +59,18 @@ void Plot::setSeriesName(int seriesIndex, const QString &seriesName)
     }
 }
 
+void Plot::setSeriesPen(int seriesIndex, const QPen &pen)
+{
+    if (seriesIndex >= 0 && seriesIndex < seriesList.size())
+    {
+        seriesList[seriesIndex]->setPen(pen);
+    }
+    else
+    {
+        qWarning("Series index out of bounds");
+    }
+}
+
 void Plot::addDataPoint(qreal x, qreal y)
 {
     addDataPoint(0, x, y);
