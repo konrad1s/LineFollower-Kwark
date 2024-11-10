@@ -29,6 +29,6 @@ typedef enum
  ******************************************************************************************/
 void LF_StartCalibration(LineFollower_T *const me);
 void LF_UpdateCalibrationData(LineFollower_T *const me);
-LF_CalibrationStatus_T LF_UpdateCalibrationTimer(LineFollower_T *const me);
+void LF_StopCalibration(LineFollower_T *const me);
 
 #endif /* __LF_CALIBRATE_H__ */

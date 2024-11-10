@@ -104,6 +104,7 @@ static void LF_InitState(LineFollower_T *const me)
     }
     
     me->timers[LF_TIMER_NO_LINE_DETECTED].associatedTimeoutSig = LF_SIG_STOP;
+    me->timers[LF_TIMER_CALIBRATION].associatedTimeoutSig = LF_SIG_CALIBRATION_COMPLETE;
 
     LF_SignalQueue_Init(&me->signals);
     memset(&me->debugData, 0, sizeof(me->debugData));
@@ -393,7 +394,7 @@ static void LF_HandleTimerTick(LineFollower_T *const me)
         if (LF_IsTimerOn(me->timers[timer]))
         {
             me->timers[timer].tick++;
-            if (me->timers[timer].tick == me->nvmBlock->timerTimeout[timer])
+            if (me->timers[timer].tick >= me->nvmBlock->timerTimeout[timer])
             {
                 LF_StopTimer(me->timers[timer]);
                 if (me->timers[timer].associatedTimeoutSig != LF_SIG_INVALID)
@@ -420,6 +421,7 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
         break;
     case LF_SIG_CALIBRATE:
         LF_StartCalibration(me);
+        LF_StartTimer(me->timers[LF_TIMER_CALIBRATION]);
         me->state = LF_CALIBRATION;
         break;
     case LF_SIG_ADC_DATA_UPDATED:
@@ -429,6 +431,8 @@ static void LF_StateIdle(LineFollower_T *const me, LF_Signal_T sig)
     case LF_SIG_SEND_DEBUG_DATA:
         LF_SendDebugData(NULL, me);
         break;
+    case LF_SIG_TIMER_TICK:
+        LF_HandleTimerTick(me);
     default:
         break;
     }
@@ -447,21 +451,22 @@ static void LF_StateCalibration(LineFollower_T *const me, LF_Signal_T sig)
     case LF_SIG_ADC_DATA_UPDATED:
         LF_UpdateCalibrationData(me);
         break;
-    case LF_SIG_TIMER_TICK:
-    {
-        LF_CalibrationStatus_T status = LF_UpdateCalibrationTimer(me);
 
-        if (status == LF_CALIBRATION_COMPLETE || status == LF_CALIBRATION_ERROR)
-        {
-            SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
-            me->state = LF_IDLE;
-        }
-    }
-    break;
+    case LF_SIG_CALIBRATION_COMPLETE:
+        LF_StopTimer(me->timers[LF_TIMER_CALIBRATION]);
+        LF_StopCalibration(me);
+        SCP_Transmit(&me->scpInstance, LF_CMD_CALIBRATE, NULL, 0);
+        me->state = LF_IDLE;
+        break;
+
+    case LF_SIG_TIMER_TICK:
+        LF_HandleTimerTick(me);
+
     default:
         break;
     }
 }
+
 
 /**
  * @brief Callback function for ADC data update.
