@@ -22,7 +22,9 @@ typedef enum
     LF_SIG_CALIBRATE,
     LF_SIG_ADC_DATA_UPDATED,
     LF_SIG_SEND_DEBUG_DATA,
-    LF_SIG_TIMER_TICK
+    LF_SIG_TIMER_TICK,
+
+    LF_SIG_INVALID
 } LF_Signal_T;
 
 typedef struct

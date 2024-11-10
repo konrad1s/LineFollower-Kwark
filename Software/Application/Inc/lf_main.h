@@ -41,13 +41,19 @@ typedef struct
 
 typedef struct
 {
+    uint32_t tick;
+    LF_Signal_T associatedTimeoutSig;
+} LF_Timer_T;
+
+typedef struct
+{
     LFState_T state;
     uint32_t *bootFlags;
     bool isDebugMode;
     TIM_HandleTypeDef *const debugModeTimer;
     LF_SignalQueue_T signals;
     Lf_DebugData_T debugData;
-    uint32_t noLineDetectedCounter;
+    LF_Timer_T timers[LF_TIMER_NB];
 
     Nvm_Instance_T nvmInstance;
     NVM_Layout_T *const nvmBlock;

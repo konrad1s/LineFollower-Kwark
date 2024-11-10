@@ -9,6 +9,11 @@
  *                                         DEFINES                                        *
  ******************************************************************************************/
 #define LF_InitHandleFailure(status)    LF_LogError(__FILE__, __LINE__, status)
+#define LF_IsTimerOn(timer)             ((timer).tick != UINT32_MAX)
+#define LF_StartTimer(timer)            ((timer).tick = 0U)
+#define LF_StopTimer(timer)             ((timer).tick = UINT32_MAX)
+#define LF_RefreshTimer(timer)          ((timer).tick = 0U)
+#define LF_TimerTick(timer)             ((timer).tick++)
 #define LF_PID_UPDATE_INTERVAL_MS       5.0f
 #define LF_MAX_MOTOR_SPEED              999U
 
@@ -90,8 +95,15 @@ static void LF_InitState(LineFollower_T *const me)
 {
     me->state = LF_IDLE;
     me->isDebugMode = false;
-    me->noLineDetectedCounter = 0U;
     me->bootFlags = &bootloaderFlags;
+
+    for (LF_TimetId_T timer = 0; timer < LF_TIMER_NB; timer++)
+    {
+        LF_StopTimer(me->timers[timer]);
+        me->timers[timer].associatedTimeoutSig = LF_SIG_INVALID;
+    }
+    
+    me->timers[LF_TIMER_NO_LINE_DETECTED].associatedTimeoutSig = LF_SIG_STOP;
 
     LF_SignalQueue_Init(&me->signals);
     memset(&me->debugData, 0, sizeof(me->debugData));
@@ -294,6 +306,14 @@ static void LF_HandleStopSignal(LineFollower_T *const me)
 {
     TB6612Motor_Stop(me->motorLeft);
     TB6612Motor_Stop(me->motorRight);
+    (void)LF_InitPID(me);
+    (void)LF_InitEncoders(me);
+
+    for (LF_TimetId_T timer = 0; timer < LF_TIMER_NB; timer++)
+    {
+        LF_StopTimer(me->timers[timer]);
+    }
+
     me->state = LF_IDLE;
 }
 
@@ -305,16 +325,41 @@ static void LF_HandleStopSignal(LineFollower_T *const me)
 static void LF_HandleADCDataUpdated(LineFollower_T *const me)
 {
     const float dt = LF_PID_UPDATE_INTERVAL_MS;
+    bool isSpeedReduced = false;
 
     if (me->sensorsInstance.anySensorDetectedLine)
     {
-        me->noLineDetectedCounter = 0U;
+        LF_RefreshTimer(me->timers[LF_TIMER_NO_LINE_DETECTED]);
+    }
+
+    if (me->sensorsInstance.rightAngleDetected)
+    {
+        LF_StartTimer(me->timers[LF_TIMER_REDUCED_SPEED]);
+        LF_StopTimer(me->timers[LF_TIMER_SENSORS_STABILIZE]);
+        isSpeedReduced = true;
+    }
+    else if (LF_IsTimerOn(me->timers[LF_TIMER_SENSORS_STABILIZE]))
+    {
+        if (!me->sensorsInstance.stabilizeDetected)
+        {
+            LF_RefreshTimer(me->timers[LF_TIMER_SENSORS_STABILIZE]);
+        }
+        isSpeedReduced = true;
+    }
+
+    float targetSpeedLeft = me->nvmBlock->targetSpeed;
+    float targetSpeedRight = me->nvmBlock->targetSpeed;
+
+    if (isSpeedReduced)
+    {
+        targetSpeedLeft *= 0.85f;
+        targetSpeedRight *= 0.85f;
     }
 
     me->debugData.sensorError = Sensors_CalculateError(&me->sensorsInstance, &me->nvmBlock->sensors);
     float pidSensorOutput = PID_Update(&me->pidSensorInstance, me->debugData.sensorError, dt);
-    float targetSpeedLeft = me->nvmBlock->targetSpeed - pidSensorOutput;
-    float targetSpeedRight = me->nvmBlock->targetSpeed + pidSensorOutput;
+    targetSpeedLeft -= me->nvmBlock->targetSpeed - pidSensorOutput;
+    targetSpeedRight += me->nvmBlock->targetSpeed + pidSensorOutput;
 
     Encoder_Update(&me->encoderLeft, dt);
     Encoder_Update(&me->encoderRight, dt);
@@ -343,13 +388,20 @@ static void LF_HandleADCDataUpdated(LineFollower_T *const me)
  */
 static void LF_HandleTimerTick(LineFollower_T *const me)
 {
-    me->noLineDetectedCounter++;
-    if (me->noLineDetectedCounter >= me->nvmBlock->noLineDetectedTimeout)
+    for (LF_TimetId_T timer = 0; timer < LF_TIMER_NB; timer++)
     {
-        TB6612Motor_Stop(me->motorLeft);
-        TB6612Motor_Stop(me->motorRight);
-        me->noLineDetectedCounter = 0U;
-        me->state = LF_IDLE;
+        if (LF_IsTimerOn(me->timers[timer]))
+        {
+            me->timers[timer].tick++;
+            if (me->timers[timer].tick == me->nvmBlock->timerTimeout[timer])
+            {
+                LF_StopTimer(me->timers[timer]);
+                if (me->timers[timer].associatedTimeoutSig != LF_SIG_INVALID)
+                {
+                    LF_SendSignal(me, me->timers[timer].associatedTimeoutSig);
+                }
+            }
+        }
     }
 }
 

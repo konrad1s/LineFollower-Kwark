@@ -26,7 +26,7 @@
 
 const NVM_Layout_T NvmDefaultData = {
     .pidStgSensor = {
-        .kp = 0.08f,
+        .kp = 0.1f,
         .ki = 0.0f,
         .kd = 0.0f,
         .integral_max = 1.0f,
@@ -60,7 +60,12 @@ const NVM_Layout_T NvmDefaultData = {
         .fallbackErrorNegative = -10.0f
     },
     .targetSpeed = 1.0f,
-    .noLineDetectedTimeout = 1000U
+    .timerTimeout = {
+        [LF_TIMER_NO_LINE_DETECTED]= 1000U,
+        [LF_TIMER_REDUCED_SPEED]= 300U,
+        [LF_TIMER_SENSORS_STABILIZE]= 100U,
+        [LF_TIMER_CALIBRATION] = 3000u
+    }
 };
 
 /* --------------------------------- SENSORS CONFIG --------------------------------- */

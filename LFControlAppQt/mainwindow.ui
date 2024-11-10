@@ -1279,103 +1279,121 @@
      <attribute name="title">
       <string>General</string>
      </attribute>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>10</y>
-        <width>481</width>
-        <height>94</height>
+        <width>808</width>
+        <height>96</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_43">
+      <layout class="QHBoxLayout" name="horizontalLayout_54">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
+        <layout class="QHBoxLayout" name="horizontalLayout_43">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_40">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+            <layout class="QHBoxLayout" name="horizontalLayout_40">
+             <item>
+              <widget class="QLabel" name="label_38">
+               <property name="text">
+                <string>errorThreshold:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditErrorThreshold"/>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLabel" name="label_38">
-             <property name="text">
-              <string>errorThreshold:</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_41">
+             <item>
+              <widget class="QLabel" name="label_39">
+               <property name="text">
+                <string>fallbackError+:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditfallbackPositive"/>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditErrorThreshold"/>
+            <layout class="QHBoxLayout" name="horizontalLayout_42">
+             <item>
+              <widget class="QLabel" name="label_40">
+               <property name="text">
+                <string>fallbackError-:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditfallbackNegative"/>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_41">
-           <item>
-            <spacer name="horizontalSpacer_29">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_39">
-             <property name="text">
-              <string>fallbackError+:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditfallbackPositive"/>
-           </item>
-          </layout>
+          <spacer name="horizontalSpacer_46">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_42">
+          <layout class="QVBoxLayout" name="verticalLayout_29">
            <item>
-            <spacer name="horizontalSpacer_33">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+            <layout class="QHBoxLayout" name="horizontalLayout_28">
+             <item>
+              <widget class="QLabel" name="label_41">
+               <property name="text">
+                <string>target speed:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditTargetSpeed">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLabel" name="label_40">
-             <property name="text">
-              <string>fallbackError-:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditfallbackNegative"/>
+            <layout class="QHBoxLayout" name="horizontalLayout_55">
+             <item>
+              <widget class="QLabel" name="label_45">
+               <property name="text">
+                <string>no line detected timeout:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditNoLineDetectedTimeout">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
         </layout>
        </item>
        <item>
-        <spacer name="horizontalSpacer_46">
+        <spacer name="horizontalSpacer_49">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
          </property>
@@ -1388,18 +1406,18 @@
         </spacer>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_29">
+        <layout class="QVBoxLayout" name="verticalLayout_30">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_28">
+          <layout class="QHBoxLayout" name="horizontalLayout_58">
            <item>
-            <widget class="QLabel" name="label_41">
+            <widget class="QLabel" name="label_46">
              <property name="text">
-              <string>target speed:</string>
+              <string>angle reduced speed: </string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditTargetSpeed">
+            <widget class="QLineEdit" name="lineEditAngleReducedSpeed">
              <property name="text">
               <string/>
              </property>
@@ -1408,16 +1426,34 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_55">
+          <layout class="QHBoxLayout" name="horizontalLayout_59">
            <item>
-            <widget class="QLabel" name="label_45">
+            <widget class="QLabel" name="label_49">
              <property name="text">
-              <string>no line detected timeout:</string>
+              <string>sensors stabilize time: </string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEditNoLineDetectedTimeout">
+            <widget class="QLineEdit" name="lineEditSensorsStabilizeTime">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_60">
+           <item>
+            <widget class="QLabel" name="label_50">
+             <property name="text">
+              <string>calibration time: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditCalibrationTime">
              <property name="text">
               <string/>
              </property>

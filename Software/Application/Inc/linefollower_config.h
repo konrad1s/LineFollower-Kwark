@@ -15,12 +15,21 @@
  *                                         DEFINES                                        *
  ******************************************************************************************/
 #define NVM_SECTOR_USED  FLASH_SECTOR_2
-#define SCP_BUFFER_SIZE  256U
+#define SCP_BUFFER_SIZE  512U
 #define SENSORS_NUMBER   (12U)
 
 /******************************************************************************************
  *                                        TYPEDEFS                                        *
  ******************************************************************************************/
+typedef enum
+{
+    LF_TIMER_NO_LINE_DETECTED,
+    LF_TIMER_REDUCED_SPEED,
+    LF_TIMER_SENSORS_STABILIZE,
+    LF_TIMER_CALIBRATION,
+    LF_TIMER_NB
+} LF_TimetId_T;
+
 typedef struct
 {
     int8_t weights[SENSORS_NUMBER];
@@ -37,7 +46,7 @@ typedef struct
     PID_Settings_T pidStgEncoderRight;
     NVM_Sensors_T sensors;
     float targetSpeed;
-    uint32_t noLineDetectedTimeout;
+    uint32_t timerTimeout[LF_TIMER_NB];
 } NVM_Layout_T;
 
 /******************************************************************************************

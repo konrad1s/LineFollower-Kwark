@@ -10,6 +10,15 @@ class NVMLayout
 {
 public:
     static constexpr size_t SENSORS_NUMBER = 12;
+    static constexpr size_t LF_TIMER_NB = 4;
+
+    enum class LF_Timers
+    {
+        LF_TIMER_NO_LINE_DETECTED,
+        LF_TIMER_REDUCED_SPEED,
+        LF_TIMER_SENSORS_STABILIZE,
+        LF_TIMER_CALIBRATION
+    };
 
     PIDSettings pidStgSensor;
     PIDSettings pidStgEncoderLeft;
@@ -23,7 +32,7 @@ public:
         float fallbackErrorNegative;
     } sensors;
     float targetSpeed;
-    uint32_t noLineDetectedTimeout;
+    std::array<uint32_t, LF_TIMER_NB> timerTimeout;
 
     NVMLayout() = default;
 
@@ -61,8 +70,11 @@ public:
         std::memcpy(&targetSpeed, data + offset, sizeof(targetSpeed));
         offset += sizeof(targetSpeed);
 
-        std::memcpy(&noLineDetectedTimeout, data + offset, sizeof(noLineDetectedTimeout));
-        offset += sizeof(noLineDetectedTimeout);
+        for (size_t i = 0U; i < timerTimeout.size(); ++i)
+        {
+            std::memcpy(&timerTimeout[i], data + offset, sizeof(timerTimeout[i]));
+            offset += sizeof(timerTimeout[i]);
+        }
     }
 
     void serializeToArray(uint8_t *data) const
@@ -99,8 +111,11 @@ public:
         std::memcpy(data + offset, &targetSpeed, sizeof(targetSpeed));
         offset += sizeof(targetSpeed);
 
-        std::memcpy(data + offset, &noLineDetectedTimeout, sizeof(noLineDetectedTimeout));
-        offset += sizeof(noLineDetectedTimeout);
+        for (size_t i = 0U; i < timerTimeout.size(); ++i)
+        {
+            std::memcpy(data + offset, &timerTimeout[i], sizeof(timerTimeout[i]));
+            offset += sizeof(timerTimeout[i]);
+        }
     }
 
     constexpr size_t size() const
@@ -109,7 +124,8 @@ public:
                (sensors.weights.size() * sizeof(int8_t)) +
                (sensors.thresholds.size() * sizeof(uint16_t)) +
                sizeof(sensors.errorThreshold) + sizeof(sensors.fallbackErrorPositive) +
-               sizeof(sensors.fallbackErrorNegative) + sizeof(targetSpeed) + sizeof(noLineDetectedTimeout);
+               sizeof(sensors.fallbackErrorNegative) + sizeof(targetSpeed) +
+               (timerTimeout.size() * sizeof(uint32_t));
     }
 
     QString toString() const
@@ -162,7 +178,12 @@ public:
         output.append(QString("Fallback Error Positive: %1\n").arg(sensors.fallbackErrorPositive));
         output.append(QString("Fallback Error Negative: %1\n").arg(sensors.fallbackErrorNegative));
         output.append(QString("\nTarget Speed: %1\n").arg(targetSpeed));
-        output.append(QString("\nNo line detected timeout: %1\n").arg(noLineDetectedTimeout));
+
+        output.append("\nTimer Timeouts:\n");
+        for (size_t i = 0; i < timerTimeout.size(); ++i)
+        {
+            output.append(QString("Timer %1 Timeout: %2\n").arg(i).arg(timerTimeout[i]));
+        }
 
         return output;
     }

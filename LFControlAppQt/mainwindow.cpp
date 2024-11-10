@@ -184,7 +184,7 @@ void MainWindow::on_pushButtonAutoConnect_clicked()
 {
     addToLogs("AutoConnect started", true);
 
-    autoConnectDeviceName = "HC-05";
+    autoConnectDeviceName = "=Linefollower";
     autoConnectInProgress = true;
     bluetoothHandler->startDeviceDiscovery();
     ui->pushButtonAutoConnect->setEnabled(false);
@@ -270,7 +270,10 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
     nvmLayout.sensors.fallbackErrorPositive = ui->lineEditfallbackPositive->text().toFloat();
     nvmLayout.sensors.fallbackErrorNegative = ui->lineEditfallbackNegative->text().toFloat();
     nvmLayout.targetSpeed = ui->lineEditTargetSpeed->text().toFloat();
-    nvmLayout.noLineDetectedTimeout = ui->lineEditNoLineDetectedTimeout->text().toFloat();
+    nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_NO_LINE_DETECTED)] = ui->lineEditNoLineDetectedTimeout->text().toFloat();
+    nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_REDUCED_SPEED)] = ui->lineEditAngleReducedSpeed->text().toFloat();
+    nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_SENSORS_STABILIZE)] = ui->lineEditSensorsStabilizeTime->text().toFloat();
+    nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_CALIBRATION)] = ui->lineEditCalibrationTime->text().toFloat();
 
     struct PidSettingsUI
     {
@@ -308,7 +311,7 @@ void MainWindow::on_pushButtonWriteNvm_clicked()
 
     bluetoothHandler->sendCommand(Command::WriteNvmData, data);
 
-    addToLogs("Write NvM command sent \n" + nvmLayout.toString(), true);
+    addToLogs("Write NvM command sent", true);
 }
 
 void MainWindow::updateNvmLayout(const QByteArray &data)
@@ -338,7 +341,10 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
     ui->lineEditfallbackPositive->setText(QString::number(nvmLayout.sensors.fallbackErrorPositive));
     ui->lineEditfallbackNegative->setText(QString::number(nvmLayout.sensors.fallbackErrorNegative));
     ui->lineEditTargetSpeed->setText(QString::number(nvmLayout.targetSpeed));
-    ui->lineEditNoLineDetectedTimeout->setText(QString::number(nvmLayout.noLineDetectedTimeout));
+    ui->lineEditNoLineDetectedTimeout->setText(QString::number( nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_NO_LINE_DETECTED)]));
+    ui->lineEditAngleReducedSpeed->setText(QString::number( nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_REDUCED_SPEED)]));
+    ui->lineEditSensorsStabilizeTime->setText(QString::number( nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_SENSORS_STABILIZE)]));
+    ui->lineEditCalibrationTime->setText(QString::number( nvmLayout.timerTimeout[static_cast<size_t>(NVMLayout::LF_Timers::LF_TIMER_CALIBRATION)]));
     sensorPlot->setAxisRange(0, 0, nvmLayout.sensors.fallbackErrorNegative - 1, nvmLayout.sensors.fallbackErrorPositive + 1);
 
     struct PidSettings
@@ -372,7 +378,7 @@ void MainWindow::updateNvmLayout(const QByteArray &data)
         settings.lineEditOutputMin->setText(QString::number(settings.pid.outputMin));
     }
 
-    addToLogs("NvM layout updated: \n" + nvmLayout.toString(), true);
+    addToLogs("NvM layout updated.", true);
 }
 
 void MainWindow::updateDebugData(const QByteArray &data)
