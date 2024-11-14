@@ -3,13 +3,14 @@
 The LineFollower Robot is an autonomous robot designed to follow a predefined path marked by a black or white line.<br>
 This project serves a quite advanced solution including hardware project, embedded software and PC QT application.
 
-![Linefollower](Images/linefollower.jpg)
+A short video demo is available on [YouTube](https://www.youtube.com/watch?v=Kh0NfI-lTgY).
 
-Example linefollower run (on of the first LineFollower Kwark runs):
+[![LineFollower Youtube Video](Images/youtubeVideo.png)](https://www.youtube.com/watch?v=Kh0NfI-lTgY)
+
+Example - one of the first - linefollower run:
 <p align="center">
   <img src="Images/linefollowerGif.gif" />
 </p>
-
 
 ## Hardware
 ### **High level block diagram**
