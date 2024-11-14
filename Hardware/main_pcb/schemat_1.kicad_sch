@@ -3,7 +3,7 @@
 	(generator "eeschema")
 	(generator_version "8.0")
 	(uuid "64207a0e-f417-48db-9b11-954f869188f0")
-	(paper "User" 522.656 239.801)
+	(paper "User" 370.256 239.801)
 	(lib_symbols
 		(symbol "Connector:Conn_01x01_Socket"
 			(pin_names
@@ -6519,14 +6519,6 @@
 		(uuid "015c26ca-fc26-4c7b-b1c4-b3354ce55fda")
 	)
 	(no_connect
-		(at 135.89 173.99)
-		(uuid "1fff1206-be32-4535-a629-f8a9fd75fa5e")
-	)
-	(no_connect
-		(at 74.93 146.05)
-		(uuid "21b12f45-8272-487b-b5bf-8eeb08feeaed")
-	)
-	(no_connect
 		(at 59.69 55.88)
 		(uuid "24898b3f-1062-49eb-bd47-9dd75319308c")
 	)
@@ -6537,6 +6529,10 @@
 	(no_connect
 		(at 234.95 53.34)
 		(uuid "602d549f-0858-4b3d-94f6-b21b9057444e")
+	)
+	(no_connect
+		(at 110.49 189.23)
+		(uuid "86e0bb77-14d7-461e-8c25-e52adf81ce9e")
 	)
 	(no_connect
 		(at 59.69 30.48)
@@ -6725,16 +6721,6 @@
 			(type default)
 		)
 		(uuid "09428b1d-7abb-4315-a051-2e19e8f4e4f3")
-	)
-	(wire
-		(pts
-			(xy 110.49 189.23) (xy 116.84 189.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "09599354-6133-4914-a6d3-840c7b5a8189")
 	)
 	(wire
 		(pts
@@ -7795,6 +7781,16 @@
 			(type default)
 		)
 		(uuid "5d3c7414-7c2b-410c-a06d-ef2e91cb47ff")
+	)
+	(wire
+		(pts
+			(xy 68.58 146.05) (xy 74.93 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e6c18bb-81ef-419a-9e8e-7d6761eee0c4")
 	)
 	(wire
 		(pts
@@ -9693,7 +9689,7 @@
 		)
 		(uuid "4e440cfc-cfe4-4276-b990-1f699b3be33f")
 	)
-	(text_box "POWER"
+	(text_box "POWER SUPPLY"
 		(exclude_from_sim no)
 		(at 13.97 15.24 0)
 		(size 196.85 55.88)
@@ -10344,6 +10340,17 @@
 		)
 		(uuid "8ae6ba43-02a2-4e06-a42f-f82e0a6fff34")
 	)
+	(label "ENCODER1_CH1"
+		(at 68.58 146.05 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "8d8efbd7-a633-401e-87b1-2c6c7b510ac5")
+	)
 	(label "LED3"
 		(at 116.84 184.15 0)
 		(fields_autoplaced yes)
@@ -10695,17 +10702,6 @@
 			(justify left bottom)
 		)
 		(uuid "e8b20ec4-bf48-4f96-9008-f3244de336b7")
-	)
-	(label "ENCODER1_CH1"
-		(at 116.84 189.23 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ea7db0ab-de52-4210-a1e3-b772201a5397")
 	)
 	(label "LED10"
 		(at 345.44 181.61 0)
