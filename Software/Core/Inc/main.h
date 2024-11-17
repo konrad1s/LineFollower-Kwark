@@ -105,10 +105,10 @@ void Error_Handler(void);
 #define LED2_GPIO_Port GPIOB
 #define LED1_Pin GPIO_PIN_15
 #define LED1_GPIO_Port GPIOB
-#define ENCODER_CH2_Pin GPIO_PIN_6
-#define ENCODER_CH2_GPIO_Port GPIOC
-#define ENCODER_CH1_Pin GPIO_PIN_7
+#define ENCODER_CH1_Pin GPIO_PIN_6
 #define ENCODER_CH1_GPIO_Port GPIOC
+#define ENCODER_CH2_Pin GPIO_PIN_7
+#define ENCODER_CH2_GPIO_Port GPIOC
 #define MOTOR1_BIN_Pin GPIO_PIN_9
 #define MOTOR1_BIN_GPIO_Port GPIOA
 #define MOTOR1_AIN_Pin GPIO_PIN_10

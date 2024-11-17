@@ -44,11 +44,8 @@
 # Project specific files
 */Output/*
 */build/*
-*.ioc
-*.s
 *.jlink
 *.jdebug
-*icf
 
 */.vscode/*
 *.user
