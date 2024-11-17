@@ -1,6 +1,35 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include "flash_manager.h"
 #include "stm32f7xx_hal.h"
 
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
+static int FlashManager_ToggleFlashLock(bool lock);
+
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/
+/**
+ * @brief Toggles the flash lock state.
+ *
+ * @param lock True to lock the flash; false to unlock.
+ * @return 0 on success; -1 on failure.
+ */
 static int FlashManager_ToggleFlashLock(bool lock)
 {
     HAL_StatusTypeDef status;
@@ -17,6 +46,12 @@ static int FlashManager_ToggleFlashLock(bool lock)
     return (status == HAL_OK) ? 0 : -1;
 }
 
+/**
+ * @brief Erases the application sectors in flash memory.
+ *
+ * @param manager Pointer to the Flash_Manager_T instance.
+ * @return 0 on success; -1 on failure.
+ */
 int FlashManager_Erase(Flash_Manager_T *const manager)
 {
     FLASH_EraseInitTypeDef eraseData = {
@@ -38,6 +73,15 @@ int FlashManager_Erase(Flash_Manager_T *const manager)
     return (status == HAL_OK) ? 0 : -1;
 }
 
+/**
+ * @brief Writes data to flash memory.
+ *
+ * @param manager Pointer to the Flash_Manager_T instance.
+ * @param startAddress The start address to write to in flash memory.
+ * @param data Pointer to the data to be written.
+ * @param size The size of the data to write in bytes.
+ * @return 0 on success; -1 on failure.
+ */
 int FlashManager_Write(Flash_Manager_T *const manager, uint32_t startAddress, const void *data, size_t size)
 {
     const uint8_t *pData = (const uint8_t *)data;
@@ -89,6 +133,15 @@ int FlashManager_Write(Flash_Manager_T *const manager, uint32_t startAddress, co
     return 0;
 }
 
+/**
+ * @brief Reads data from flash memory.
+ *
+ * @param manager Pointer to the Flash_Manager_T instance.
+ * @param startAddress The start address to read from.
+ * @param buffer Pointer to the buffer to store the read data.
+ * @param size The size of the data to read.
+ * @return 0 on success; -1 on failure.
+ */
 int FlashManager_Read(Flash_Manager_T *const manager, uint32_t startAddress, void *buffer, size_t size)
 {
     memcpy(buffer, (const void *)startAddress, size);

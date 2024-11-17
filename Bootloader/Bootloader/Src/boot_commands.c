@@ -1,7 +1,22 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include "boot_commands.h"
 #include "boot.h"
 #include <string.h>
 
+
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
 static void Boot_GetSession(const SCP_Packet *const packet, void *context);
 static void Boot_GetVersionCmd(const SCP_Packet *const packet, void *context);
 static void Boot_StartDownloadCmd(const SCP_Packet *const packet, void *context);
@@ -11,7 +26,9 @@ static void Boot_FlashMacCmd(const SCP_Packet *const packet, void *context);
 static void Boot_ValidateAppCmd(const SCP_Packet *const packet, void *context);
 static void Boot_JumpToAppCmd(const SCP_Packet *const packet, void *context);
 
-
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
 const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS] = {
      {BOOT_CMD_GET_SESSION,     0,  Boot_GetSession},
      {BOOT_CMD_GET_VERSION,     0,  Boot_GetVersionCmd},
@@ -23,6 +40,9 @@ const SCP_Command_T bootScpCommands[BOOT_CMD_NUMBERS] = {
      {BOOT_CMD_JUMP_TO_APP,     0,  Boot_JumpToAppCmd},
 };
 
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/
 static void Boot_GetSession(const SCP_Packet *const packet, void *context)
 {
     Bootloader_T *const me = (Bootloader_T *const )context;

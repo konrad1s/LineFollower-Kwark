@@ -1,17 +1,26 @@
 #ifndef __SCP__H__
 #define __SCP__H__
 
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include <stdint.h>
 #include <stddef.h>
 #include <assert.h>
 #include "usart.h"
 #include "scp_dispatcher.h"
 
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
 #define SCP_MAX_HUART_INSTANCES 1U
 #define SCP_PACKET_START        0x7EU
 #define SCP_PACKET_CRC_INIT     0x1D0FU
 #define SCP_PACKET_MAX_SIZE     2060U
 
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
 typedef uint16_t SCP_CommandId_T;
 
 typedef struct __attribute__((packed))
@@ -66,6 +75,13 @@ typedef struct
     SCP_DispatcherQueue_T queue;
 } SCP_Instance_T;
 
+/******************************************************************************************
+ *                                    GLOBAL VARIABLES                                    *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTION PROTOTYPES                                  *
+ ******************************************************************************************/
 int SCP_Init(SCP_Instance_T *const scp);
 void SCP_Process(void *context);
 int SCP_Transmit(SCP_Instance_T *const scp, SCP_CommandId_T id, const void *data, uint16_t size);

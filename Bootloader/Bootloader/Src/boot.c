@@ -1,18 +1,41 @@
+/******************************************************************************************
+ *                                        INCLUDES                                        *
+ ******************************************************************************************/
 #include "boot.h"
 #include "scp.h"
 #include "boot_commands.h"
 #include "crc.h"
 
+/******************************************************************************************
+ *                                         DEFINES                                        *
+ ******************************************************************************************/
 #define BOOT_BACKDOOR_TIMEOUT   50U
 #define BOOT_EXTENDED_TIMEOUT   30000U
 #define BOOT_BLINK_TIME         1000U
 #define BOOT_APP_RESET_FLAG     0xDEADBEEF
 #define BOOT_SCP_BUFFER_SIZE    512U
 
+/******************************************************************************************
+ *                                        TYPEDEFS                                        *
+ ******************************************************************************************/
+
+/******************************************************************************************
+ *                                   FUNCTIONS PROTOTYPES                                 *
+ ******************************************************************************************/
 extern void Boot_JumpToApp(uint32_t address);
+
 static void Boot_CheckAndClearBootShared(uint32_t *bootFlags);
 static void Boot_HandleBlinking(void);
+static bool Boot_ValidateApp(void);
+static void Boot_HandleStateIdle(Boot_Event_T event);
+static void Boot_HandleStateBooting(Boot_Event_T event);
+static void Boot_HandleStateErasing(Boot_Event_T event);
+static void Boot_HandleStateFlashing(Boot_Event_T event);
+static void Boot_HandleStateVerifying(Boot_Event_T event);
 
+/******************************************************************************************
+ *                                        VARIABLES                                       *
+ ******************************************************************************************/
 __attribute__((section(".noinit_shared"))) static uint32_t bootFlags;
 static uint8_t scpBuffer[BOOT_SCP_BUFFER_SIZE];
 
@@ -48,6 +71,14 @@ static Bootloader_T bootloader = {
     },
 };
 
+/******************************************************************************************
+ *                                        FUNCTIONS                                       *
+ ******************************************************************************************/
+/**
+ * @brief Validates the integrity of the application firmware in flash memory.
+ *
+ * @return True if the application CRC matches the stored CRC; false otherwise.
+ */
 static bool Boot_ValidateApp(void)
 {
     uint32_t appStartAddress = bootloader.flashManager.appStartAddress;
@@ -63,6 +94,9 @@ static bool Boot_ValidateApp(void)
     return (crcCalculated == storedCRC);
 }
 
+/**
+ * @brief Handles the LED blinking functionality during bootloader operation.
+ */
 static void Boot_HandleBlinking(void)
 {
     if (bootloader.blinkingEnabled)
@@ -80,6 +114,11 @@ static void Boot_HandleBlinking(void)
     }
 }
 
+/**
+ * @brief Handles the bootloader behavior when in the IDLE state.
+ *
+ * @param event The event to process in the IDLE state.
+ */
 static void Boot_HandleStateIdle(Boot_Event_T event)
 {
     switch (event)
@@ -111,6 +150,11 @@ static void Boot_HandleStateIdle(Boot_Event_T event)
     }
 }
 
+/**
+ * @brief Handles the bootloader behavior when in the BOOTING state.
+ *
+ * @param event The event to process in the BOOTING state.
+ */
 static void Boot_HandleStateBooting(Boot_Event_T event)
 {
     switch (event)
@@ -138,6 +182,11 @@ static void Boot_HandleStateBooting(Boot_Event_T event)
     }
 }
 
+/**
+ * @brief Handles the bootloader behavior when in the ERASING state.
+ *
+ * @param event The event to process in the ERASING state.
+ */
 static void Boot_HandleStateErasing(Boot_Event_T event)
 {
     switch (event)
@@ -174,6 +223,11 @@ static void Boot_HandleStateErasing(Boot_Event_T event)
     }
 }
 
+/**
+ * @brief Handles the bootloader behavior when in the FLASHING state.
+ *
+ * @param event The event to process in the FLASHING state.
+ */
 static void Boot_HandleStateFlashing(Boot_Event_T event)
 {
     switch (event)
@@ -221,6 +275,11 @@ static void Boot_HandleStateFlashing(Boot_Event_T event)
     }
 }
 
+/**
+ * @brief Handles the bootloader behavior when in the VERIFYING state.
+ *
+ * @param event The event to process in the VERIFYING state.
+ */
 static void Boot_HandleStateVerifying(Boot_Event_T event)
 {
     switch (event)
@@ -243,6 +302,11 @@ static void Boot_HandleStateVerifying(Boot_Event_T event)
     }
 }
 
+/**
+ * @brief Checks and clears the boot shared flags in non-initialized shared memory.
+ *
+ * @param bootFlags Pointer to the boot flags variable in shared memory.
+ */
 static void Boot_CheckAndClearBootShared(uint32_t *bootFlags)
 {
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST))
@@ -253,7 +317,12 @@ static void Boot_CheckAndClearBootShared(uint32_t *bootFlags)
     __HAL_RCC_CLEAR_RESET_FLAGS();
 }
 
-
+/**
+ * @brief Initializes the bootloader.
+ *
+ * This function sets up the bootloader state, initializes peripherals,
+ * and checks for any boot flags set by the application.
+ */
 void Boot_Init(void)
 {
     bootloader.backdoorTimer = 0U;
@@ -276,6 +345,13 @@ void Boot_Init(void)
     }
 }
 
+
+/**
+ * @brief Main function of the bootloader.
+ *
+ * This function should be called periodically to process events
+ * and handle state transitions in the bootloader.
+ */
 void Boot_MainFunction(void)
 {
     Boot_Event_T event;
@@ -310,10 +386,15 @@ void Boot_MainFunction(void)
     }
 }
 
+/**
+ * @brief Adds an event to the bootloader event queue.
+ *
+ * @param event The event to add to the queue.
+ */
 void Boot_AddEvent(Boot_Event_T event)
 {
     if (!Boot_EventQueueEnqueue(&bootloader.eventQueue, event))
     {
-
+        /* TODO: Handle event queue full scenario */
     }
 }
